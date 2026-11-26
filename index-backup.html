@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <script type="importmap">
+{
+"imports": {
+"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+}
+}
+</script>
+<title>Our First Date Kinda Game ❤️</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;font-family:Georgia,serif;background:#9bd8ee}
+canvas{display:block;touch-action:none}
+#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#241b15d9,#241b1570 48%,#241b15d9);overflow:hidden}
+#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#b98b5e 0,#8b6244 48%,#493526 100%)}
+#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#3e281b55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#2b1b1440 77px 81px);opacity:.75}
+#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#70472d 0 118px,#8b5c39 120px 124px);border-top:9px solid #3b281d;box-shadow:0 -12px 35px #24160d88}
+#roomTitle{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:clamp(20px,3vw,32px);letter-spacing:3px;text-shadow:0 3px 5px #24160d;text-align:center;z-index:1;white-space:nowrap}
+#start .layout{position:relative;z-index:2;width:100%;height:100%;display:grid;grid-template-columns:minmax(190px,25%) 1fr minmax(190px,25%);gap:12px;padding:72px 18px 18px}
+.ward-panel{background:linear-gradient(145deg,#493326ed,#281d17f2);border:2px solid #b88c5c;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b100b88;overflow:auto;min-height:0}
+.ward-panel h2{font-size:17px;color:#e7c79b;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b88c5c66;padding-bottom:9px}
+.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a77c5144;border-radius:8px;background:#674a35;color:#fff1dc;font:13px Arial;cursor:pointer}
+.category.active{background:#b88752;color:#21160f;border-color:#f0d0a1}
+.category span:first-child{font-weight:bold}
+.arrows{display:flex;gap:5px}
+.arrows button,.small-btn{border:0;border-radius:6px;background:#e4c49a;color:#342115;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
+#previewWrap{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+#previewCanvas{width:100%;height:100%;max-height:calc(100vh - 115px);border-radius:16px;touch-action:none}
+.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a281dcc;border:1px solid #d1a979;border-radius:20px;padding:8px 18px;color:#f7e6c8;font:12px Arial;white-space:nowrap}
+#selectedName{font-size:13px;color:#f3d6ae;margin:-4px 0 12px}
+#swatches{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7e8d3;box-shadow:0 2px 4px #0008;cursor:pointer}
+.swatch.selected{outline:3px solid #e4bd79;outline-offset:3px}
+#savedOutfits{display:grid;gap:8px}
+.outfit{padding:10px;border:1px solid #a77c51;border-radius:8px;background:#674a35;color:#fff1dc;text-align:left;font:13px Arial;cursor:pointer}
+.outfit strong{display:block;color:#f0d2a8;margin-bottom:3px}
+#saveOutfit{width:100%;padding:10px;border:1px solid #e7c79b;border-radius:8px;background:#8b6244;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
+#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2d3a5;border-radius:30px;background:linear-gradient(#e6bd81,#ad7846);color:#2d1d12;font:bold 16px Georgia;box-shadow:0 4px 14px #1b100b99;cursor:pointer;white-space:nowrap}
+#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#203e36bb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
+#status{position:absolute;top:14px;right:14px;z-index:3;background:#203e36dd;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
+#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#493326e8;color:white;border:1px solid #e7c79b;border-radius:12px;padding:12px 16px;font-weight:bold}
+#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#203e3655;border:2px solid #ffffff99;z-index:5;touch-action:none}
+#stick{position:absolute;width:58px;height:58px;left:39px;top:39px;border-radius:50%;background:#ffffffbb;border:3px solid white;pointer-events:none}
+#runButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#203e36bb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
+@media(max-width:700px){
+#start .layout{grid-template-columns:minmax(112px,30%) 1fr minmax(112px,30%);gap:6px;padding:64px 6px 82px}
+.ward-panel{padding:8px;border-radius:9px}
+.ward-panel h2{font-size:12px;margin-bottom:8px}
+.category{font-size:10px;padding:7px 4px}
+.arrows button{padding:4px 7px;font-size:13px}
+.swatch{width:23px;height:23px}
+.outfit{font-size:10px;padding:7px}
+#roomTitle{top:12px;font-size:17px}
+#enterButton{bottom:13px;padding:11px 30px;font-size:14px}
+.preview-plaque{font-size:10px}
+}
+@media(pointer:coarse){#joystick,#runButton{display:block}#instructions{font-size:11px}#wardrobe{top:65px}}
+</style>
+</head>
+<body>
+
+<div id="start">
+<div id="wardrobeRoom"></div>
+<div id="roomTitle">YOUR LITTLE WARDROBE</div>
+<div class="layout">
+<section class="ward-panel">
+<h2>CHARACTER</h2>
+<div id="categories"></div>
+</section>
+<div id="previewWrap">
+<canvas id="previewCanvas"></canvas>
+<div class="preview-plaque">Drag to turn your character</div>
+</div>
+<section class="ward-panel">
+<h2 id="customTitle">SKIN TONE</h2>
+<div id="selectedName">Choose your look</div>
+<div id="swatches"></div>
+<h2>YOUR OUTFITS</h2>
+<div id="savedOutfits"></div>
+<button id="saveOutfit">＋ SAVE CURRENT OUTFIT</button>
+</section>
+</div>
+<button id="enterButton">CONTINUE TO OUR CITY ❤️</button>
+</div>
+
+<div id="instructions">WASD – Move | SHIFT – Run<br>Mouse / Finger – Look around</div>
+<div id="status">Loading 3D characters...</div>
+<button id="wardrobe">👕 WARDROBE</button>
+<div id="joystick"><div id="stick"></div></div>
+<button id="runButton">RUN</button>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js';
+import {clone as cloneSkeleton} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/utils/SkeletonUtils.js';
+
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+import {getAuth,signInAnonymously} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+import {getDatabase,ref,set,onValue,onDisconnect} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
+
+const statusText=document.getElementById('status');
+
+// LOAD THE TWO REAL 3D CHARACTERS
+const loader=new GLTFLoader();
+
+const modelURLs={
+boy:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/boy.glb.glb',
+girl:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/girl.glb.glb'
+};
+
+let models={};
+
+try{
+statusText.textContent='Loading your 3D characters...';
+const [boyModel,girlModel]=await Promise.all([
+loader.loadAsync(modelURLs.boy),
+loader.loadAsync(modelURLs.girl)
+]);
+models.boy=boyModel;
+models.girl=girlModel;
+}catch(error){
+console.error('Character loading error:',error);
+statusText.textContent='Could not load characters. Check the model files.';
+throw error;
+}
+
+// FIREBASE
+const firebaseConfig={
+apiKey:"AIzaSyCIkwXfeAfEZrG1kE0myW8BIRXNq5gOnpE",
+authDomain:"our-first-date-kinda-game.firebaseapp.com",
+databaseURL:"https://our-first-date-kinda-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"our-first-date-kinda-game",
+storageBucket:"our-first-date-kinda-game.firebasestorage.app",
+messagingSenderId:"176526649038",
+appId:"1:176526649038:web:3c6ab02491491e4e8e129f",
+measurementId:"G-49HR8VS7TV"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+
+let myUID=null;
+let myPlayerRef=null;
+let networkReady=false;
+const remotePlayers=new Map();
+
+const defaultAppearance={
+gender:'boy',
+skinColor:'#d99b72',
+hairStyle:'short',
+hairColor:'#25170f',
+eyeColor:'#30251f',
+accessory:'none',
+topStyle:'tshirt',
+topColor:'#398b72',
+bottomStyle:'pants',
+bottomColor:'#394b68',
+shoeColor:'#63452e'
+};
+
+let appearance={...defaultAppearance};
+
+const choices={
+gender:[['Boy','boy'],['Girl','girl']],
+skinColor:[['Light','#f5d0b0'],['Warm light','#e8b58e'],['Medium','#d99b72'],['Tan','#b97950'],['Brown','#895536'],['Deep brown','#583521']],
+hairStyle:[
+['Short','short'],
+['Buzz Cut','buzz'],
+['Crew Cut','crew'],
+['Low Fade','lowfade'],
+['High Fade','highfade'],
+['Textured Crop','textured'],
+['Slick Back','slickback'],
+['Middle Part','middlepart'],
+['Curly','curly'],
+['Wavy','wavy'],
+['Long Straight','long'],
+['Shaggy','shaggy'],
+['Wolf Cut','wolfcut'],
+['Long Wolf Cut','longwolf'],
+['Mullet','mullet'],
+['Bob','bob'],
+['Ponytail','ponytail'],
+['High Ponytail','highpony'],
+['Low Ponytail','lowpony'],
+['Twin Ponytails','twinponies'],
+['Bun','bun'],
+['Messy Bun','messybun'],
+['Braids','braids'],
+['Cornrows','cornrows'],
+['Box Braids','boxbraids'],
+['Twists','twists'],
+['Side Part','sidepart'],
+['French Crop','frenchcrop'],
+['Afro','afro'],
+['Double Buns','doublebun']
+],
+hairColor:[['Black','#25170f'],['Dark brown','#493020'],['Brown','#79502d'],['Blonde','#c18a4a'],['Light blonde','#d5b879'],['Ginger','#a94d35'],['White','#eeeeee'],['Purple','#8b5cc5'],['Pink','#d85c91'],['Blue','#427fbd']],
+eyeColor:[['Brown','#30251f'],['Dark','#202020'],['Blue','#478cbb'],['Green','#57965c'],['Hazel','#8a6740'],['Grey','#777777']],
+accessory:[['None','none'],['Glasses','glasses'],['Headband','headband']],
+topStyle:[['T-shirt','tshirt'],['Hoodie','hoodie'],['Tank top','tank'],['Sweater','sweater']],
+topColor:[['Green','#398b72'],['Black','#252b3d'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e'],['Purple','#8656a7'],['Pink','#e58b9c'],['Orange','#b87543'],['Grey','#777777']],
+bottomStyle:[['Trousers','pants'],['Shorts','shorts'],['Skirt','skirt']],
+bottomColor:[['Navy','#394b68'],['Black','#252525'],['White','#eeeeee'],['Green','#547c4b'],['Red','#a34b4b'],['Blue','#5479aa'],['Brown','#9b7958'],['Grey','#777777'],['Purple','#8656a7']],
+shoeColor:[['Brown','#63452e'],['Black','#252525'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e']]
+};
+
+const categoryNames=[
+['gender','Body style'],
+['skinColor','Skin tone'],
+['eyeColor','Eye colour'],
+['hairStyle','Hairstyle'],
+['hairColor','Hair colour'],
+['accessory','Accessories'],
+['topStyle','Top style'],
+['topColor','Top colour'],
+['bottomStyle','Bottom style'],
+['bottomColor','Bottom colour'],
+['shoeColor','Shoes']
+];
+
+let activeCategory='gender';
+let wardrobeOpen=true;
+let previewCharacter=null;
+let previewRotation=0;
+let previewPointer=null;
+let previewLastX=0;
+
+// CREATE A CHARACTER FROM A GLB MODEL
+
+function createCharacter(custom=defaultAppearance){
+const appearance={...defaultAppearance,...custom};
+
+const group=new THREE.Group();
+const gender=appearance.gender==='girl'?'girl':'boy';
+const source=models[gender];
+
+const model=cloneSkeleton(source.scene);
+
+// Fit model to a consistent height
+const originalBox=new THREE.Box3().setFromObject(model);
+const originalSize=originalBox.getSize(new THREE.Vector3());
+
+if(originalSize.y>0){
+const scale=2.8/originalSize.y;
+model.scale.setScalar(scale);
+}
+
+const fittedBox=new THREE.Box3().setFromObject(model);
+const fittedCenter=fittedBox.getCenter(new THREE.Vector3());
+
+model.position.x-=fittedCenter.x;
+model.position.z-=fittedCenter.z;
+model.position.y-=fittedBox.min.y;
+
+// Keep the imported model facing the same general direction
+const modelHolder=new THREE.Group();
+modelHolder.rotation.y=0;
+modelHolder.add(model);
+group.add(modelHolder);
+
+// Apply custom colours to the character's materials
+model.traverse(object=>{
+if(object.isMesh){
+object.castShadow=true;
+object.receiveShadow=true;
+
+function colourMaterial(material){
+const mat=material.clone();
+const name=(mat.name||'').toLowerCase();
+
+let colour=null;
+
+if(name==='skin'||name==='body_secondary'){
+colour=appearance.skinColor;
+}
+else if(name==='hair'){
+colour=appearance.hairColor;
+}
+else if(name==='eyes'){
+colour=appearance.eyeColor;
+}
+else if(name.startsWith('top_')){
+colour=appearance.topColor;
+}
+else if(name.startsWith('bottom_')){
+colour=appearance.bottomColor;
+}
+else if(name.startsWith('shoes_')){
+colour=appearance.shoeColor;
+}
+
+if(colour&&mat.color){
+mat.color.set(colour);
+}
+
+return mat;
+}
+
+object.material=Array.isArray(object.material)
+?object.material.map(colourMaterial)
+:colourMaterial(object.material);
+}
+});
+
+// ===== CUSTOM HAIRSTYLE SYSTEM =====
+const hairStyle = appearance.hairStyle;
+
+if (hairStyle !== 'short') {
+// Hide the original hair so it doesn't overlap the new style
+model.traverse(object => {
+if (object.isMesh && object.material) {
+const materials = Array.isArray(object.material)
+? object.material
+: [object.material];
+
+if (materials.some(mat => mat.name === 'hair')) {
+object.visible = false;
+}
+}
+});
+
+const hairMaterial = new THREE.MeshStandardMaterial({
+color: appearance.hairColor,
+roughness: 0.85
+});
+
+const hair = new THREE.Group();
+
+function sphere(x, y, z, sx, sy, sz) {
+const mesh = new THREE.Mesh(
+new THREE.SphereGeometry(1, 16, 12),
+hairMaterial
+);
+mesh.position.set(x, y, z);
+mesh.scale.set(sx, sy, sz);
+hair.add(mesh);
+return mesh;
+}
+
+function strand(x, y, z, radius, length, sx=1, sz=1, rz=0) {
+const mesh = new THREE.Mesh(
+new THREE.CapsuleGeometry(radius, length, 6, 12),
+hairMaterial
+);
+mesh.position.set(x, y, z);
+mesh.scale.set(sx, 1, sz);
+mesh.rotation.z = rz;
+hair.add(mesh);
+return mesh;
+}
+
+function cap() {
+sphere(0, 0.27, 0, 0.27, 0.22, 0.25);
+}
+
+function sides(length=0.85) {
+for (const side of [-1, 1]) {
+strand(side * 0.20, -0.05, -0.02, 0.105, length);
+}
+}
+
+function back(length=0.85, radius=0.21) {
+strand(0, -0.22, -0.17, radius, length, 1, 1, 0);
+}
+
+function fringe() {
+for (let i = -2; i <= 2; i++) {
+strand(i * 0.075, 0.13, 0.19, 0.055, 0.16, 1, 1, i * 0.12);
+}
+}
+
+function curls() {
+for (let row = 0; row < 3; row++) {
+for (let i = -2; i <= 2; i++) {
+sphere(
+i * 0.095,
+0.30 + (row === 1 ? 0.07 : 0),
+row === 0 ? 0.12 : row === 1 ? -0.02 : -0.14,
+0.105, 0.11, 0.105
+);
+}
+}
+sphere(-0.24, 0.10, 0, 0.10, 0.20, 0.11);
+sphere(0.24, 0.10, 0, 0.10, 0.20, 0.11);
+}
+
+function ponytail(x=0, y=-0.02, length=0.85, radius=0.12) {
+strand(x, y - length * 0.35, -0.25, radius, length, 1, 1, -0.12);
+sphere(x, y + 0.10, -0.23, radius * 1.5, radius * 1.3, radius * 1.5);
+}
+
+function braid(x, length=0.85) {
+for (let i = 0; i < 7; i++) {
+sphere(
+x + Math.sin(i * 1.2) * 0.025,
+0.02 - i * (length / 7),
+-0.08,
+0.075, 0.09, 0.075
+);
+}
+}
+
+switch (hairStyle) {
+case 'long':
+cap();
+sides(0.95);
+back(1.0, 0.22);
+break;
+
+case 'curly':
+cap();
+curls();
+break;
+
+case 'wavy':
+cap();
+sides(0.95);
+back(0.85, 0.20);
+for (const side of [-1, 1]) {
+sphere(side * 0.20, 0.25, 0.02, 0.13, 0.18, 0.13);
+}
+break;
+
+case 'wolfcut':
+cap();
+fringe();
+sides(0.65);
+back(0.95, 0.20);
+break;
+
+case 'longwolf':
+cap();
+fringe();
+sides(1.05);
+back(1.15, 0.22);
+break;
+
+case 'mullet':
+cap();
+fringe();
+back(1.1, 0.22);
+break;
+
+case 'shaggy':
+cap();
+sides(0.75);
+back(0.9, 0.22);
+fringe();
+break;
+
+case 'textured':
+cap();
+fringe();
+for (let i = -2; i <= 2; i++) {
+strand(i * 0.08, 0.35, 0.04, 0.07, 0.15, 1, 1, i * 0.15);
+}
+break;
+
+case 'middlepart':
+cap();
+for (const side of [-1, 1]) {
+strand(side * 0.18, 0.10, 0.14, 0.09, 0.30, 1, 1, side * 0.3);
+}
+sides(0.45);
+break;
+
+case 'slickback':
+cap();
+back(0.55, 0.18);
+break;
+
+case 'buzz':
+sphere(0, 0.27, 0, 0.275, 0.17, 0.25);
+break;
+
+case 'crew':
+sphere(0, 0.29, 0, 0.27, 0.19, 0.25);
+break;
+
+case 'highfade':
+case 'lowfade':
+sphere(0, 0.32, -0.01, 0.26, 0.13, 0.24);
+break;
+
+case 'bob':
+cap();
+sides(0.32);
+back(0.35, 0.22);
+break;
+
+case 'ponytail':
+cap();
+ponytail(0, -0.05, 0.95);
+break;
+
+case 'highpony':
+cap();
+ponytail(0, 0.15, 1.0);
+break;
+
+case 'lowpony':
+cap();
+ponytail(0, -0.12, 0.85);
+break;
+
+case 'twinponies':
+cap();
+ponytail(-0.23, 0.05, 0.85, 0.10);
+ponytail(0.23, 0.05, 0.85, 0.10);
+break;
+
+case 'bun':
+cap();
+sphere(0, -0.02, -0.27, 0.19, 0.18, 0.18);
+break;
+
+case 'messybun':
+cap();
+sphere(0, 0.03, -0.28, 0.22, 0.20, 0.20);
+strand(-0.22, 0.02, 0.05, 0.07, 0.30);
+strand(0.22, 0.02, 0.05, 0.07, 0.30);
+break;
+
+case 'braids':
+cap();
+sides(0.45);
+braid(-0.20, 0.85);
+braid(0.20, 0.85);
+break;
+
+case 'cornrows':
+cap();
+for (let i = -2; i <= 2; i++) {
+strand(i * 0.085, 0.30, 0, 0.035, 0.30, 1, 1, 0);
+}
+break;
+
+case 'boxbraids':
+cap();
+for (let i = -2; i <= 2; i++) {
+braid(i * 0.09, 0.95);
+}
+break;
+
+case 'twists':
+cap();
+for (const side of [-1, 1]) {
+for (let i = 0; i < 3; i++) {
+strand(side * (0.12 + i * 0.06), -0.05, -0.10, 0.055, 0.65, 1, 1, side * 0.15);
+}
+}
+break;
+
+default:
+cap();
+sides(0.85);
+break;
+}
+
+const hairBone = model.getObjectByName('head');
+
+if (hairBone) {
+hairBone.add(hair);
+} else {
+model.add(hair);
+}
+
+hair.traverse(object => {
+if (object.isMesh) {
+object.castShadow = true;
+object.receiveShadow = true;
+}
+});
+}
+
+  // Set up the animation mixer for this individual character
+const mixer=new THREE.AnimationMixer(model);
+const actions={};
+
+const clips=source.animations||[];
+
+function findClip(word){
+return clips.find(clip=>clip.name.toLowerCase().includes(word));
+}
+
+const animationNames={
+idle:findClip('idle'),
+walk:findClip('walk'),
+run:findClip('run'),
+wave:findClip('wave'),
+jump:findClip('jump')
+};
+
+for(const [name,clip] of Object.entries(animationNames)){
+if(clip)actions[name]=mixer.clipAction(clip);
+}
+
+let currentAction=null;
+let currentAnimation='';
+
+function play(name){
+if(!actions[name]){
+if(name==='run'&&actions.walk)name='walk';
+else if(name!=='idle'&&actions.idle)name='idle';
+else return;
+}
+
+if(currentAnimation===name)return;
+
+const next=actions[name];
+if(currentAction){
+currentAction.fadeOut(.18);
+}
+
+next.reset();
+next.fadeIn(.18);
+next.play();
+
+currentAction=next;
+currentAnimation=name;
+}
+
+play('idle');
+
+group.userData.appearanceSignature=JSON.stringify(appearance);
+
+return{
+group,
+mixer,
+actions,
+play,
+update(delta){mixer.update(delta)},
+model
+};
+}
+
+// MAIN CITY SCENE
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x9bd8ee);
+scene.fog=new THREE.Fog(0x9bd8ee,65,190);
+
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// LIGHTING
+scene.add(new THREE.HemisphereLight(0xe5f5ff,0x64804c,2));
+const sun=new THREE.DirectionalLight(0xfff2d5,2.3);
+sun.position.set(-25,40,20);
+sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+scene.add(sun);
+
+function material(color){
+return new THREE.MeshStandardMaterial({color,roughness:.85});
+}
+
+// GROUND AND ROAD
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),material(0x78ae60));
+ground.rotation.x=-Math.PI/2;
+ground.receiveShadow=true;
+scene.add(ground);
+
+const road=new THREE.Mesh(new THREE.PlaneGeometry(13,400),material(0x41474b));
+road.rotation.x=-Math.PI/2;
+road.position.y=.035;
+scene.add(road);
+
+for(const x of [-7.2,7.2]){
+const edge=new THREE.Mesh(new THREE.BoxGeometry(.25,.12,400),material(0xe4dfc9));
+edge.position.set(x,.08,0);
+scene.add(edge);
+}
+
+for(let z=-190;z<200;z+=9){
+const line=new THREE.Mesh(new THREE.BoxGeometry(.16,.025,4),material(0xf5e7a6));
+line.position.set(0,.105,z);
+scene.add(line);
+}
+
+for(const x of [-9,9]){
+const p=new THREE.Mesh(new THREE.BoxGeometry(3,.25,400),material(0xbab9a9));
+p.position.set(x,.12,0);
+scene.add(p);
+}
+
+// BUILDINGS
+const buildingColors=[0xd6b99b,0xc4a6a0,0xd8d0b5,0xa9c5c6,0xd6d1c4,0xb9ad99,0xe0c5a2,0x9db3a6];
+
+function createBuilding(x,z,w,d,h,color){
+const g=new THREE.Group();
+const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material(color));
+body.position.y=h/2+.25;
+body.castShadow=true;
+body.receiveShadow=true;
+g.add(body);
+
+const roof=new THREE.Mesh(new THREE.BoxGeometry(w+.35,.35,d+.35),material(0x56504b));
+roof.position.y=h+.4;
+g.add(roof);
+
+const side=x<0?1:-1;
+const columns=Math.max(2,Math.floor(d/2.4));
+const rows=Math.max(2,Math.floor(h/2.4));
+
+for(let r=0;r<rows;r++){
+for(let c=0;c<columns;c++){
+const win=new THREE.Mesh(new THREE.BoxGeometry(.09,1.05,.85),material(Math.random()>.25?0x82c5d9:0xffe3a0));
+win.position.set(side*(w/2+.05),1.35+r*2.15,-d/2+1.2+c*(d-1.5)/Math.max(1,columns-1));
+g.add(win);
+}
+}
+
+const door=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.95),material(0x594332));
+door.position.set(side*(w/2+.08),1.25,0);
+g.add(door);
+
+const sign=new THREE.Mesh(new THREE.BoxGeometry(.16,.55,2.4),material(0x397c72));
+sign.position.set(side*(w/2+.12),h*.65,0);
+g.add(sign);
+
+g.position.set(x,0,z);
+scene.add(g);
+}
+
+for(let z=-90;z<=100;z+=19){
+createBuilding(-14,z,9,12,9+Math.random()*12,buildingColors[Math.floor(Math.random()*buildingColors.length)]);
+createBuilding(14,z,9,12,9+Math.random()*16,buildingColors[Math.floor(Math.random()*buildingColors.length)]);
+}
+
+// STREETLIGHTS
+function createStreetLight(x,z){
+const g=new THREE.Group();
+const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,5,8),material(0x333b3d));
+pole.position.y=2.5;
+g.add(pole);
+
+const arm=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,1.1),material(0x333b3d));
+arm.position.set(0,4.8,x<0?-.35:.35);
+g.add(arm);
+
+const lamp=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),material(0xffe8a3));
+lamp.position.set(0,4.7,x<0?-.8:.8);
+g.add(lamp);
+
+g.position.set(x,0,z);
+scene.add(g);
+}
+
+for(let z=-90;z<110;z+=17){
+createStreetLight(-7.9,z);
+createStreetLight(7.9,z);
+}
+
+// TREES
+function createTree(x,z,s=1){
+const g=new THREE.Group();
+const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.32,2.5,8),material(0x80502f));
+trunk.position.y=1.25;
+g.add(trunk);
+
+for(let i=0;i<3;i++){
+const leaves=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25-i*.13,1),material([0x397f43,0x4d994c,0x67a94f][i]));
+leaves.position.set((i-1)*.25,2.8+(i===1?.4:0),0);
+g.add(leaves);
+}
+
+g.position.set(x,0,z);
+g.scale.setScalar(s);
+scene.add(g);
+}
+
+for(let z=-100;z<110;z+=13){
+createTree(-10.7,z,.8);
+createTree(10.7,z,.8);
+}
+
+// LOCAL PLAYER
+let character=createCharacter(appearance);
+let player=character.group;
+scene.add(player);
+player.position.set(0,0,5);
+
+// WARDROBE PREVIEW SCENE
+const previewScene=new THREE.Scene();
+previewScene.background=new THREE.Color(0x876447);
+previewScene.fog=new THREE.Fog(0x876447,10,24);
+previewScene.add(new THREE.HemisphereLight(0xffe9ce,0x62452e,2.2));
+
+const previewLight=new THREE.DirectionalLight(0xffe5bd,2.5);
+previewLight.position.set(-3,7,5);
+previewLight.castShadow=true;
+previewScene.add(previewLight);
+
+const previewCamera=new THREE.PerspectiveCamera(32,1,.1,50);
+previewCamera.position.set(0,2.15,7.4);
+previewCamera.lookAt(0,1.45,0);
+
+const previewRenderer=new THREE.WebGLRenderer({
+canvas:document.getElementById('previewCanvas'),
+antialias:true,
+alpha:false
+});
+previewRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
+previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
+
+const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x9a704d));
+previewFloor.position.y=-.08;
+previewScene.add(previewFloor);
+
+const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x6b5140));
+previewRug.position.y=0;
+previewScene.add(previewRug);
+
+function updatePreview(){
+if(previewCharacter){
+previewScene.remove(previewCharacter.group);
+previewCharacter.mixer.stopAllAction();
+}
+
+previewCharacter=createCharacter(appearance);
+previewScene.add(previewCharacter.group);
+previewCharacter.group.position.y=0;
+previewCharacter.group.rotation.y=previewRotation;
+}
+
+updatePreview();
+
+function resizePreview(){
+const r=document.getElementById('previewWrap').getBoundingClientRect();
+const w=Math.max(1,r.width);
+const h=Math.max(1,r.height);
+previewRenderer.setSize(w,h,false);
+previewCamera.aspect=w/h;
+previewCamera.updateProjectionMatrix();
+}
+
+new ResizeObserver(resizePreview).observe(document.getElementById('previewWrap'));
+resizePreview();
+
+const previewCanvas=document.getElementById('previewCanvas');
+
+previewCanvas.addEventListener('pointerdown',e=>{
+previewPointer=e.pointerId;
+previewLastX=e.clientX;
+previewCanvas.setPointerCapture(e.pointerId);
+});
+
+previewCanvas.addEventListener('pointermove',e=>{
+if(e.pointerId!==previewPointer)return;
+previewRotation+=(e.clientX-previewLastX)*.012;
+previewLastX=e.clientX;
+if(previewCharacter)previewCharacter.group.rotation.y=previewRotation;
+});
+
+previewCanvas.addEventListener('pointerup',e=>{
+if(e.pointerId===previewPointer)previewPointer=null;
+});
+
+previewCanvas.addEventListener('pointercancel',()=>previewPointer=null);
+
+// WARDROBE OPTIONS
+function renderWardrobe(){
+const cats=document.getElementById('categories');
+cats.innerHTML='';
+
+for(const [key,label] of categoryNames){
+const row=document.createElement('div');
+row.className='category'+(key===activeCategory?' active':'');
+
+const name=document.createElement('span');
+name.textContent=label;
+
+const arrows=document.createElement('div');
+arrows.className='arrows';
+
+const left=document.createElement('button');
+left.textContent='‹';
+left.setAttribute('aria-label','Previous '+label);
+
+const right=document.createElement('button');
+right.textContent='›';
+right.setAttribute('aria-label','Next '+label);
+
+left.onclick=e=>{
+e.stopPropagation();
+cycle(key,-1);
+};
+
+right.onclick=e=>{
+e.stopPropagation();
+cycle(key,1);
+};
+
+arrows.append(left,right);
+row.append(name,arrows);
+
+row.onclick=()=>{
+activeCategory=key;
+renderWardrobe();
+};
+
+cats.append(row);
+}
+
+const list=choices[activeCategory];
+const selected=list.find(v=>v[1]===appearance[activeCategory]);
+
+document.getElementById('customTitle').textContent=
+categoryNames.find(v=>v[0]===activeCategory)[1].toUpperCase();
+
+document.getElementById('selectedName').textContent=
+selected?selected[0]:'Selected option';
+
+const sw=document.getElementById('swatches');
+sw.innerHTML='';
+
+for(const [label,value] of list){
+const b=document.createElement('button');
+b.className='swatch'+(appearance[activeCategory]===value?' selected':'');
+b.title=label;
+
+if(value.startsWith('#')){
+b.style.background=value;
+}else{
+b.style.background=activeCategory==='gender'
+?(value==='boy'?'#5b8db7':'#c77c9b')
+:activeCategory==='hairStyle'
+?({short:'#63452e',long:'#8b5a38',curly:'#38251c',braids:'#52351f',ponytail:'#76502e',bun:'#9b7048',none:'#d9c6aa'}[value])
+:({none:'#b8b0a4',glasses:'#777',headband:'#d7a5c4'}[value]);
+}
+
+b.onclick=()=>choose(value);
+sw.append(b);
+}
+}
+
+// CHANGE LOCAL CHARACTER IF BOY/GIRL IS CHANGED
+function replaceLocalCharacter(){
+const oldPosition=player.position.clone();
+const oldRotation=player.rotation.clone();
+
+scene.remove(player);
+character.mixer.stopAllAction();
+
+character=createCharacter(appearance);
+player=character.group;
+player.position.copy(oldPosition);
+player.rotation.copy(oldRotation);
+scene.add(player);
+}
+
+function choose(value){
+appearance[activeCategory]=value;
+
+replaceLocalCharacter();
+
+updatePreview();
+renderWardrobe();
+sendMyPosition();
+}
+
+function cycle(key,direction){
+const arr=choices[key];
+const i=arr.findIndex(v=>v[1]===appearance[key]);
+activeCategory=key;
+choose(arr[(i+direction+arr.length)%arr.length][1]);
+}
+
+renderWardrobe();
+
+// SAVED OUTFITS
+function renderSaved(){
+const box=document.getElementById('savedOutfits');
+box.innerHTML='';
+
+const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
+
+const defaults=[
+{name:'Everyday outfit',data:{...defaultAppearance}},
+{name:'Cosy evening',data:{...defaultAppearance,topColor:'#8656a7',bottomColor:'#252525',hairStyle:'long'}},
+{name:'Summer day',data:{...defaultAppearance,topColor:'#e58b9c',bottomStyle:'shorts',shoeColor:'#eeeeee'}}
+];
+
+[...defaults,...saved].slice(0,6).forEach(o=>{
+const b=document.createElement('button');
+b.className='outfit';
+b.innerHTML='<strong>'+o.name+'</strong><span>Tap to wear this look</span>';
+b.onclick=()=>{
+appearance={...defaultAppearance,...o.data};
+replaceLocalCharacter();
+updatePreview();
+renderWardrobe();
+sendMyPosition();
+};
+box.append(b);
+});
+}
+
+document.getElementById('saveOutfit').onclick=()=>{
+const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
+if(saved.length>=3)saved.shift();
+saved.push({name:'Saved outfit '+(saved.length+1),data:{...appearance}});
+localStorage.setItem('ofd_saved_outfits',JSON.stringify(saved));
+renderSaved();
+};
+
+renderSaved();
+
+// OPEN AND CLOSE WARDROBE
+function openCreator(){
+wardrobeOpen=true;
+document.getElementById('start').style.display='flex';
+document.getElementById('wardrobe').style.display='none';
+document.getElementById('instructions').style.display='none';
+document.getElementById('joystick').style.display='none';
+document.getElementById('runButton').style.display='none';
+
+if(document.pointerLockElement)document.exitPointerLock();
+resizePreview();
+}
+
+function closeCreator(){
+wardrobeOpen=false;
+document.getElementById('start').style.display='none';
+document.getElementById('wardrobe').style.display='block';
+document.getElementById('instructions').style.display='block';
+
+if(matchMedia('(pointer:coarse)').matches){
+document.getElementById('joystick').style.display='block';
+document.getElementById('runButton').style.display='block';
+}
+
+if(matchMedia('(pointer:fine)').matches){
+renderer.domElement.requestPointerLock();
+}
+
+sendMyPosition();
+}
+
+document.getElementById('enterButton').addEventListener('click',closeCreator);
+document.getElementById('wardrobe').addEventListener('click',openCreator);
+
+// INPUT AND MOVEMENT — ORIGINAL CONTROLS
+const keys={};
+let yaw=0;
+let pitch=.12;
+let running=false;
+let localMoving=false;
+let localSprinting=false;
+
+window.addEventListener('keydown',e=>{
+keys[e.key.toLowerCase()]=true;
+});
+
+window.addEventListener('keyup',e=>{
+keys[e.key.toLowerCase()]=false;
+});
+
+window.addEventListener('blur',()=>{
+for(const key in keys)keys[key]=false;
+running=false;
+});
+
+// RUN BUTTON
+const runButton=document.getElementById('runButton');
+
+runButton.addEventListener('pointerdown',e=>{
+e.preventDefault();
+running=true;
+});
+
+for(const n of ['pointerup','pointerleave','pointercancel']){
+runButton.addEventListener(n,()=>running=false);
+}
+
+// JOYSTICK
+const joystick=document.getElementById('joystick');
+const stick=document.getElementById('stick');
+
+let joystickPointer=null;
+let joyX=0;
+let joyY=0;
+
+function resetJoystick(){
+joyX=0;
+joyY=0;
+joystickPointer=null;
+stick.style.transform='translate(0px,0px)';
+}
+
+function updateJoystick(e){
+const r=joystick.getBoundingClientRect();
+const cx=r.left+r.width/2;
+const cy=r.top+r.height/2;
+
+let dx=e.clientX-cx;
+let dy=e.clientY-cy;
+
+const max=48;
+const d=Math.hypot(dx,dy);
+
+if(d>max){
+dx=dx/d*max;
+dy=dy/d*max;
+}
+
+joyX=dx/max;
+joyY=dy/max;
+stick.style.transform=`translate(${dx}px,${dy}px)`;
+}
+
+joystick.addEventListener('pointerdown',e=>{
+e.preventDefault();
+if(joystickPointer!==null)return;
+joystickPointer=e.pointerId;
+joystick.setPointerCapture(e.pointerId);
+updateJoystick(e);
+});
+
+joystick.addEventListener('pointermove',e=>{
+if(e.pointerId!==joystickPointer)return;
+e.preventDefault();
+updateJoystick(e);
+});
+
+joystick.addEventListener('pointerup',e=>{
+if(e.pointerId===joystickPointer)resetJoystick();
+});
+
+joystick.addEventListener('pointercancel',resetJoystick);
+joystick.addEventListener('lostpointercapture',resetJoystick);
+
+// PC CAMERA
+document.addEventListener('mousemove',e=>{
+if(wardrobeOpen||document.pointerLockElement!==renderer.domElement)return;
+yaw-=e.movementX*.003;
+pitch+=e.movementY*.002;
+pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
+});
+
+// IPAD CAMERA
+let cameraPointer=null;
+let touchX=0;
+let touchY=0;
+
+renderer.domElement.addEventListener('pointerdown',e=>{
+if(wardrobeOpen||e.pointerType!=='touch'||e.clientX<innerWidth*.42)return;
+cameraPointer=e.pointerId;
+renderer.domElement.setPointerCapture(e.pointerId);
+touchX=e.clientX;
+touchY=e.clientY;
+});
+
+renderer.domElement.addEventListener('pointermove',e=>{
+if(e.pointerId!==cameraPointer)return;
+
+const dx=e.clientX-touchX;
+const dy=e.clientY-touchY;
+
+yaw-=dx*.006;
+pitch+=dy*.004;
+pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
+
+touchX=e.clientX;
+touchY=e.clientY;
+});
+
+function releaseCamera(e){
+if(e.pointerId===cameraPointer)cameraPointer=null;
+}
+
+renderer.domElement.addEventListener('pointerup',releaseCamera);
+renderer.domElement.addEventListener('pointercancel',releaseCamera);
+renderer.domElement.addEventListener('lostpointercapture',releaseCamera);
+
+// MULTIPLAYER
+async function connectMultiplayer(){
+try{
+const result=await signInAnonymously(auth);
+myUID=result.user.uid;
+myPlayerRef=ref(db,'players/'+myUID);
+
+await onDisconnect(myPlayerRef).remove();
+
+await set(myPlayerRef,{
+x:player.position.x,
+z:player.position.z,
+rotation:player.rotation.y,
+moving:false,
+running:false,
+appearance:appearance,
+updatedAt:Date.now()
+});
+
+networkReady=true;
+
+onValue(ref(db,'players'),snapshot=>{
+snapshot.forEach(child=>{
+const id=child.key;
+const data=child.val();
+
+if(id===myUID||!data)return;
+
+let other=remotePlayers.get(id);
+
+if(!other){
+other=createCharacter(data.appearance||defaultAppearance);
+other.group.position.set(Number(data.x)||0,0,Number(data.z)||0);
+other.group.rotation.y=Number(data.rotation)||0;
+
+other.group.userData.targetPosition=new THREE.Vector3(
+Number(data.x)||0,0,Number(data.z)||0
+);
+
+other.group.userData.targetRotation=Number(data.rotation)||0;
+other.group.userData.targetMoving=data.moving===true;
+other.group.userData.targetRunning=data.running===true;
+
+scene.add(other.group);
+remotePlayers.set(id,other);
+}else{
+const incoming=JSON.stringify({...defaultAppearance,...(data.appearance||{})});
+const current=other.group.userData.appearanceSignature;
+
+if(incoming!==current){
+const old=other.group;
+const state=old.userData;
+const replacement=createCharacter(data.appearance||defaultAppearance);
+
+replacement.group.position.copy(old.position);
+replacement.group.rotation.copy(old.rotation);
+
+replacement.group.userData.targetPosition=state.targetPosition;
+replacement.group.userData.targetRotation=state.targetRotation;
+replacement.group.userData.targetMoving=state.targetMoving;
+replacement.group.userData.targetRunning=state.targetRunning;
+
+scene.remove(old);
+scene.add(replacement.group);
+
+other=replacement;
+remotePlayers.set(id,other);
+}
+}
+
+const state=other.group.userData;
+
+state.targetPosition.set(
+Number(data.x)||0,0,Number(data.z)||0
+);
+
+if(Number.isFinite(Number(data.rotation))){
+state.targetRotation=Number(data.rotation);
+}
+
+state.targetMoving=data.moving===true;
+state.targetRunning=data.running===true;
+});
+
+for(const [id,other] of remotePlayers){
+if(!snapshot.hasChild(id)){
+scene.remove(other.group);
+other.mixer.stopAllAction();
+remotePlayers.delete(id);
+}
+}
+
+statusText.textContent=remotePlayers.size>0
+?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players'
+:'🟢 Connected · Waiting for Tina';
+},error=>{
+console.error(error);
+statusText.textContent='🔴 Multiplayer read error';
+});
+
+}catch(error){
+console.error(error);
+statusText.textContent='🔴 Connection failed';
+}
+}
+
+connectMultiplayer();
+
+// SEND POSITION AND APPEARANCE
+let lastSent=0;
+
+function sendMyPosition(){
+if(!networkReady||!myPlayerRef)return;
+
+set(myPlayerRef,{
+x:player.position.x,
+z:player.position.z,
+rotation:player.rotation.y,
+moving:localMoving,
+running:localSprinting,
+appearance:appearance,
+updatedAt:Date.now()
+}).catch(error=>{
+console.error('Position update failed:',error);
+});
+}
+
+// GAME LOOP
+const clock=new THREE.Clock();
+const targetCamera=new THREE.Vector3();
+
+function animate(){
+requestAnimationFrame(animate);
+
+const delta=Math.min(clock.getDelta(),.05);
+const time=clock.elapsedTime;
+
+let forward=0;
+let sideways=0;
+
+if(!wardrobeOpen){
+if(keys.w||keys.arrowup)forward+=1;
+if(keys.s||keys.arrowdown)forward-=1;
+if(keys.d||keys.arrowright)sideways+=1;
+if(keys.a||keys.arrowleft)sideways-=1;
+
+forward+=-joyY;
+sideways+=joyX;
+}
+
+const length=Math.hypot(forward,sideways);
+const moving=length>.08;
+const sprint=keys.shift||running;
+
+localMoving=moving;
+localSprinting=moving&&sprint;
+
+if(moving){
+forward/=length;
+sideways/=length;
+
+// ORIGINAL MOVEMENT MATH — UNCHANGED
+const dx=-Math.sin(yaw)*forward+Math.cos(yaw)*sideways;
+const dz=-Math.cos(yaw)*forward-Math.sin(yaw)*sideways;
+const speed=sprint?10:5.5;
+
+player.position.x+=dx*speed*delta;
+player.position.z+=dz*speed*delta;
+}
+
+// ORIGINAL PLAYER FACING
+player.rotation.y=Math.PI+yaw;
+
+// PLAY THE ACTUAL MODEL ANIMATIONS
+character.play(moving?(sprint?'run':'walk'):'idle');
+character.update(delta);
+
+// REMOTE CHARACTERS
+for(const other of remotePlayers.values()){
+const data=other.group.userData;
+
+other.group.position.lerp(
+data.targetPosition,
+Math.min(1,delta*12)
+);
+
+const diff=Math.atan2(
+Math.sin(data.targetRotation-other.group.rotation.y),
+Math.cos(data.targetRotation-other.group.rotation.y)
+);
+
+other.group.rotation.y+=diff*Math.min(1,delta*12);
+
+other.play(data.targetMoving
+?(data.targetRunning?'run':'walk')
+:'idle');
+
+other.update(delta);
+}
+
+// CAMERA — ORIGINAL WORKING CAMERA MATH
+const horizontal=7*Math.cos(pitch);
+
+targetCamera.set(
+player.position.x+Math.sin(yaw)*horizontal,
+player.position.y+2.2+7*Math.sin(pitch),
+player.position.z+Math.cos(yaw)*horizontal
+);
+
+camera.position.lerp(targetCamera,.16);
+camera.lookAt(player.position.x,player.position.y+1.45,player.position.z);
+
+if(time-lastSent>.08){
+sendMyPosition();
+lastSent=time;
+}
+
+renderer.render(scene,camera);
+
+if(wardrobeOpen&&previewCharacter){
+previewCharacter.group.rotation.y=previewRotation;
+previewCharacter.update(delta);
+previewRenderer.render(previewScene,previewCamera);
+}
+}
+
+animate();
+
+// RESIZE
+window.addEventListener('resize',()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight);
+resizePreview();
+});
+
+statusText.textContent='🟢 3D characters loaded';
+</script>
+</body>
+</html>
