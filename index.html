@@ -298,29 +298,27 @@ roughness: 0.85
 
 const longHair = new THREE.Group();
 
-// Two long sections flowing down either side of the head
+// Long hair falling down both sides
 for (const side of [-1, 1]) {
 const strand = new THREE.Mesh(
-new THREE.CapsuleGeometry(0.105, 0.75, 6, 12),
+new THREE.CapsuleGeometry(0.11, 0.85, 6, 12),
 hairMaterial
 );
 
-strand.position.set(side * 0.20, 0.78, -0.015);
-strand.scale.set(1, 1, 1);
+strand.position.set(side * 0.20, -0.05, -0.02);
 longHair.add(strand);
 }
 
-// Hair cap on top of the head
+// Hair covering the top of the head
 const cap = new THREE.Mesh(
-new THREE.SphereGeometry(0.27, 20, 16),
+new THREE.SphereGeometry(0.27, 24, 20),
 hairMaterial
 );
 
-cap.scale.set(1, 0.72, 0.9);
-cap.position.set(0, 1.12, 0);
+cap.scale.set(1, 0.75, 0.9);
+cap.position.set(0, 0.27, 0);
 longHair.add(cap);
 
-// Attach the hairstyle to the animated head bone
 const hairBone = model.getObjectByName('head');
 
 if (hairBone) {
