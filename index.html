@@ -6,225 +6,78 @@
 <title>Our First Date Kinda Game ❤️</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{overflow:hidden;font-family:Arial;background:#9bd8ee}
+body{overflow:hidden;font-family:Georgia,serif;background:#9bd8ee}
 canvas{display:block;touch-action:none}
-
-#start{
-position:absolute;inset:0;z-index:10;
-display:flex;align-items:center;justify-content:center;
-background:#203e3677;color:white;text-align:center;
-overflow-y:auto;padding:15px
+#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#241b15d9,#241b1570 48%,#241b15d9);overflow:hidden}
+#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#b98b5e 0,#8b6244 48%,#493526 100%)}
+#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#3e281b55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#2b1b1440 77px 81px);opacity:.75}
+#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#70472d 0 118px,#8b5c39 120px 124px);border-top:9px solid #3b281d;box-shadow:0 -12px 35px #24160d88}
+#roomTitle{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:clamp(20px,3vw,32px);letter-spacing:3px;text-shadow:0 3px 5px #24160d;text-align:center;z-index:1;white-space:nowrap}
+#start .layout{position:relative;z-index:2;width:100%;height:100%;display:grid;grid-template-columns:minmax(190px,25%) 1fr minmax(190px,25%);gap:12px;padding:72px 18px 18px}
+.ward-panel{background:linear-gradient(145deg,#493326ed,#281d17f2);border:2px solid #b88c5c;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b100b88;overflow:auto;min-height:0}
+.ward-panel h2{font-size:17px;color:#e7c79b;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b88c5c66;padding-bottom:9px}
+.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a77c5144;border-radius:8px;background:#674a35;color:#fff1dc;font:13px Arial;cursor:pointer}
+.category.active{background:#b88752;color:#21160f;border-color:#f0d0a1}
+.category span:first-child{font-weight:bold}
+.arrows{display:flex;gap:5px}
+.arrows button,.small-btn{border:0;border-radius:6px;background:#e4c49a;color:#342115;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
+#previewWrap{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+#previewCanvas{width:100%;height:100%;max-height:calc(100vh - 115px);border-radius:16px;touch-action:none}
+.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a281dcc;border:1px solid #d1a979;border-radius:20px;padding:8px 18px;color:#f7e6c8;font:12px Arial;white-space:nowrap}
+#selectedName{font-size:13px;color:#f3d6ae;margin:-4px 0 12px}
+#swatches{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7e8d3;box-shadow:0 2px 4px #0008;cursor:pointer}
+.swatch.selected{outline:3px solid #e4bd79;outline-offset:3px}
+#savedOutfits{display:grid;gap:8px}
+.outfit{padding:10px;border:1px solid #a77c51;border-radius:8px;background:#674a35;color:#fff1dc;text-align:left;font:13px Arial;cursor:pointer}
+.outfit strong{display:block;color:#f0d2a8;margin-bottom:3px}
+#saveOutfit{width:100%;padding:10px;border:1px solid #e7c79b;border-radius:8px;background:#8b6244;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
+#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2d3a5;border-radius:30px;background:linear-gradient(#e6bd81,#ad7846);color:#2d1d12;font:bold 16px Georgia;box-shadow:0 4px 14px #1b100b99;cursor:pointer;white-space:nowrap}
+#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#203e36bb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
+#status{position:absolute;top:14px;right:14px;z-index:3;background:#203e36dd;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
+#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#493326e8;color:white;border:1px solid #e7c79b;border-radius:12px;padding:12px 16px;font-weight:bold}
+#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#203e3655;border:2px solid #ffffff99;z-index:5;touch-action:none}
+#stick{position:absolute;width:58px;height:58px;left:39px;top:39px;border-radius:50%;background:#ffffffbb;border:3px solid white;pointer-events:none}
+#runButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#203e36bb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
+@media(max-width:700px){
+#start .layout{grid-template-columns:minmax(112px,30%) 1fr minmax(112px,30%);gap:6px;padding:64px 6px 82px}
+.ward-panel{padding:8px;border-radius:9px}
+.ward-panel h2{font-size:12px;margin-bottom:8px}
+.category{font-size:10px;padding:7px 4px}
+.arrows button{padding:4px 7px;font-size:13px}
+.swatch{width:23px;height:23px}
+.outfit{font-size:10px;padding:7px}
+#roomTitle{top:12px;font-size:17px}
+#enterButton{bottom:13px;padding:11px 30px;font-size:14px}
+.preview-plaque{font-size:10px}
 }
-.panel{
-background:#203e36ee;padding:22px;border-radius:22px;
-width:min(440px,100%);max-height:95vh;overflow-y:auto;
-text-align:left
-}
-.panel h1{text-align:center;margin-bottom:8px;font-size:25px}
-.subtitle{text-align:center;font-size:13px;opacity:.85;margin-bottom:17px}
-.section-title{font-weight:bold;margin:15px 0 7px;color:#c6e8d4}
-.field{margin:9px 0}
-.field label{display:block;font-size:12px;margin-bottom:5px;color:#e2f1e7}
-.field select{
-width:100%;padding:11px;border:0;border-radius:9px;
-background:#f4f4ee;color:#243a31;font-size:14px
-}
-.field select:focus{outline:2px solid #8bd0a8}
-#enterButton{
-width:100%;padding:14px;margin-top:17px;border:0;
-border-radius:12px;background:#8bd0a8;color:#183b2c;
-font-size:16px;font-weight:bold
-}
-#enterButton:active{transform:scale(.98)}
-#instructions{
-position:absolute;top:14px;left:50%;transform:translateX(-50%);
-z-index:2;background:#203e36bb;color:white;padding:10px 15px;
-border-radius:12px;text-align:center;font-size:12px;
-pointer-events:none;line-height:1.5
-}
-#status{
-position:absolute;top:14px;right:14px;z-index:3;
-background:#203e36dd;color:white;padding:9px 12px;
-border-radius:12px;font-size:12px;pointer-events:none
-}
-#wardrobe{
-display:none;position:absolute;top:65px;right:14px;z-index:4;
-background:#203e36dd;color:white;border:1px solid #ffffff77;
-border-radius:12px;padding:12px 16px;font-weight:bold
-}
-#joystick{
-display:none;position:absolute;bottom:28px;left:25px;
-width:140px;height:140px;border-radius:50%;
-background:#203e3655;border:2px solid #ffffff99;
-z-index:5;touch-action:none
-}
-#stick{
-position:absolute;width:58px;height:58px;left:39px;top:39px;
-border-radius:50%;background:#ffffffbb;border:3px solid white;
-pointer-events:none
-}
-#runButton{
-display:none;position:absolute;right:28px;bottom:35px;
-width:76px;height:76px;border-radius:50%;
-border:2px solid #ffffffaa;background:#203e36bb;color:white;
-font-weight:bold;font-size:15px;z-index:5;touch-action:none
-}
-@media(pointer:coarse){
-#joystick,#runButton{display:block}
-#instructions{font-size:11px}
-#wardrobe{top:65px}
-}
+@media(pointer:coarse){#joystick,#runButton{display:block}#instructions{font-size:11px}#wardrobe{top:65px}}
 </style>
 </head>
 <body>
 
 <div id="start">
-<div class="panel">
-<h1>Our First Date ❤️</h1>
-<p class="subtitle">Create your character before entering our little world.</p>
-
-<div class="section-title">Your character</div>
-
-<div class="field">
-<label>Character style</label>
-<select id="gender">
-<option value="boy">Boy</option>
-<option value="girl">Girl</option>
-</select>
+<div id="wardrobeRoom"></div>
+<div id="roomTitle">YOUR LITTLE WARDROBE</div>
+<div class="layout">
+<section class="ward-panel">
+<h2>CHARACTER</h2>
+<div id="categories"></div>
+</section>
+<div id="previewWrap">
+<canvas id="previewCanvas"></canvas>
+<div class="preview-plaque">Drag to turn your character</div>
 </div>
-
-<div class="field">
-<label>Skin tone</label>
-<select id="skinColor">
-<option value="#f5d0b0">Light</option>
-<option value="#e8b58e">Warm light</option>
-<option value="#d99b72" selected>Medium</option>
-<option value="#b97950">Tan</option>
-<option value="#895536">Brown</option>
-<option value="#583521">Deep brown</option>
-</select>
+<section class="ward-panel">
+<h2 id="customTitle">SKIN TONE</h2>
+<div id="selectedName">Choose your look</div>
+<div id="swatches"></div>
+<h2>YOUR OUTFITS</h2>
+<div id="savedOutfits"></div>
+<button id="saveOutfit">＋ SAVE CURRENT OUTFIT</button>
+</section>
 </div>
-
-<div class="section-title">Hair</div>
-
-<div class="field">
-<label>Hairstyle</label>
-<select id="hairStyle">
-<option value="short">Short</option>
-<option value="long">Long</option>
-<option value="curly">Curly</option>
-<option value="braids">Braids</option>
-<option value="ponytail">Ponytail</option>
-<option value="bun">Bun</option>
-<option value="none">No hair</option>
-</select>
-</div>
-
-<div class="field">
-<label>Hair colour</label>
-<select id="hairColor">
-<option value="#25170f">Black</option>
-<option value="#493020">Dark brown</option>
-<option value="#79502d">Brown</option>
-<option value="#c18a4a">Blonde</option>
-<option value="#d5b879">Light blonde</option>
-<option value="#a94d35">Ginger</option>
-<option value="#eeeeee">White</option>
-<option value="#8b5cc5">Purple</option>
-<option value="#d85c91">Pink</option>
-<option value="#427fbd">Blue</option>
-</select>
-</div>
-
-<div class="section-title">Face</div>
-
-<div class="field">
-<label>Eye colour</label>
-<select id="eyeColor">
-<option value="#30251f">Brown</option>
-<option value="#202020">Dark</option>
-<option value="#478cbb">Blue</option>
-<option value="#57965c">Green</option>
-<option value="#8a6740">Hazel</option>
-<option value="#777777">Grey</option>
-</select>
-</div>
-
-<div class="field">
-<label>Accessory</label>
-<select id="accessory">
-<option value="none">None</option>
-<option value="glasses">Glasses</option>
-<option value="headband">Headband</option>
-</select>
-</div>
-
-<div class="section-title">Clothing</div>
-
-<div class="field">
-<label>Top style</label>
-<select id="topStyle">
-<option value="tshirt">T-shirt</option>
-<option value="hoodie">Hoodie</option>
-<option value="tank">Tank top</option>
-<option value="sweater">Sweater</option>
-</select>
-</div>
-
-<div class="field">
-<label>Top colour</label>
-<select id="topColor">
-<option value="#398b72">Green</option>
-<option value="#252b3d">Black</option>
-<option value="#eeeeee">White</option>
-<option value="#bd4444">Red</option>
-<option value="#426eae">Blue</option>
-<option value="#d5a64e">Yellow</option>
-<option value="#8656a7">Purple</option>
-<option value="#e58b9c">Pink</option>
-<option value="#b87543">Orange</option>
-<option value="#777777">Grey</option>
-</select>
-</div>
-
-<div class="field">
-<label>Bottom style</label>
-<select id="bottomStyle">
-<option value="pants">Trousers</option>
-<option value="shorts">Shorts</option>
-<option value="skirt">Skirt</option>
-</select>
-</div>
-
-<div class="field">
-<label>Bottom colour</label>
-<select id="bottomColor">
-<option value="#394b68">Navy</option>
-<option value="#252525">Black</option>
-<option value="#eeeeee">White</option>
-<option value="#547c4b">Green</option>
-<option value="#a34b4b">Red</option>
-<option value="#5479aa">Blue</option>
-<option value="#9b7958">Brown</option>
-<option value="#777777">Grey</option>
-<option value="#8656a7">Purple</option>
-</select>
-</div>
-
-<div class="field">
-<label>Shoe colour</label>
-<select id="shoeColor">
-<option value="#63452e">Brown</option>
-<option value="#252525">Black</option>
-<option value="#eeeeee">White</option>
-<option value="#bd4444">Red</option>
-<option value="#426eae">Blue</option>
-<option value="#d5a64e">Yellow</option>
-</select>
-</div>
-
-<button id="enterButton">Enter the City ❤️</button>
-</div>
+<button id="enterButton">CONTINUE TO OUR CITY ❤️</button>
 </div>
 
 <div id="instructions">WASD – Move | SHIFT – Run<br>Mouse / Finger – Look around</div>
@@ -277,7 +130,42 @@ shoeColor:'#63452e'
 
 let appearance={...defaultAppearance};
 
-// SCENE
+const choices={
+gender:[['Boy','boy'],['Girl','girl']],
+skinColor:[['Light','#f5d0b0'],['Warm light','#e8b58e'],['Medium','#d99b72'],['Tan','#b97950'],['Brown','#895536'],['Deep brown','#583521']],
+hairStyle:[['Short','short'],['Long','long'],['Curly','curly'],['Braids','braids'],['Ponytail','ponytail'],['Bun','bun'],['None','none']],
+hairColor:[['Black','#25170f'],['Dark brown','#493020'],['Brown','#79502d'],['Blonde','#c18a4a'],['Light blonde','#d5b879'],['Ginger','#a94d35'],['White','#eeeeee'],['Purple','#8b5cc5'],['Pink','#d85c91'],['Blue','#427fbd']],
+eyeColor:[['Brown','#30251f'],['Dark','#202020'],['Blue','#478cbb'],['Green','#57965c'],['Hazel','#8a6740'],['Grey','#777777']],
+accessory:[['None','none'],['Glasses','glasses'],['Headband','headband']],
+topStyle:[['T-shirt','tshirt'],['Hoodie','hoodie'],['Tank top','tank'],['Sweater','sweater']],
+topColor:[['Green','#398b72'],['Black','#252b3d'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e'],['Purple','#8656a7'],['Pink','#e58b9c'],['Orange','#b87543'],['Grey','#777777']],
+bottomStyle:[['Trousers','pants'],['Shorts','shorts'],['Skirt','skirt']],
+bottomColor:[['Navy','#394b68'],['Black','#252525'],['White','#eeeeee'],['Green','#547c4b'],['Red','#a34b4b'],['Blue','#5479aa'],['Brown','#9b7958'],['Grey','#777777'],['Purple','#8656a7']],
+shoeColor:[['Brown','#63452e'],['Black','#252525'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e']]
+};
+
+const categoryNames=[
+['gender','Body style'],
+['skinColor','Skin tone'],
+['eyeColor','Eye colour'],
+['hairStyle','Hairstyle'],
+['hairColor','Hair colour'],
+['accessory','Accessories'],
+['topStyle','Top style'],
+['topColor','Top colour'],
+['bottomStyle','Bottom style'],
+['bottomColor','Bottom colour'],
+['shoeColor','Shoes']
+];
+
+let activeCategory='skinColor';
+let wardrobeOpen=true;
+let previewCharacter;
+let previewRotation=0;
+let previewPointer=null;
+let previewLastX=0;
+
+// MAIN CITY SCENE
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x9bd8ee);
 scene.fog=new THREE.Fog(0x9bd8ee,65,190);
@@ -303,13 +191,12 @@ function material(color){
 return new THREE.MeshStandardMaterial({color,roughness:.85});
 }
 
-// GROUND
+// GROUND AND ROAD
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),material(0x78ae60));
 ground.rotation.x=-Math.PI/2;
 ground.receiveShadow=true;
 scene.add(ground);
 
-// ROAD
 const road=new THREE.Mesh(new THREE.PlaneGeometry(13,400),material(0x41474b));
 road.rotation.x=-Math.PI/2;
 road.position.y=.035;
@@ -327,50 +214,49 @@ line.position.set(0,.105,z);
 scene.add(line);
 }
 
-// PAVEMENTS
 for(const x of [-9,9]){
-const pavement=new THREE.Mesh(new THREE.BoxGeometry(3,.25,400),material(0xbab9a9));
-pavement.position.set(x,.12,0);
-scene.add(pavement);
+const p=new THREE.Mesh(new THREE.BoxGeometry(3,.25,400),material(0xbab9a9));
+p.position.set(x,.12,0);
+scene.add(p);
 }
 
 // BUILDINGS
 const buildingColors=[0xd6b99b,0xc4a6a0,0xd8d0b5,0xa9c5c6,0xd6d1c4,0xb9ad99,0xe0c5a2,0x9db3a6];
 
 function createBuilding(x,z,w,d,h,color){
-const group=new THREE.Group();
+const g=new THREE.Group();
 const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material(color));
 body.position.y=h/2+.25;
 body.castShadow=true;
 body.receiveShadow=true;
-group.add(body);
+g.add(body);
 
 const roof=new THREE.Mesh(new THREE.BoxGeometry(w+.35,.35,d+.35),material(0x56504b));
 roof.position.y=h+.4;
-group.add(roof);
+g.add(roof);
 
 const side=x<0?1:-1;
 const columns=Math.max(2,Math.floor(d/2.4));
 const rows=Math.max(2,Math.floor(h/2.4));
 
-for(let row=0;row<rows;row++){
-for(let col=0;col<columns;col++){
+for(let r=0;r<rows;r++){
+for(let c=0;c<columns;c++){
 const win=new THREE.Mesh(new THREE.BoxGeometry(.09,1.05,.85),material(Math.random()>.25?0x82c5d9:0xffe3a0));
-win.position.set(side*(w/2+.05),1.35+row*2.15,-d/2+1.2+col*(d-1.5)/Math.max(1,columns-1));
-group.add(win);
+win.position.set(side*(w/2+.05),1.35+r*2.15,-d/2+1.2+c*(d-1.5)/Math.max(1,columns-1));
+g.add(win);
 }
 }
 
 const door=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.95),material(0x594332));
 door.position.set(side*(w/2+.08),1.25,0);
-group.add(door);
+g.add(door);
 
 const sign=new THREE.Mesh(new THREE.BoxGeometry(.16,.55,2.4),material(0x397c72));
 sign.position.set(side*(w/2+.12),h*.65,0);
-group.add(sign);
+g.add(sign);
 
-group.position.set(x,0,z);
-scene.add(group);
+g.position.set(x,0,z);
+scene.add(g);
 }
 
 for(let z=-90;z<=100;z+=19){
@@ -380,21 +266,21 @@ createBuilding(14,z,9,12,9+Math.random()*16,buildingColors[Math.floor(Math.rando
 
 // STREETLIGHTS
 function createStreetLight(x,z){
-const group=new THREE.Group();
+const g=new THREE.Group();
 const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,5,8),material(0x333b3d));
 pole.position.y=2.5;
-group.add(pole);
+g.add(pole);
 
 const arm=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,1.1),material(0x333b3d));
 arm.position.set(0,4.8,x<0?-.35:.35);
-group.add(arm);
+g.add(arm);
 
 const lamp=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),material(0xffe8a3));
 lamp.position.set(0,4.7,x<0?-.8:.8);
-group.add(lamp);
+g.add(lamp);
 
-group.position.set(x,0,z);
-scene.add(group);
+g.position.set(x,0,z);
+scene.add(g);
 }
 
 for(let z=-90;z<110;z+=17){
@@ -403,21 +289,21 @@ createStreetLight(7.9,z);
 }
 
 // TREES
-function createTree(x,z,scale=1){
-const group=new THREE.Group();
+function createTree(x,z,s=1){
+const g=new THREE.Group();
 const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.32,2.5,8),material(0x80502f));
 trunk.position.y=1.25;
-group.add(trunk);
+g.add(trunk);
 
 for(let i=0;i<3;i++){
 const leaves=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25-i*.13,1),material([0x397f43,0x4d994c,0x67a94f][i]));
 leaves.position.set((i-1)*.25,2.8+(i===1?.4:0),0);
-group.add(leaves);
+g.add(leaves);
 }
 
-group.position.set(x,0,z);
-group.scale.setScalar(scale);
-scene.add(group);
+g.position.set(x,0,z);
+g.scale.setScalar(s);
+scene.add(g);
 }
 
 for(let z=-100;z<110;z+=13){
@@ -427,247 +313,217 @@ createTree(10.7,z,.8);
 
 // CHARACTER HELPERS
 function part(parent,geo,mat,x,y,z,slot=null){
-const mesh=new THREE.Mesh(geo,mat);
-mesh.position.set(x,y,z);
-mesh.castShadow=true;
-mesh.receiveShadow=true;
-if(slot)mesh.userData.slot=slot;
-parent.add(mesh);
-return mesh;
+const m=new THREE.Mesh(geo,mat);
+m.position.set(x,y,z);
+m.castShadow=true;
+m.receiveShadow=true;
+if(slot)m.userData.slot=slot;
+parent.add(m);
+return m;
 }
 
-function roundedPart(parent,x,y,z,sx,sy,sz,mat,slot=null){
-const mesh=part(parent,new THREE.SphereGeometry(1,18,14),mat,x,y,z,slot);
-mesh.scale.set(sx,sy,sz);
-return mesh;
+function ball(parent,x,y,z,sx,sy,sz,mat,slot=null){
+const m=part(parent,new THREE.SphereGeometry(1,24,18),mat,x,y,z,slot);
+m.scale.set(sx,sy,sz);
+return m;
 }
 
 // CHARACTER CREATION
 function createCharacter(custom=defaultAppearance){
 const group=new THREE.Group();
+const skin=material(custom.skinColor);
+const hair=material(custom.hairColor);
+const shirt=material(custom.topColor);
+const pants=material(custom.bottomColor);
+const shoes=material(custom.shoeColor);
+const eyes=material(custom.eyeColor);
+const white=material(0xffffff);
+const dark=material(0x29221f);
 
-const skinMat=material(custom.skinColor);
-const hairMat=material(custom.hairColor);
-const shirtMat=material(custom.topColor);
-const pantsMat=material(custom.bottomColor);
-const shoeMat=material(custom.shoeColor);
-const eyeMat=material(custom.eyeColor);
-const whiteMat=material(0xffffff);
-const darkMat=material(0x29221f);
-const accentMat=material(0xffffff);
+const torso=part(group,new THREE.CapsuleGeometry(.34,.63,8,20),shirt,0,1.45,0,'top');
+torso.scale.set(1,.98,.82);
+ball(group,0,1.91,0,.14,.18,.14,skin,'skin');
 
-// Body and neck
-const torso=part(group,new THREE.CapsuleGeometry(.37,.62,6,16),shirtMat,0,1.48,0,'top');
-torso.scale.set(1,.98,.78);
-
-roundedPart(group,0,1.91,0,.16,.19,.16,skinMat,'skin');
-
-// Head
 const head=new THREE.Group();
 head.position.set(0,2.34,0);
 group.add(head);
 
-roundedPart(head,0,0,0,.34,.39,.31,skinMat,'skin');
+// Face shape and cheeks
+ball(head,0,-.015,0,.305,.365,.275,skin,'skin');
+ball(head,0,-.17,.055,.245,.19,.235,skin,'skin');
 
-// Ears
-for(const x of [-.34,.34]){
-roundedPart(head,x,-.02,0,.075,.11,.07,skinMat,'skin');
+for(const x of [-.305,.305]){
+ball(head,x,-.015,0,.065,.095,.06,skin,'skin');
+}
+
+// Eyes, irises, pupils and eyebrows
+for(const x of [-.115,.115]){
+ball(head,x,.045,.244,.061,.069,.028,white);
+ball(head,x,.035,.268,.031,.043,.018,eyes,'eyes');
+ball(head,x,.034,.281,.014,.027,.009,dark);
+ball(head,x,.151,.247,.075,.018,.023,hair,'hair');
+ball(head,x,.008,.285,.007,.008,.005,white);
 }
 
 // Nose
-roundedPart(head,0,-.10,.305,.055,.075,.07,skinMat,'skin');
+ball(head,0,-.055,.275,.035,.075,.045,skin,'skin');
+ball(head,0,-.105,.303,.047,.035,.035,skin,'skin');
 
-// Eyes and pupils
-for(const x of [-.125,.125]){
-roundedPart(head,x,.035,.278,.065,.075,.035,whiteMat);
-roundedPart(head,x,-.005,.309,.033,.043,.018,eyeMat,'eyes');
-roundedPart(head,x,-.005,.324,.014,.026,.009,darkMat);
-const brow=roundedPart(head,x,.135,.285,.07,.018,.025,hairMat,'hair');
-brow.rotation.z=x<0?-.12:.12;
-}
+// Smile
+const smile=part(head,new THREE.TorusGeometry(.052,.009,8,20,Math.PI),material(0x874d48),0,-.205,.263);
+smile.rotation.z=Math.PI;
 
-// Mouth
-const mouth=part(head,new THREE.TorusGeometry(.055,.012,6,16,Math.PI),material(0x8d4545),0,-.19,.305);
-mouth.rotation.z=Math.PI;
-
-// Hair styles
-const hairStyles=new THREE.Group();
-head.add(hairStyles);
-
-function hairPiece(geo,x,y,z,sx=1,sy=1,sz=1){
-const mesh=part(hairStyles,geo,hairMat,x,y,z,'hair');
-mesh.scale.set(sx,sy,sz);
-return mesh;
-}
-
+// Hairstyles
 const styles={};
+const makeStyle=n=>{
+styles[n]=new THREE.Group();
+head.add(styles[n]);
+return styles[n];
+};
 
-// Short hair
-styles.short=new THREE.Group();
-hairStyles.add(styles.short);
-const shortCap=part(styles.short,new THREE.SphereGeometry(.345,18,12,0,Math.PI*2,0,Math.PI*.58),hairMat,0,.15,0,'hair');
-shortCap.scale.set(1.04,.95,1);
+let s=makeStyle('short');
+part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
+for(const x of [-.25,.25]){
+ball(s,x,.055,.025,.075,.13,.09,hair,'hair');
+}
+
+s=makeStyle('long');
+part(s,new THREE.SphereGeometry(.32,24,16,0,Math.PI*2,0,Math.PI*.58),hair,0,.14,0,'hair');
+ball(s,0,-.19,-.19,.29,.42,.13,hair,'hair');
 for(const x of [-.27,.27]){
-roundedPart(styles.short,x,.08,.02,.09,.15,.10,hairMat,'hair');
+ball(s,x,-.13,-.015,.075,.35,.09,hair,'hair');
 }
 
-// Long hair
-styles.long=new THREE.Group();
-hairStyles.add(styles.long);
-part(styles.long,new THREE.SphereGeometry(.35,18,12,0,Math.PI*2,0,Math.PI*.57),hairMat,0,.15,0,'hair');
-roundedPart(styles.long,0,-.19,-.23,.31,.45,.15,hairMat,'hair');
-for(const x of [-.29,.29]){
-roundedPart(styles.long,x,-.15,-.02,.09,.38,.10,hairMat,'hair');
+s=makeStyle('curly');
+for(let i=0;i<17;i++){
+const a=i/17*Math.PI*2;
+ball(s,Math.cos(a)*.22,.15+Math.sin(i*2)*.035,Math.sin(a)*.19,.105,.11,.105,hair,'hair');
+}
+ball(s,0,.23,0,.25,.16,.24,hair,'hair');
+
+s=makeStyle('braids');
+part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
+for(const x of [-.27,.27]){
+for(let i=0;i<5;i++){
+ball(s,x,-.04-i*.115,.02,.065,.105,.065,hair,'hair');
+}
+ball(s,x,-.58,.02,.075,.08,.075,hair,'hair');
 }
 
-// Curly hair
-styles.curly=new THREE.Group();
-hairStyles.add(styles.curly);
-for(let i=0;i<13;i++){
-const a=i/13*Math.PI*2;
-roundedPart(styles.curly,Math.cos(a)*.24,.17+Math.sin(i*2)*.04,Math.sin(a)*.22,.13,.13,.13,hairMat,'hair');
-}
-roundedPart(styles.curly,0,.25,0,.27,.18,.27,hairMat,'hair');
+s=makeStyle('ponytail');
+part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
+ball(s,0,.02,-.32,.11,.12,.12,hair,'hair');
+ball(s,0,-.24,-.4,.085,.28,.085,hair,'hair');
 
-// Braids
-styles.braids=new THREE.Group();
-hairStyles.add(styles.braids);
-part(styles.braids,new THREE.SphereGeometry(.345,18,12,0,Math.PI*2,0,Math.PI*.58),hairMat,0,.15,0,'hair');
-for(const x of [-.28,.28]){
-for(let i=0;i<4;i++){
-roundedPart(styles.braids,x,-.04-i*.13,.01,.075,.12,.075,hairMat,'hair');
-}
-roundedPart(styles.braids,x,-.56,.02,.09,.09,.09,hairMat,'hair');
-}
+s=makeStyle('bun');
+part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
+ball(s,0,.39,-.06,.15,.15,.15,hair,'hair');
 
-// Ponytail
-styles.ponytail=new THREE.Group();
-hairStyles.add(styles.ponytail);
-part(styles.ponytail,new THREE.SphereGeometry(.345,18,12,0,Math.PI*2,0,Math.PI*.58),hairMat,0,.15,0,'hair');
-roundedPart(styles.ponytail,0,.03,-.34,.12,.14,.13,hairMat,'hair');
-roundedPart(styles.ponytail,0,-.25,-.43,.10,.30,.10,hairMat,'hair');
-
-// Bun
-styles.bun=new THREE.Group();
-hairStyles.add(styles.bun);
-part(styles.bun,new THREE.SphereGeometry(.345,18,12,0,Math.PI*2,0,Math.PI*.58),hairMat,0,.15,0,'hair');
-roundedPart(styles.bun,0,.43,-.08,.17,.17,.17,hairMat,'hair');
+styles.none=new THREE.Group();
+head.add(styles.none);
 
 // Arms
-function createArm(x){
-const pivot=new THREE.Group();
-pivot.position.set(x,1.78,0);
-group.add(pivot);
+function arm(x){
+const p=new THREE.Group();
+p.position.set(x,1.76,0);
+group.add(p);
 
-const sleeve=part(pivot,new THREE.CapsuleGeometry(.125,.48,5,12),shirtMat,0,-.30,0,'top');
-sleeve.rotation.z=x<0?-.10:.10;
+const sleeve=part(p,new THREE.CapsuleGeometry(.12,.46,6,14),shirt,0,-.29,0,'top');
+ball(p,0,-.61,.015,.105,.12,.105,skin,'skin');
 
-roundedPart(pivot,0,-.61,.015,.12,.13,.12,skinMat,'skin');
+const bare=part(p,new THREE.CapsuleGeometry(.095,.46,6,14),skin,0,-.29,0,'skin');
+bare.visible=false;
 
-const tankArm=part(pivot,new THREE.CapsuleGeometry(.105,.46,5,12),skinMat,0,-.30,0,'skin');
-tankArm.visible=false;
-pivot.userData.sleeve=sleeve;
-pivot.userData.tankArm=tankArm;
-
-return pivot;
+p.userData.sleeve=sleeve;
+p.userData.bare=bare;
+return p;
 }
 
 // Legs
-function createLeg(x){
-const pivot=new THREE.Group();
-pivot.position.set(x,.86,0);
-group.add(pivot);
+function leg(x){
+const p=new THREE.Group();
+p.position.set(x,.86,0);
+group.add(p);
 
-const pants=part(pivot,new THREE.CapsuleGeometry(.155,.48,5,12),pantsMat,0,-.28,0,'bottom');
-const shorts=part(pivot,new THREE.CapsuleGeometry(.16,.25,5,12),pantsMat,0,-.18,0,'bottom');
-const shoe=roundedPart(pivot,0,-.61,.12,.17,.12,.27,shoeMat,'shoes');
+const trousers=part(p,new THREE.CapsuleGeometry(.145,.48,6,14),pants,0,-.28,0,'bottom');
+const shorts=part(p,new THREE.CapsuleGeometry(.15,.23,6,14),pants,0,-.16,0,'bottom');
+ball(p,0,-.61,.12,.16,.11,.25,shoes,'shoes');
 
-pivot.userData.pants=pants;
-pivot.userData.shorts=shorts;
-pivot.userData.shoe=shoe;
-
-return pivot;
+p.userData.trousers=trousers;
+p.userData.shorts=shorts;
+return p;
 }
 
-const leftArm=createArm(-.46);
-const rightArm=createArm(.46);
-const leftLeg=createLeg(-.19);
-const rightLeg=createLeg(.19);
+const leftArm=arm(-.43);
+const rightArm=arm(.43);
+const leftLeg=leg(-.18);
+const rightLeg=leg(.18);
 
-// Skirt
-const skirt=part(group,new THREE.CylinderGeometry(.30,.48,.43,20,1,true),pantsMat,0,.91,0,'skirt');
+const skirt=part(group,new THREE.CylinderGeometry(.29,.46,.42,24,1,true),pants,0,.91,0,'skirt');
 skirt.visible=false;
 
-// Hoodie hood
-const hood=roundedPart(group,0,1.72,-.28,.25,.28,.12,shirtMat,'top');
+const hood=ball(group,0,1.72,-.25,.23,.25,.12,shirt,'top');
 hood.visible=false;
-
-// Shirt collar
-const collar=part(group,new THREE.TorusGeometry(.16,.035,8,20),accentMat,0,1.84,0);
-collar.rotation.x=Math.PI/2;
 
 // Accessories
 const glasses=new THREE.Group();
 head.add(glasses);
-for(const x of [-.13,.13]){
-const ring=part(glasses,new THREE.TorusGeometry(.075,.012,6,16),darkMat,x,.035,.31);
+
+for(const x of [-.115,.115]){
+const ring=part(glasses,new THREE.TorusGeometry(.067,.012,8,20),dark,x,.045,.28);
 ring.scale.set(1,1,.7);
 }
-part(glasses,new THREE.BoxGeometry(.13,.018,.018),darkMat,0,.035,.31);
+
+part(glasses,new THREE.BoxGeometry(.12,.015,.015),dark,0,.045,.28);
 glasses.visible=false;
 
-const headband=part(head,new THREE.TorusGeometry(.32,.035,8,24),material(0xd7a5c4),0,.18,0);
+const headband=part(head,new THREE.TorusGeometry(.30,.027,8,28),material(0xd7a5c4),0,.19,0);
 headband.scale.set(1,1,.9);
 headband.visible=false;
 
-const character={
-group,torso,leftArm,rightArm,leftLeg,rightLeg,
-styles,glasses,headband,skirt,hood
-};
-
-applyAppearance(character,custom);
-return character;
+const c={group,torso,leftArm,rightArm,leftLeg,rightLeg,styles,glasses,headband,skirt,hood};
+applyAppearance(c,custom);
+return c;
 }
 
-// APPLY CUSTOMISATION WITHOUT REBUILDING MOVEMENT JOINTS
-function applyAppearance(character,custom){
-const a={...defaultAppearance,...custom};
+// APPLY CUSTOMISATION
+function applyAppearance(c,a0){
+const a={...defaultAppearance,...a0};
 
-character.group.traverse(obj=>{
-if(!obj.isMesh)return;
-const slot=obj.userData.slot;
-if(slot==='skin')obj.material.color.set(a.skinColor);
-if(slot==='hair')obj.material.color.set(a.hairColor);
-if(slot==='top')obj.material.color.set(a.topColor);
-if(slot==='bottom'||slot==='skirt')obj.material.color.set(a.bottomColor);
-if(slot==='shoes')obj.material.color.set(a.shoeColor);
-if(slot==='eyes')obj.material.color.set(a.eyeColor);
+c.group.traverse(o=>{
+if(!o.isMesh)return;
+const slot=o.userData.slot;
+if(slot==='skin')o.material.color.set(a.skinColor);
+if(slot==='hair')o.material.color.set(a.hairColor);
+if(slot==='top')o.material.color.set(a.topColor);
+if(slot==='bottom'||slot==='skirt')o.material.color.set(a.bottomColor);
+if(slot==='shoes')o.material.color.set(a.shoeColor);
+if(slot==='eyes')o.material.color.set(a.eyeColor);
 });
 
-for(const [name,style] of Object.entries(character.styles)){
-style.visible=name===a.hairStyle;
+for(const [n,g] of Object.entries(c.styles)){
+g.visible=n===a.hairStyle;
 }
 
-character.glasses.visible=a.accessory==='glasses';
-character.headband.visible=a.accessory==='headband';
+c.glasses.visible=a.accessory==='glasses';
+c.headband.visible=a.accessory==='headband';
 
-const isTank=a.topStyle==='tank';
-character.leftArm.userData.sleeve.visible=!isTank;
-character.rightArm.userData.sleeve.visible=!isTank;
-character.leftArm.userData.tankArm.visible=isTank;
-character.rightArm.userData.tankArm.visible=isTank;
+const tank=a.topStyle==='tank';
+c.leftArm.userData.sleeve.visible=!tank;
+c.rightArm.userData.sleeve.visible=!tank;
+c.leftArm.userData.bare.visible=tank;
+c.rightArm.userData.bare.visible=tank;
 
-character.hood.visible=a.topStyle==='hoodie';
+c.hood.visible=a.topStyle==='hoodie';
 
-character.leftLeg.userData.pants.visible=a.bottomStyle==='pants';
-character.rightLeg.userData.pants.visible=a.bottomStyle==='pants';
-character.leftLeg.userData.shorts.visible=a.bottomStyle==='shorts';
-character.rightLeg.userData.shorts.visible=a.bottomStyle==='shorts';
-character.skirt.visible=a.bottomStyle==='skirt';
+c.leftLeg.userData.trousers.visible=a.bottomStyle==='pants';
+c.rightLeg.userData.trousers.visible=a.bottomStyle==='pants';
+c.leftLeg.userData.shorts.visible=a.bottomStyle==='shorts';
+c.rightLeg.userData.shorts.visible=a.bottomStyle==='shorts';
+c.skirt.visible=a.bottomStyle==='skirt';
 
-// Small body proportion differences between the two character styles
-character.torso.scale.x=a.gender==='girl'?.94:1;
-character.group.userData.appearanceSignature=JSON.stringify(a);
+c.torso.scale.x=a.gender==='girl'?.94:1;
+c.group.userData.appearanceSignature=JSON.stringify(a);
 }
 
 // LOCAL PLAYER
@@ -676,40 +532,239 @@ const player=character.group;
 scene.add(player);
 player.position.set(0,0,5);
 
-// CHARACTER CREATOR UI
-const appearanceFields=[
-'gender','skinColor','hairStyle','hairColor','eyeColor',
-'accessory','topStyle','topColor','bottomStyle','bottomColor','shoeColor'
+// SEPARATE WARDROBE PREVIEW
+const previewScene=new THREE.Scene();
+previewScene.background=new THREE.Color(0x876447);
+previewScene.fog=new THREE.Fog(0x876447,10,24);
+
+previewScene.add(new THREE.HemisphereLight(0xffe9ce,0x62452e,2.2));
+
+const previewLight=new THREE.DirectionalLight(0xffe5bd,2.5);
+previewLight.position.set(-3,7,5);
+previewLight.castShadow=true;
+previewScene.add(previewLight);
+
+const previewCamera=new THREE.PerspectiveCamera(32,1,.1,50);
+previewCamera.position.set(0,2.15,7.4);
+previewCamera.lookAt(0,1.45,0);
+
+const previewRenderer=new THREE.WebGLRenderer({
+canvas:document.getElementById('previewCanvas'),
+antialias:true,
+alpha:false
+});
+previewRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
+previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
+
+const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x9a704d));
+previewFloor.position.y=-.08;
+previewScene.add(previewFloor);
+
+const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x6b5140));
+previewRug.position.y=0;
+previewScene.add(previewRug);
+
+function updatePreview(){
+if(previewCharacter)previewScene.remove(previewCharacter.group);
+previewCharacter=createCharacter(appearance);
+previewScene.add(previewCharacter.group);
+previewCharacter.group.position.y=0;
+previewCharacter.group.rotation.y=previewRotation;
+}
+
+updatePreview();
+
+function resizePreview(){
+const r=document.getElementById('previewWrap').getBoundingClientRect();
+const w=Math.max(1,r.width);
+const h=Math.max(1,r.height);
+previewRenderer.setSize(w,h,false);
+previewCamera.aspect=w/h;
+previewCamera.updateProjectionMatrix();
+}
+
+new ResizeObserver(resizePreview).observe(document.getElementById('previewWrap'));
+resizePreview();
+
+const previewCanvas=document.getElementById('previewCanvas');
+
+previewCanvas.addEventListener('pointerdown',e=>{
+previewPointer=e.pointerId;
+previewLastX=e.clientX;
+previewCanvas.setPointerCapture(e.pointerId);
+});
+
+previewCanvas.addEventListener('pointermove',e=>{
+if(e.pointerId!==previewPointer)return;
+previewRotation+=(e.clientX-previewLastX)*.012;
+previewLastX=e.clientX;
+if(previewCharacter)previewCharacter.group.rotation.y=previewRotation;
+});
+
+previewCanvas.addEventListener('pointerup',e=>{
+if(e.pointerId===previewPointer)previewPointer=null;
+});
+
+previewCanvas.addEventListener('pointercancel',()=>previewPointer=null);
+
+// WARDROBE OPTIONS
+function renderWardrobe(){
+const cats=document.getElementById('categories');
+cats.innerHTML='';
+
+for(const [key,label] of categoryNames){
+const row=document.createElement('div');
+row.className='category'+(key===activeCategory?' active':'');
+
+const name=document.createElement('span');
+name.textContent=label;
+
+const arrows=document.createElement('div');
+arrows.className='arrows';
+
+const left=document.createElement('button');
+left.textContent='‹';
+left.setAttribute('aria-label','Previous '+label);
+
+const right=document.createElement('button');
+right.textContent='›';
+right.setAttribute('aria-label','Next '+label);
+
+left.onclick=e=>{
+e.stopPropagation();
+cycle(key,-1);
+};
+
+right.onclick=e=>{
+e.stopPropagation();
+cycle(key,1);
+};
+
+arrows.append(left,right);
+row.append(name,arrows);
+
+row.onclick=()=>{
+activeCategory=key;
+renderWardrobe();
+};
+
+cats.append(row);
+}
+
+const list=choices[activeCategory];
+const selected=list.find(v=>v[1]===appearance[activeCategory]);
+
+document.getElementById('customTitle').textContent=
+categoryNames.find(v=>v[0]===activeCategory)[1].toUpperCase();
+
+document.getElementById('selectedName').textContent=
+selected?selected[0]:'Selected option';
+
+const sw=document.getElementById('swatches');
+sw.innerHTML='';
+
+for(const [label,value] of list){
+const b=document.createElement('button');
+b.className='swatch'+(appearance[activeCategory]===value?' selected':'');
+b.title=label;
+
+if(value.startsWith('#')){
+b.style.background=value;
+}else{
+b.style.background=activeCategory==='gender'
+?(value==='boy'?'#5b8db7':'#c77c9b')
+:activeCategory==='hairStyle'
+?({short:'#63452e',long:'#8b5a38',curly:'#38251c',braids:'#52351f',ponytail:'#76502e',bun:'#9b7048',none:'#d9c6aa'}[value])
+:({none:'#b8b0a4',glasses:'#777',headband:'#d7a5c4'}[value]);
+}
+
+b.onclick=()=>choose(value);
+sw.append(b);
+}
+}
+
+function choose(value){
+appearance[activeCategory]=value;
+applyAppearance(character,appearance);
+updatePreview();
+renderWardrobe();
+sendMyPosition();
+}
+
+function cycle(key,direction){
+const arr=choices[key];
+const i=arr.findIndex(v=>v[1]===appearance[key]);
+activeCategory=key;
+choose(arr[(i+direction+arr.length)%arr.length][1]);
+}
+
+renderWardrobe();
+
+// SAVED OUTFITS
+function renderSaved(){
+const box=document.getElementById('savedOutfits');
+box.innerHTML='';
+
+const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
+
+const defaults=[
+{name:'Everyday outfit',data:{...defaultAppearance}},
+{name:'Cosy evening',data:{...defaultAppearance,topColor:'#8656a7',bottomColor:'#252525',hairStyle:'long'}},
+{name:'Summer day',data:{...defaultAppearance,topColor:'#e58b9c',bottomStyle:'shorts',shoeColor:'#eeeeee'}}
 ];
 
-function readAppearanceFromUI(){
-for(const field of appearanceFields){
-appearance[field]=document.getElementById(field).value;
+[...defaults,...saved].slice(0,6).forEach((o,i)=>{
+const b=document.createElement('button');
+b.className='outfit';
+b.innerHTML='<strong>'+o.name+'</strong><span>Tap to wear this look</span>';
+b.onclick=()=>{
+appearance={...defaultAppearance,...o.data};
+loadAppearance();
+};
+box.append(b);
+});
 }
+
+function loadAppearance(){
 applyAppearance(character,appearance);
+updatePreview();
+renderWardrobe();
+sendMyPosition();
 }
 
-for(const field of appearanceFields){
-document.getElementById(field).addEventListener('change',readAppearanceFromUI);
-}
+document.getElementById('saveOutfit').onclick=()=>{
+const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
+if(saved.length>=3)saved.shift();
+saved.push({name:'Saved outfit '+(saved.length+1),data:{...appearance}});
+localStorage.setItem('ofd_saved_outfits',JSON.stringify(saved));
+renderSaved();
+};
 
-function loadAppearanceIntoUI(a){
-for(const field of appearanceFields){
-const element=document.getElementById(field);
-if(a[field])element.value=a[field];
-}
-}
+renderSaved();
 
+// OPEN AND CLOSE WARDROBE
 function openCreator(){
+wardrobeOpen=true;
 document.getElementById('start').style.display='flex';
 document.getElementById('wardrobe').style.display='none';
+document.getElementById('instructions').style.display='none';
+document.getElementById('joystick').style.display='none';
+document.getElementById('runButton').style.display='none';
+
 if(document.pointerLockElement)document.exitPointerLock();
+resizePreview();
 }
 
 function closeCreator(){
-readAppearanceFromUI();
+wardrobeOpen=false;
 document.getElementById('start').style.display='none';
 document.getElementById('wardrobe').style.display='block';
+document.getElementById('instructions').style.display='block';
+
+if(matchMedia('(pointer:coarse)').matches){
+document.getElementById('joystick').style.display='block';
+document.getElementById('runButton').style.display='block';
+}
 
 if(matchMedia('(pointer:fine)').matches){
 renderer.domElement.requestPointerLock();
@@ -721,7 +776,7 @@ sendMyPosition();
 document.getElementById('enterButton').addEventListener('click',closeCreator);
 document.getElementById('wardrobe').addEventListener('click',openCreator);
 
-// INPUT
+// INPUT AND MOVEMENT — ORIGINAL WORKING CONTROLS
 const keys={};
 let yaw=0;
 let pitch=.12;
@@ -730,8 +785,14 @@ let localMoving=false;
 let localSprinting=false;
 let walkPhase=0;
 
-window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;});
-window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+window.addEventListener('keydown',e=>{
+keys[e.key.toLowerCase()]=true;
+});
+
+window.addEventListener('keyup',e=>{
+keys[e.key.toLowerCase()]=false;
+});
+
 window.addEventListener('blur',()=>{
 for(const key in keys)keys[key]=false;
 running=false;
@@ -739,17 +800,20 @@ running=false;
 
 // RUN BUTTON
 const runButton=document.getElementById('runButton');
+
 runButton.addEventListener('pointerdown',e=>{
 e.preventDefault();
 running=true;
 });
-for(const eventName of ['pointerup','pointerleave','pointercancel']){
-runButton.addEventListener(eventName,()=>running=false);
+
+for(const n of ['pointerup','pointerleave','pointercancel']){
+runButton.addEventListener(n,()=>running=false);
 }
 
 // JOYSTICK
 const joystick=document.getElementById('joystick');
 const stick=document.getElementById('stick');
+
 let joystickPointer=null;
 let joyX=0;
 let joyY=0;
@@ -762,21 +826,23 @@ stick.style.transform='translate(0px,0px)';
 }
 
 function updateJoystick(e){
-const rect=joystick.getBoundingClientRect();
-const centerX=rect.left+rect.width/2;
-const centerY=rect.top+rect.height/2;
-let dx=e.clientX-centerX;
-let dy=e.clientY-centerY;
-const maxDistance=48;
-const distance=Math.hypot(dx,dy);
+const r=joystick.getBoundingClientRect();
+const cx=r.left+r.width/2;
+const cy=r.top+r.height/2;
 
-if(distance>maxDistance){
-dx=dx/distance*maxDistance;
-dy=dy/distance*maxDistance;
+let dx=e.clientX-cx;
+let dy=e.clientY-cy;
+
+const max=48;
+const d=Math.hypot(dx,dy);
+
+if(d>max){
+dx=dx/d*max;
+dy=dy/d*max;
 }
 
-joyX=dx/maxDistance;
-joyY=dy/maxDistance;
+joyX=dx/max;
+joyY=dy/max;
 stick.style.transform=`translate(${dx}px,${dy}px)`;
 }
 
@@ -797,12 +863,13 @@ updateJoystick(e);
 joystick.addEventListener('pointerup',e=>{
 if(e.pointerId===joystickPointer)resetJoystick();
 });
+
 joystick.addEventListener('pointercancel',resetJoystick);
 joystick.addEventListener('lostpointercapture',resetJoystick);
 
 // PC CAMERA
 document.addEventListener('mousemove',e=>{
-if(document.pointerLockElement!==renderer.domElement)return;
+if(wardrobeOpen||document.pointerLockElement!==renderer.domElement)return;
 yaw-=e.movementX*.003;
 pitch+=e.movementY*.002;
 pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
@@ -814,8 +881,7 @@ let touchX=0;
 let touchY=0;
 
 renderer.domElement.addEventListener('pointerdown',e=>{
-if(e.pointerType!=='touch')return;
-if(e.clientX<innerWidth*.42)return;
+if(wardrobeOpen||e.pointerType!=='touch'||e.clientX<innerWidth*.42)return;
 cameraPointer=e.pointerId;
 renderer.domElement.setPointerCapture(e.pointerId);
 touchX=e.clientX;
@@ -824,11 +890,14 @@ touchY=e.clientY;
 
 renderer.domElement.addEventListener('pointermove',e=>{
 if(e.pointerId!==cameraPointer)return;
+
 const dx=e.clientX-touchX;
 const dy=e.clientY-touchY;
+
 yaw-=dx*.006;
 pitch+=dy*.004;
 pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
+
 touchX=e.clientX;
 touchY=e.clientY;
 });
@@ -836,6 +905,7 @@ touchY=e.clientY;
 function releaseCamera(e){
 if(e.pointerId===cameraPointer)cameraPointer=null;
 }
+
 renderer.domElement.addEventListener('pointerup',releaseCamera);
 renderer.domElement.addEventListener('pointercancel',releaseCamera);
 renderer.domElement.addEventListener('lostpointercapture',releaseCamera);
@@ -878,6 +948,7 @@ other.group.rotation.y=Number(data.rotation)||0;
 other.group.userData.targetPosition=new THREE.Vector3(
 Number(data.x)||0,0,Number(data.z)||0
 );
+
 other.group.userData.targetRotation=Number(data.rotation)||0;
 other.group.userData.targetMoving=data.moving===true;
 other.group.userData.targetRunning=data.running===true;
@@ -890,17 +961,18 @@ const incoming=JSON.stringify({...defaultAppearance,...(data.appearance||{})});
 const current=other.group.userData.appearanceSignature;
 
 if(incoming!==current){
-const oldGroup=other.group;
-const state=oldGroup.userData;
+const old=other.group;
+const state=old.userData;
 const replacement=createCharacter(data.appearance||defaultAppearance);
 
-replacement.group.position.copy(oldGroup.position);
-replacement.group.rotation.copy(oldGroup.rotation);
+replacement.group.position.copy(old.position);
+replacement.group.rotation.copy(old.rotation);
 replacement.group.userData=state;
 replacement.group.userData.appearanceSignature=incoming;
 
-scene.remove(oldGroup);
+scene.remove(old);
 scene.add(replacement.group);
+
 other=replacement;
 remotePlayers.set(id,other);
 }
@@ -931,12 +1003,12 @@ statusText.textContent=remotePlayers.size>0
 ?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players'
 :'🟢 Connected · Waiting for Tina';
 },error=>{
-console.error('Multiplayer read error:',error);
+console.error(error);
 statusText.textContent='🔴 Multiplayer read error';
 });
 
 }catch(error){
-console.error('Firebase connection error:',error);
+console.error(error);
 statusText.textContent='🔴 Connection failed';
 }
 }
@@ -962,7 +1034,7 @@ console.error('Position update failed:',error);
 });
 }
 
-// GAME LOOP
+// GAME LOOP — MOVEMENT AND CAMERA KEPT
 const clock=new THREE.Clock();
 const targetCamera=new THREE.Vector3();
 
@@ -975,6 +1047,7 @@ const time=clock.elapsedTime;
 let forward=0;
 let sideways=0;
 
+if(!wardrobeOpen){
 if(keys.w||keys.arrowup)forward+=1;
 if(keys.s||keys.arrowdown)forward-=1;
 if(keys.d||keys.arrowright)sideways+=1;
@@ -982,6 +1055,7 @@ if(keys.a||keys.arrowleft)sideways-=1;
 
 forward+=-joyY;
 sideways+=joyX;
+}
 
 const length=Math.hypot(forward,sideways);
 const moving=length>.08;
@@ -1000,6 +1074,7 @@ const speed=sprint?10:5.5;
 
 player.position.x+=dx*speed*delta;
 player.position.z+=dz*speed*delta;
+
 walkPhase+=delta*(sprint?13:9);
 }
 
@@ -1007,6 +1082,7 @@ walkPhase+=delta*(sprint?13:9);
 player.rotation.y=Math.PI+yaw;
 
 const swing=moving?Math.sin(walkPhase)*.65:0;
+
 character.leftLeg.rotation.x=swing;
 character.rightLeg.rotation.x=-swing;
 character.leftArm.rotation.x=-swing*.8;
@@ -1027,25 +1103,25 @@ data.targetPosition,
 Math.min(1,delta*12)
 );
 
-const rotationDifference=Math.atan2(
+const diff=Math.atan2(
 Math.sin(data.targetRotation-other.group.rotation.y),
 Math.cos(data.targetRotation-other.group.rotation.y)
 );
 
-other.group.rotation.y+=rotationDifference*Math.min(1,delta*12);
+other.group.rotation.y+=diff*Math.min(1,delta*12);
 
 if(data.targetMoving){
 data.animationPhase+=delta*(data.targetRunning?13:9);
 }
 
-const remoteSwing=data.targetMoving
+const rs=data.targetMoving
 ?Math.sin(data.animationPhase)*.65
 :0;
 
-other.leftLeg.rotation.x=remoteSwing;
-other.rightLeg.rotation.x=-remoteSwing;
-other.leftArm.rotation.x=-remoteSwing*.8;
-other.rightArm.rotation.x=remoteSwing*.8;
+other.leftLeg.rotation.x=rs;
+other.rightLeg.rotation.x=-rs;
+other.leftArm.rotation.x=-rs*.8;
+other.rightArm.rotation.x=rs*.8;
 
 other.torso.scale.y=.95+Math.sin(time*2)*.012;
 
@@ -1076,6 +1152,11 @@ lastSent=time;
 }
 
 renderer.render(scene,camera);
+
+if(wardrobeOpen){
+previewCharacter.group.rotation.y=previewRotation;
+previewRenderer.render(previewScene,previewCamera);
+}
 }
 
 animate();
@@ -1085,6 +1166,7 @@ window.addEventListener('resize',()=>{
 camera.aspect=innerWidth/innerHeight;
 camera.updateProjectionMatrix();
 renderer.setSize(innerWidth,innerHeight);
+resizePreview();
 });
 </script>
 </body>
