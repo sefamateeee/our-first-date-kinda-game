@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Our First Date kinda game</title>
+<title>Our First Date Kinda Game ❤️</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{overflow:hidden;font-family:Arial;background:#9bd8ee}
@@ -24,7 +24,7 @@ canvas{display:block;touch-action:none}
 
 <div id="start">
 <div class="panel">
-<h1>Our First Date kinda game</h1>
+<h1>Our First Date ❤️</h1>
 <p>Welcome to our little world.</p>
 <p style="margin-top:12px">Tap to explore the city</p>
 <p style="font-size:12px;margin-top:15px">WASD – Move · Shift – Run<br>Mouse or finger – Look around</p>
@@ -179,6 +179,7 @@ group.add(arm);
 const lamp=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),material(0xffe8a3));
 lamp.position.set(0,4.7,x<0?-.8:.8);
 group.add(lamp);
+
 group.position.set(x,0,z);
 scene.add(group);
 }
@@ -230,7 +231,7 @@ parent.add(mesh);
 return mesh;
 }
 
-// CREATE A FRESH CHARACTER WITH ITS OWN ANIMATION JOINTS
+// CHARACTER WITH SEPARATE ANIMATION JOINTS
 function createCharacter(){
 const group=new THREE.Group();
 
@@ -423,10 +424,9 @@ await onDisconnect(myPlayerRef).remove();
 await set(myPlayerRef,{
 x:player.position.x,
 z:player.position.z,
-yaw:yaw,
+rotation:player.rotation.y,
 moving:false,
 running:false,
-phase:0,
 updatedAt:Date.now()
 });
 
@@ -444,23 +444,33 @@ let other=remotePlayers.get(id);
 if(!other){
 other=createCharacter();
 other.group.position.set(Number(data.x)||0,0,Number(data.z)||0);
-other.group.userData.targetPosition=new THREE.Vector3(Number(data.x)||0,0,Number(data.z)||0);
-other.group.userData.targetYaw=Number(data.yaw)||0;
+other.group.rotation.y=Number(data.rotation)||0;
+
+other.group.userData.targetPosition=new THREE.Vector3(
+Number(data.x)||0,0,Number(data.z)||0
+);
+other.group.userData.targetRotation=Number(data.rotation)||0;
 other.group.userData.targetMoving=data.moving===true;
 other.group.userData.targetRunning=data.running===true;
-other.group.userData.targetPhase=Number(data.phase)||0;
-other.group.userData.currentPhase=Number(data.phase)||0;
-other.group.userData.currentBounce=0;
+other.group.userData.animationPhase=0;
+
 scene.add(other.group);
 remotePlayers.set(id,other);
 }
 
-const dataTarget=other.group.userData;
-dataTarget.targetPosition.set(Number(data.x)||0,0,Number(data.z)||0);
-dataTarget.targetYaw=Number(data.yaw)||0;
-dataTarget.targetMoving=data.moving===true;
-dataTarget.targetRunning=data.running===true;
-dataTarget.targetPhase=Number(data.phase)||0;
+const state=other.group.userData;
+
+state.targetPosition.set(
+Number(data.x)||0,0,Number(data.z)||0
+);
+
+// Receive the actual character rotation
+if(Number.isFinite(Number(data.rotation))){
+state.targetRotation=Number(data.rotation);
+}
+
+state.targetMoving=data.moving===true;
+state.targetRunning=data.running===true;
 });
 
 for(const [id,other] of remotePlayers){
@@ -486,7 +496,7 @@ statusText.textContent='🔴 Connection failed';
 
 connectMultiplayer();
 
-// SEND POSITION, FACING AND ANIMATION
+// SEND POSITION AND ACTUAL CHARACTER ROTATION
 let lastSent=0;
 
 function sendMyPosition(){
@@ -495,10 +505,9 @@ if(!networkReady||!myPlayerRef)return;
 set(myPlayerRef,{
 x:player.position.x,
 z:player.position.z,
-yaw:yaw,
+rotation:player.rotation.y,
 moving:localMoving,
 running:localSprinting,
-phase:walkPhase,
 updatedAt:Date.now()
 }).catch(error=>{
 console.error('Position update failed:',error);
@@ -546,7 +555,7 @@ player.position.z+=dz*speed*delta;
 walkPhase+=delta*(sprint?13:9);
 }
 
-// SAME FACING RULE FOR BOTH DEVICES
+// LOCAL CHARACTER FACING
 player.rotation.y=Math.PI+yaw;
 
 const swing=moving?Math.sin(walkPhase)*.65:0;
@@ -565,27 +574,28 @@ player.position.y=moving
 for(const other of remotePlayers.values()){
 const data=other.group.userData;
 
-// Smooth position updates
-other.group.position.lerp(data.targetPosition,Math.min(1,delta*10));
-
-// Match the exact same facing direction as the other device
-const targetRotation=Math.PI+data.targetYaw;
-const rotationDifference=Math.atan2(
-Math.sin(targetRotation-other.group.rotation.y),
-Math.cos(targetRotation-other.group.rotation.y)
+// Smoothly follow the other player's position
+other.group.position.lerp(
+data.targetPosition,
+Math.min(1,delta*12)
 );
+
+// Smoothly turn to the exact rotation received from Firebase
+const rotationDifference=Math.atan2(
+Math.sin(data.targetRotation-other.group.rotation.y),
+Math.cos(data.targetRotation-other.group.rotation.y)
+);
+
 other.group.rotation.y+=rotationDifference*Math.min(1,delta*12);
 
-// Smoothly follow the animation phase sent by the other player
+// Animate independently on this device.
+// This avoids relying on matching animation timing between devices.
 if(data.targetMoving){
-let phaseDifference=data.targetPhase-data.currentPhase;
-while(phaseDifference>Math.PI)phaseDifference-=Math.PI*2;
-while(phaseDifference< -Math.PI)phaseDifference+=Math.PI*2;
-data.currentPhase+=phaseDifference*Math.min(1,delta*12);
+data.animationPhase+=delta*(data.targetRunning?13:9);
 }
 
 const remoteSwing=data.targetMoving
-?Math.sin(data.currentPhase)*.65
+?Math.sin(data.animationPhase)*.65
 :0;
 
 other.leftLeg.rotation.x=remoteSwing;
@@ -596,7 +606,7 @@ other.rightArm.rotation.x=remoteSwing*.8;
 other.torso.scale.y=.95+Math.sin(time*2)*.012;
 
 const bounce=data.targetMoving
-?Math.abs(Math.sin(data.currentPhase*2))*.045
+?Math.abs(Math.sin(data.animationPhase*2))*.045
 :Math.sin(time*2)*.015;
 
 other.group.position.y=THREE.MathUtils.lerp(
@@ -616,8 +626,8 @@ player.position.z+Math.cos(yaw)*horizontal
 camera.position.lerp(targetCamera,.16);
 camera.lookAt(player.position.x,player.position.y+1.45,player.position.z);
 
-// SEND UPDATES
-if(time-lastSent>.1){
+// SEND UPDATES FREQUENTLY, INCLUDING WHILE STANDING STILL
+if(time-lastSent>.08){
 sendMyPosition();
 lastSent=time;
 }
