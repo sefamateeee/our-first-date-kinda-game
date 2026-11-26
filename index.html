@@ -38,7 +38,6 @@ canvas{display:block;touch-action:none}
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
-
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
 import {getAuth,signInAnonymously} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
 import {getDatabase,ref,set,onValue,onDisconnect} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
@@ -201,6 +200,7 @@ const leaves=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25-i*.13,1),material
 leaves.position.set((i-1)*.25,2.8+(i===1?.4:0),0);
 group.add(leaves);
 }
+
 group.position.set(x,0,z);
 group.scale.setScalar(scale);
 scene.add(group);
@@ -211,10 +211,7 @@ createTree(-10.7,z,.8);
 createTree(10.7,z,.8);
 }
 
-// CHARACTER
-const player=new THREE.Group();
-scene.add(player);
-
+// CHARACTER MATERIALS
 const skin=material(0xd99b72);
 const tunic=material(0x398b72);
 const tunicLight=material(0x65b68c);
@@ -233,14 +230,18 @@ parent.add(mesh);
 return mesh;
 }
 
-const torso=part(player,new THREE.CapsuleGeometry(.37,.65,5,10),tunic,0,1.45,0);
+// CREATE A FRESH CHARACTER WITH ITS OWN ANIMATION JOINTS
+function createCharacter(){
+const group=new THREE.Group();
+
+const torso=part(group,new THREE.CapsuleGeometry(.37,.65,5,10),tunic,0,1.45,0);
 torso.scale.set(1,.95,.75);
 
-part(player,new THREE.TorusGeometry(.19,.055,8,16),tunicLight,0,1.85,0);
+part(group,new THREE.TorusGeometry(.19,.055,8,16),tunicLight,0,1.85,0);
 
 const head=new THREE.Group();
 head.position.set(0,2.35,0);
-player.add(head);
+group.add(head);
 
 part(head,new THREE.SphereGeometry(.34,20,16),skin,0,0,0);
 part(head,new THREE.SphereGeometry(.355,16,12,0,Math.PI*2,0,Math.PI/2),hair,0,.08,0);
@@ -252,114 +253,39 @@ part(head,new THREE.SphereGeometry(.022,8,8),dark,x,-.02,.33);
 }
 part(head,new THREE.SphereGeometry(.045,8,8),skin,0,-.1,.33);
 
-function createArm(x,name){
+function createArm(x){
 const pivot=new THREE.Group();
-pivot.name=name;
 pivot.position.set(x,1.78,0);
-player.add(pivot);
+group.add(pivot);
 part(pivot,new THREE.CapsuleGeometry(.12,.52,4,8),tunic,0,-.34,0);
 part(pivot,new THREE.SphereGeometry(.12,10,10),skin,0,-.68,.015);
 return pivot;
 }
 
-const leftArm=createArm(-.48,'leftArm');
-const rightArm=createArm(.48,'rightArm');
-
-function createLeg(x,name){
+function createLeg(x){
 const pivot=new THREE.Group();
-pivot.name=name;
 pivot.position.set(x,.85,0);
-player.add(pivot);
+group.add(pivot);
 part(pivot,new THREE.CapsuleGeometry(.16,.48,4,8),trousers,0,-.27,0);
 part(pivot,new THREE.BoxGeometry(.3,.2,.48),boots,0,-.61,.1);
 return pivot;
 }
 
-const leftLeg=createLeg(-.2,'leftLeg');
-const rightLeg=createLeg(.2,'rightLeg');
+const leftArm=createArm(-.48);
+const rightArm=createArm(.48);
+const leftLeg=createLeg(-.2);
+const rightLeg=createLeg(.2);
 
-part(player,new THREE.TorusGeometry(.3,.055,8,16),material(0x704b2c),0,1.12,0).rotation.x=Math.PI/2;
+part(group,new THREE.TorusGeometry(.3,.055,8,16),material(0x704b2c),0,1.12,0).rotation.x=Math.PI/2;
+
+return {group,torso,leftArm,rightArm,leftLeg,rightLeg};
+}
+
+// LOCAL PLAYER
+const character=createCharacter();
+const player=character.group;
+scene.add(player);
 player.position.set(0,0,5);
-
-// MULTIPLAYER CONNECTION
-async function connectMultiplayer(){
-try{
-const result=await signInAnonymously(auth);
-myUID=result.user.uid;
-myPlayerRef=ref(db,'players/'+myUID);
-
-await onDisconnect(myPlayerRef).remove();
-
-await set(myPlayerRef,{
-x:player.position.x,
-z:player.position.z,
-rotation:player.rotation.y,
-moving:false,
-running:false,
-updatedAt:Date.now()
-});
-
-networkReady=true;
-statusText.textContent='🟢 Multiplayer connected';
-
-onValue(ref(db,'players'),snapshot=>{
-snapshot.forEach(child=>{
-const id=child.key;
-const data=child.val();
-if(id===myUID||!data)return;
-
-let other=remotePlayers.get(id);
-
-if(!other){
-other=player.clone(true);
-
-other.position.set(Number(data.x)||0,0,Number(data.z)||0);
-other.userData.targetPosition=new THREE.Vector3(Number(data.x)||0,0,Number(data.z)||0);
-other.userData.targetRotation=Number(data.rotation)||0;
-
-// Find the cloned character's body parts
-other.userData.leftArm=other.getObjectByName('leftArm');
-other.userData.rightArm=other.getObjectByName('rightArm');
-other.userData.leftLeg=other.getObjectByName('leftLeg');
-other.userData.rightLeg=other.getObjectByName('rightLeg');
-other.userData.torso=other.children.find(child=>child===other.getObjectByName(''));
-other.userData.animationTime=0;
-other.userData.animationBlend=0;
-other.userData.targetMoving=false;
-other.userData.targetRunning=false;
-
-scene.add(other);
-remotePlayers.set(id,other);
-}
-
-other.userData.targetPosition.set(Number(data.x)||0,0,Number(data.z)||0);
-other.userData.targetRotation=Number(data.rotation)||0;
-other.userData.targetMoving=data.moving===true;
-other.userData.targetRunning=data.running===true;
-});
-
-for(const [id,other] of remotePlayers){
-if(!snapshot.hasChild(id)){
-scene.remove(other);
-remotePlayers.delete(id);
-}
-}
-
-statusText.textContent=remotePlayers.size>0
-?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players'
-:'🟢 Connected · Waiting for Tina';
-},error=>{
-console.error('Multiplayer read error:',error);
-statusText.textContent='🔴 Multiplayer read error';
-});
-
-}catch(error){
-console.error('Firebase connection error:',error);
-statusText.textContent='🔴 Connection failed';
-}
-}
-
-connectMultiplayer();
 
 // INPUT
 const keys={};
@@ -368,6 +294,7 @@ let pitch=.12;
 let running=false;
 let localMoving=false;
 let localSprinting=false;
+let walkPhase=0;
 
 window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;});
 window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
@@ -444,7 +371,7 @@ if(e.pointerId===joystickPointer)resetJoystick();
 joystick.addEventListener('pointercancel',resetJoystick);
 joystick.addEventListener('lostpointercapture',resetJoystick);
 
-// CAMERA
+// PC CAMERA
 document.addEventListener('mousemove',e=>{
 if(document.pointerLockElement!==renderer.domElement)return;
 yaw-=e.movementX*.003;
@@ -452,6 +379,7 @@ pitch+=e.movementY*.002;
 pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
 });
 
+// IPAD CAMERA
 let cameraPointer=null;
 let touchX=0;
 let touchY=0;
@@ -483,7 +411,82 @@ renderer.domElement.addEventListener('pointerup',releaseCamera);
 renderer.domElement.addEventListener('pointercancel',releaseCamera);
 renderer.domElement.addEventListener('lostpointercapture',releaseCamera);
 
-// SEND POSITION AND ANIMATION STATE
+// MULTIPLAYER
+async function connectMultiplayer(){
+try{
+const result=await signInAnonymously(auth);
+myUID=result.user.uid;
+myPlayerRef=ref(db,'players/'+myUID);
+
+await onDisconnect(myPlayerRef).remove();
+
+await set(myPlayerRef,{
+x:player.position.x,
+z:player.position.z,
+yaw:yaw,
+moving:false,
+running:false,
+phase:0,
+updatedAt:Date.now()
+});
+
+networkReady=true;
+
+onValue(ref(db,'players'),snapshot=>{
+snapshot.forEach(child=>{
+const id=child.key;
+const data=child.val();
+
+if(id===myUID||!data)return;
+
+let other=remotePlayers.get(id);
+
+if(!other){
+other=createCharacter();
+other.group.position.set(Number(data.x)||0,0,Number(data.z)||0);
+other.group.userData.targetPosition=new THREE.Vector3(Number(data.x)||0,0,Number(data.z)||0);
+other.group.userData.targetYaw=Number(data.yaw)||0;
+other.group.userData.targetMoving=data.moving===true;
+other.group.userData.targetRunning=data.running===true;
+other.group.userData.targetPhase=Number(data.phase)||0;
+other.group.userData.currentPhase=Number(data.phase)||0;
+other.group.userData.currentBounce=0;
+scene.add(other.group);
+remotePlayers.set(id,other);
+}
+
+const dataTarget=other.group.userData;
+dataTarget.targetPosition.set(Number(data.x)||0,0,Number(data.z)||0);
+dataTarget.targetYaw=Number(data.yaw)||0;
+dataTarget.targetMoving=data.moving===true;
+dataTarget.targetRunning=data.running===true;
+dataTarget.targetPhase=Number(data.phase)||0;
+});
+
+for(const [id,other] of remotePlayers){
+if(!snapshot.hasChild(id)){
+scene.remove(other.group);
+remotePlayers.delete(id);
+}
+}
+
+statusText.textContent=remotePlayers.size>0
+?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players'
+:'🟢 Connected · Waiting for Tina';
+},error=>{
+console.error('Multiplayer read error:',error);
+statusText.textContent='🔴 Multiplayer read error';
+});
+
+}catch(error){
+console.error('Firebase connection error:',error);
+statusText.textContent='🔴 Connection failed';
+}
+}
+
+connectMultiplayer();
+
+// SEND POSITION, FACING AND ANIMATION
 let lastSent=0;
 
 function sendMyPosition(){
@@ -492,9 +495,10 @@ if(!networkReady||!myPlayerRef)return;
 set(myPlayerRef,{
 x:player.position.x,
 z:player.position.z,
-rotation:player.rotation.y,
+yaw:yaw,
 moving:localMoving,
 running:localSprinting,
+phase:walkPhase,
 updatedAt:Date.now()
 }).catch(error=>{
 console.error('Position update failed:',error);
@@ -539,59 +543,65 @@ const speed=sprint?10:5.5;
 
 player.position.x+=dx*speed*delta;
 player.position.z+=dz*speed*delta;
+walkPhase+=delta*(sprint?13:9);
 }
 
+// SAME FACING RULE FOR BOTH DEVICES
 player.rotation.y=Math.PI+yaw;
 
-// LOCAL PLAYER ANIMATION
-const animationSpeed=sprint?13:9;
-const swing=moving?Math.sin(time*animationSpeed)*.65:0;
+const swing=moving?Math.sin(walkPhase)*.65:0;
+character.leftLeg.rotation.x=swing;
+character.rightLeg.rotation.x=-swing;
+character.leftArm.rotation.x=-swing*.8;
+character.rightArm.rotation.x=swing*.8;
 
-leftLeg.rotation.x=swing;
-rightLeg.rotation.x=-swing;
-leftArm.rotation.x=-swing*.8;
-rightArm.rotation.x=swing*.8;
-
-torso.scale.y=.95+Math.sin(time*2)*.012;
+character.torso.scale.y=.95+Math.sin(time*2)*.012;
 
 player.position.y=moving
-?Math.abs(Math.sin(time*animationSpeed*2))*.045
+?Math.abs(Math.sin(walkPhase*2))*.045
 :Math.sin(time*2)*.015;
 
-// REMOTE PLAYER ANIMATIONS
+// REMOTE CHARACTERS
 for(const other of remotePlayers.values()){
-const data=other.userData;
+const data=other.group.userData;
 
-if(data.targetPosition){
-other.position.lerp(data.targetPosition,Math.min(1,delta*10));
-}
+// Smooth position updates
+other.group.position.lerp(data.targetPosition,Math.min(1,delta*10));
 
-if(data.targetRotation!==undefined){
-other.rotation.y=data.targetRotation;
-}
+// Match the exact same facing direction as the other device
+const targetRotation=Math.PI+data.targetYaw;
+const rotationDifference=Math.atan2(
+Math.sin(targetRotation-other.group.rotation.y),
+Math.cos(targetRotation-other.group.rotation.y)
+);
+other.group.rotation.y+=rotationDifference*Math.min(1,delta*12);
 
-// Smoothly switch between idle and walking
-const wantedBlend=data.targetMoving?1:0;
-data.animationBlend=THREE.MathUtils.lerp(data.animationBlend,wantedBlend,Math.min(1,delta*8));
-
+// Smoothly follow the animation phase sent by the other player
 if(data.targetMoving){
-data.animationTime+=delta*(data.targetRunning?13:9);
+let phaseDifference=data.targetPhase-data.currentPhase;
+while(phaseDifference>Math.PI)phaseDifference-=Math.PI*2;
+while(phaseDifference< -Math.PI)phaseDifference+=Math.PI*2;
+data.currentPhase+=phaseDifference*Math.min(1,delta*12);
 }
 
-const remoteSwing=Math.sin(data.animationTime)*.65*data.animationBlend;
+const remoteSwing=data.targetMoving
+?Math.sin(data.currentPhase)*.65
+:0;
 
-if(data.leftLeg)data.leftLeg.rotation.x=remoteSwing;
-if(data.rightLeg)data.rightLeg.rotation.x=-remoteSwing;
-if(data.leftArm)data.leftArm.rotation.x=-remoteSwing*.8;
-if(data.rightArm)data.rightArm.rotation.x=remoteSwing*.8;
+other.leftLeg.rotation.x=remoteSwing;
+other.rightLeg.rotation.x=-remoteSwing;
+other.leftArm.rotation.x=-remoteSwing*.8;
+other.rightArm.rotation.x=remoteSwing*.8;
 
-// Gentle idle breathing and movement bounce
-const remoteSpeed=data.targetRunning?13:9;
+other.torso.scale.y=.95+Math.sin(time*2)*.012;
+
 const bounce=data.targetMoving
-?Math.abs(Math.sin(data.animationTime*2))*.045
-:Math.sin(time*2+data.animationTime)*.015;
+?Math.abs(Math.sin(data.currentPhase*2))*.045
+:Math.sin(time*2)*.015;
 
-other.position.y=THREE.MathUtils.lerp(other.position.y,bounce,Math.min(1,delta*10));
+other.group.position.y=THREE.MathUtils.lerp(
+other.group.position.y,bounce,Math.min(1,delta*10)
+);
 }
 
 // CAMERA
@@ -606,7 +616,7 @@ player.position.z+Math.cos(yaw)*horizontal
 camera.position.lerp(targetCamera,.16);
 camera.lookAt(player.position.x,player.position.y+1.45,player.position.z);
 
-// SEND ABOUT 10 TIMES PER SECOND
+// SEND UPDATES
 if(time-lastSent>.1){
 sendMyPosition();
 lastSent=time;
