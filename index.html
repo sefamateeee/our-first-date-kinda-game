@@ -338,7 +338,7 @@ document.addEventListener('mousemove', (event) => {
 if (document.pointerLockElement !== renderer.domElement) return;
 
 // Corrected horizontal camera direction
-yaw += event.movementX * 0.003;
+yaw -= event.movementX * 0.003;
 
 pitch = Math.max(
 -0.15,
@@ -399,7 +399,7 @@ const dx = event.clientX - lastTouchX;
 const dy = event.clientY - lastTouchY;
 
 // Corrected horizontal touch camera direction
-yaw += dx * 0.006;
+yaw -= dx * 0.006;
 
 pitch = Math.max(
 -0.15,
