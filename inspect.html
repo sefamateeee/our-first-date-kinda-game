@@ -68,6 +68,18 @@ output.textContent += 'HAIR IS SKINNED: ' + !!object.isSkinnedMesh + '\n';
 
 if (object.isSkinnedMesh && object.skeleton) {
 output.textContent += 'HAIR BONES: ' + object.skeleton.bones.map(b => b.name).join(', ') + '\n';
+
+const headBone = object.skeleton.bones.find(b => b.name === 'head');
+
+if (headBone) {
+const headPosition = new THREE.Vector3();
+headBone.getWorldPosition(headPosition);
+
+output.textContent += 'HEAD POSITION: ' +
+headPosition.x.toFixed(3) + ', ' +
+headPosition.y.toFixed(3) + ', ' +
+headPosition.z.toFixed(3) + '\n';
+}
 }
 }
 });
