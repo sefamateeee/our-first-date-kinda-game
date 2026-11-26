@@ -660,12 +660,9 @@ scene.add(player);
 }
 
 function choose(value){
-const previousGender=appearance.gender;
 appearance[activeCategory]=value;
 
-if(activeCategory==='gender'&&appearance.gender!==previousGender){
 replaceLocalCharacter();
-}
 
 updatePreview();
 renderWardrobe();
