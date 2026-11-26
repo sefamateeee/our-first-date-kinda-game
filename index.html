@@ -201,9 +201,12 @@ let previewPointer=null;
 let previewLastX=0;
 
 // CREATE A CHARACTER FROM A GLB MODEL
+
 function createCharacter(custom=defaultAppearance){
+const appearance={...defaultAppearance,...custom};
+
 const group=new THREE.Group();
-const gender=custom.gender==='girl'?'girl':'boy';
+const gender=appearance.gender==='girl'?'girl':'boy';
 const source=models[gender];
 
 const model=cloneSkeleton(source.scene);
@@ -230,11 +233,47 @@ modelHolder.rotation.y=0;
 modelHolder.add(model);
 group.add(modelHolder);
 
-// Enable shadows on model meshes
+// Apply custom colours to the character's materials
 model.traverse(object=>{
 if(object.isMesh){
 object.castShadow=true;
 object.receiveShadow=true;
+
+function colourMaterial(material){
+const mat=material.clone();
+const name=(mat.name||'').toLowerCase();
+
+let colour=null;
+
+if(name==='skin'||name==='body_secondary'){
+colour=appearance.skinColor;
+}
+else if(name==='hair'){
+colour=appearance.hairColor;
+}
+else if(name==='eyes'){
+colour=appearance.eyeColor;
+}
+else if(name.startsWith('top_')){
+colour=appearance.topColor;
+}
+else if(name.startsWith('bottom_')){
+colour=appearance.bottomColor;
+}
+else if(name.startsWith('shoes_')){
+colour=appearance.shoeColor;
+}
+
+if(colour&&mat.color){
+mat.color.set(colour);
+}
+
+return mat;
+}
+
+object.material=Array.isArray(object.material)
+?object.material.map(colourMaterial)
+:colourMaterial(object.material);
 }
 });
 
@@ -287,7 +326,7 @@ currentAnimation=name;
 
 play('idle');
 
-group.userData.appearanceSignature=JSON.stringify({...defaultAppearance,...custom});
+group.userData.appearanceSignature=JSON.stringify(appearance);
 
 return{
 group,
