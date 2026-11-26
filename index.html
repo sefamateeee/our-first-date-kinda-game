@@ -81,16 +81,45 @@ canvas{display:block;touch-action:none}
 </div>
 
 <div id="instructions">WASD – Move | SHIFT – Run<br>Mouse / Finger – Look around</div>
-<div id="status">Connecting to multiplayer...</div>
+<div id="status">Loading 3D characters...</div>
 <button id="wardrobe">👕 WARDROBE</button>
 <div id="joystick"><div id="stick"></div></div>
 <button id="runButton">RUN</button>
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js';
+import {clone as cloneSkeleton} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/utils/SkeletonUtils.js';
+
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
 import {getAuth,signInAnonymously} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
 import {getDatabase,ref,set,onValue,onDisconnect} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
+
+const statusText=document.getElementById('status');
+
+// LOAD THE TWO REAL 3D CHARACTERS
+const loader=new GLTFLoader();
+
+const modelURLs={
+boy:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/boy.glb.glb',
+girl:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/girl.glb.glb'
+};
+
+let models={};
+
+try{
+statusText.textContent='Loading your 3D characters...';
+const [boyModel,girlModel]=await Promise.all([
+loader.loadAsync(modelURLs.boy),
+loader.loadAsync(modelURLs.girl)
+]);
+models.boy=boyModel;
+models.girl=girlModel;
+}catch(error){
+console.error('Character loading error:',error);
+statusText.textContent='Could not load characters. Check the model files.';
+throw error;
+}
 
 // FIREBASE
 const firebaseConfig={
@@ -107,7 +136,6 @@ measurementId:"G-49HR8VS7TV"
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getDatabase(app);
-const statusText=document.getElementById('status');
 
 let myUID=null;
 let myPlayerRef=null;
@@ -158,12 +186,111 @@ const categoryNames=[
 ['shoeColor','Shoes']
 ];
 
-let activeCategory='skinColor';
+let activeCategory='gender';
 let wardrobeOpen=true;
-let previewCharacter;
+let previewCharacter=null;
 let previewRotation=0;
 let previewPointer=null;
 let previewLastX=0;
+
+// CREATE A CHARACTER FROM A GLB MODEL
+function createCharacter(custom=defaultAppearance){
+const group=new THREE.Group();
+const gender=custom.gender==='girl'?'girl':'boy';
+const source=models[gender];
+
+const model=cloneSkeleton(source.scene);
+
+// Fit model to a consistent height
+const originalBox=new THREE.Box3().setFromObject(model);
+const originalSize=originalBox.getSize(new THREE.Vector3());
+
+if(originalSize.y>0){
+const scale=2.8/originalSize.y;
+model.scale.setScalar(scale);
+}
+
+const fittedBox=new THREE.Box3().setFromObject(model);
+const fittedCenter=fittedBox.getCenter(new THREE.Vector3());
+
+model.position.x-=fittedCenter.x;
+model.position.z-=fittedCenter.z;
+model.position.y-=fittedBox.min.y;
+
+// Keep the imported model facing the same general direction
+const modelHolder=new THREE.Group();
+modelHolder.rotation.y=Math.PI;
+modelHolder.add(model);
+group.add(modelHolder);
+
+// Enable shadows on model meshes
+model.traverse(object=>{
+if(object.isMesh){
+object.castShadow=true;
+object.receiveShadow=true;
+}
+});
+
+// Set up the animation mixer for this individual character
+const mixer=new THREE.AnimationMixer(model);
+const actions={};
+
+const clips=source.animations||[];
+
+function findClip(word){
+return clips.find(clip=>clip.name.toLowerCase().includes(word));
+}
+
+const animationNames={
+idle:findClip('idle'),
+walk:findClip('walk'),
+run:findClip('run'),
+wave:findClip('wave'),
+jump:findClip('jump')
+};
+
+for(const [name,clip] of Object.entries(animationNames)){
+if(clip)actions[name]=mixer.clipAction(clip);
+}
+
+let currentAction=null;
+let currentAnimation='';
+
+function play(name){
+if(!actions[name]){
+if(name==='run'&&actions.walk)name='walk';
+else if(name!=='idle'&&actions.idle)name='idle';
+else return;
+}
+
+if(currentAnimation===name)return;
+
+const next=actions[name];
+if(currentAction){
+currentAction.fadeOut(.18);
+}
+
+next.reset();
+next.fadeIn(.18);
+next.play();
+
+currentAction=next;
+currentAnimation=name;
+}
+
+play('idle');
+
+group.userData.appearanceSignature=JSON.stringify({...defaultAppearance,...custom});
+
+return{
+group,
+mixer,
+actions,
+play,
+update(delta){mixer.update(delta)},
+model
+};
+}
 
 // MAIN CITY SCENE
 const scene=new THREE.Scene();
@@ -311,232 +438,16 @@ createTree(-10.7,z,.8);
 createTree(10.7,z,.8);
 }
 
-// CHARACTER HELPERS
-function part(parent,geo,mat,x,y,z,slot=null){
-const m=new THREE.Mesh(geo,mat);
-m.position.set(x,y,z);
-m.castShadow=true;
-m.receiveShadow=true;
-if(slot)m.userData.slot=slot;
-parent.add(m);
-return m;
-}
-
-function ball(parent,x,y,z,sx,sy,sz,mat,slot=null){
-const m=part(parent,new THREE.SphereGeometry(1,24,18),mat,x,y,z,slot);
-m.scale.set(sx,sy,sz);
-return m;
-}
-
-// CHARACTER CREATION
-function createCharacter(custom=defaultAppearance){
-const group=new THREE.Group();
-const skin=material(custom.skinColor);
-const hair=material(custom.hairColor);
-const shirt=material(custom.topColor);
-const pants=material(custom.bottomColor);
-const shoes=material(custom.shoeColor);
-const eyes=material(custom.eyeColor);
-const white=material(0xffffff);
-const dark=material(0x29221f);
-
-const torso=part(group,new THREE.CapsuleGeometry(.34,.63,8,20),shirt,0,1.45,0,'top');
-torso.scale.set(1,.98,.82);
-ball(group,0,1.91,0,.14,.18,.14,skin,'skin');
-
-const head=new THREE.Group();
-head.position.set(0,2.34,0);
-group.add(head);
-
-// Face shape and cheeks
-ball(head,0,-.015,0,.305,.365,.275,skin,'skin');
-ball(head,0,-.17,.055,.245,.19,.235,skin,'skin');
-
-for(const x of [-.305,.305]){
-ball(head,x,-.015,0,.065,.095,.06,skin,'skin');
-}
-
-// Eyes, irises, pupils and eyebrows
-for(const x of [-.115,.115]){
-ball(head,x,.045,.244,.061,.069,.028,white);
-ball(head,x,.035,.268,.031,.043,.018,eyes,'eyes');
-ball(head,x,.034,.281,.014,.027,.009,dark);
-ball(head,x,.151,.247,.075,.018,.023,hair,'hair');
-ball(head,x,.008,.285,.007,.008,.005,white);
-}
-
-// Nose
-ball(head,0,-.055,.275,.035,.075,.045,skin,'skin');
-ball(head,0,-.105,.303,.047,.035,.035,skin,'skin');
-
-// Smile
-const smile=part(head,new THREE.TorusGeometry(.052,.009,8,20,Math.PI),material(0x874d48),0,-.205,.263);
-smile.rotation.z=Math.PI;
-
-// Hairstyles
-const styles={};
-const makeStyle=n=>{
-styles[n]=new THREE.Group();
-head.add(styles[n]);
-return styles[n];
-};
-
-let s=makeStyle('short');
-part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
-for(const x of [-.25,.25]){
-ball(s,x,.055,.025,.075,.13,.09,hair,'hair');
-}
-
-s=makeStyle('long');
-part(s,new THREE.SphereGeometry(.32,24,16,0,Math.PI*2,0,Math.PI*.58),hair,0,.14,0,'hair');
-ball(s,0,-.19,-.19,.29,.42,.13,hair,'hair');
-for(const x of [-.27,.27]){
-ball(s,x,-.13,-.015,.075,.35,.09,hair,'hair');
-}
-
-s=makeStyle('curly');
-for(let i=0;i<17;i++){
-const a=i/17*Math.PI*2;
-ball(s,Math.cos(a)*.22,.15+Math.sin(i*2)*.035,Math.sin(a)*.19,.105,.11,.105,hair,'hair');
-}
-ball(s,0,.23,0,.25,.16,.24,hair,'hair');
-
-s=makeStyle('braids');
-part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
-for(const x of [-.27,.27]){
-for(let i=0;i<5;i++){
-ball(s,x,-.04-i*.115,.02,.065,.105,.065,hair,'hair');
-}
-ball(s,x,-.58,.02,.075,.08,.075,hair,'hair');
-}
-
-s=makeStyle('ponytail');
-part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
-ball(s,0,.02,-.32,.11,.12,.12,hair,'hair');
-ball(s,0,-.24,-.4,.085,.28,.085,hair,'hair');
-
-s=makeStyle('bun');
-part(s,new THREE.SphereGeometry(.315,24,16,0,Math.PI*2,0,Math.PI*.59),hair,0,.145,0,'hair');
-ball(s,0,.39,-.06,.15,.15,.15,hair,'hair');
-
-styles.none=new THREE.Group();
-head.add(styles.none);
-
-// Arms
-function arm(x){
-const p=new THREE.Group();
-p.position.set(x,1.76,0);
-group.add(p);
-
-const sleeve=part(p,new THREE.CapsuleGeometry(.12,.46,6,14),shirt,0,-.29,0,'top');
-ball(p,0,-.61,.015,.105,.12,.105,skin,'skin');
-
-const bare=part(p,new THREE.CapsuleGeometry(.095,.46,6,14),skin,0,-.29,0,'skin');
-bare.visible=false;
-
-p.userData.sleeve=sleeve;
-p.userData.bare=bare;
-return p;
-}
-
-// Legs
-function leg(x){
-const p=new THREE.Group();
-p.position.set(x,.86,0);
-group.add(p);
-
-const trousers=part(p,new THREE.CapsuleGeometry(.145,.48,6,14),pants,0,-.28,0,'bottom');
-const shorts=part(p,new THREE.CapsuleGeometry(.15,.23,6,14),pants,0,-.16,0,'bottom');
-ball(p,0,-.61,.12,.16,.11,.25,shoes,'shoes');
-
-p.userData.trousers=trousers;
-p.userData.shorts=shorts;
-return p;
-}
-
-const leftArm=arm(-.43);
-const rightArm=arm(.43);
-const leftLeg=leg(-.18);
-const rightLeg=leg(.18);
-
-const skirt=part(group,new THREE.CylinderGeometry(.29,.46,.42,24,1,true),pants,0,.91,0,'skirt');
-skirt.visible=false;
-
-const hood=ball(group,0,1.72,-.25,.23,.25,.12,shirt,'top');
-hood.visible=false;
-
-// Accessories
-const glasses=new THREE.Group();
-head.add(glasses);
-
-for(const x of [-.115,.115]){
-const ring=part(glasses,new THREE.TorusGeometry(.067,.012,8,20),dark,x,.045,.28);
-ring.scale.set(1,1,.7);
-}
-
-part(glasses,new THREE.BoxGeometry(.12,.015,.015),dark,0,.045,.28);
-glasses.visible=false;
-
-const headband=part(head,new THREE.TorusGeometry(.30,.027,8,28),material(0xd7a5c4),0,.19,0);
-headband.scale.set(1,1,.9);
-headband.visible=false;
-
-const c={group,torso,leftArm,rightArm,leftLeg,rightLeg,styles,glasses,headband,skirt,hood};
-applyAppearance(c,custom);
-return c;
-}
-
-// APPLY CUSTOMISATION
-function applyAppearance(c,a0){
-const a={...defaultAppearance,...a0};
-
-c.group.traverse(o=>{
-if(!o.isMesh)return;
-const slot=o.userData.slot;
-if(slot==='skin')o.material.color.set(a.skinColor);
-if(slot==='hair')o.material.color.set(a.hairColor);
-if(slot==='top')o.material.color.set(a.topColor);
-if(slot==='bottom'||slot==='skirt')o.material.color.set(a.bottomColor);
-if(slot==='shoes')o.material.color.set(a.shoeColor);
-if(slot==='eyes')o.material.color.set(a.eyeColor);
-});
-
-for(const [n,g] of Object.entries(c.styles)){
-g.visible=n===a.hairStyle;
-}
-
-c.glasses.visible=a.accessory==='glasses';
-c.headband.visible=a.accessory==='headband';
-
-const tank=a.topStyle==='tank';
-c.leftArm.userData.sleeve.visible=!tank;
-c.rightArm.userData.sleeve.visible=!tank;
-c.leftArm.userData.bare.visible=tank;
-c.rightArm.userData.bare.visible=tank;
-
-c.hood.visible=a.topStyle==='hoodie';
-
-c.leftLeg.userData.trousers.visible=a.bottomStyle==='pants';
-c.rightLeg.userData.trousers.visible=a.bottomStyle==='pants';
-c.leftLeg.userData.shorts.visible=a.bottomStyle==='shorts';
-c.rightLeg.userData.shorts.visible=a.bottomStyle==='shorts';
-c.skirt.visible=a.bottomStyle==='skirt';
-
-c.torso.scale.x=a.gender==='girl'?.94:1;
-c.group.userData.appearanceSignature=JSON.stringify(a);
-}
-
 // LOCAL PLAYER
-const character=createCharacter(appearance);
-const player=character.group;
+let character=createCharacter(appearance);
+let player=character.group;
 scene.add(player);
 player.position.set(0,0,5);
 
-// SEPARATE WARDROBE PREVIEW
+// WARDROBE PREVIEW SCENE
 const previewScene=new THREE.Scene();
 previewScene.background=new THREE.Color(0x876447);
 previewScene.fog=new THREE.Fog(0x876447,10,24);
-
 previewScene.add(new THREE.HemisphereLight(0xffe9ce,0x62452e,2.2));
 
 const previewLight=new THREE.DirectionalLight(0xffe5bd,2.5);
@@ -565,7 +476,11 @@ previewRug.position.y=0;
 previewScene.add(previewRug);
 
 function updatePreview(){
-if(previewCharacter)previewScene.remove(previewCharacter.group);
+if(previewCharacter){
+previewScene.remove(previewCharacter.group);
+previewCharacter.mixer.stopAllAction();
+}
+
 previewCharacter=createCharacter(appearance);
 previewScene.add(previewCharacter.group);
 previewCharacter.group.position.y=0;
@@ -683,9 +598,29 @@ sw.append(b);
 }
 }
 
+// CHANGE LOCAL CHARACTER IF BOY/GIRL IS CHANGED
+function replaceLocalCharacter(){
+const oldPosition=player.position.clone();
+const oldRotation=player.rotation.clone();
+
+scene.remove(player);
+character.mixer.stopAllAction();
+
+character=createCharacter(appearance);
+player=character.group;
+player.position.copy(oldPosition);
+player.rotation.copy(oldRotation);
+scene.add(player);
+}
+
 function choose(value){
+const previousGender=appearance.gender;
 appearance[activeCategory]=value;
-applyAppearance(character,appearance);
+
+if(activeCategory==='gender'&&appearance.gender!==previousGender){
+replaceLocalCharacter();
+}
+
 updatePreview();
 renderWardrobe();
 sendMyPosition();
@@ -713,23 +648,19 @@ const defaults=[
 {name:'Summer day',data:{...defaultAppearance,topColor:'#e58b9c',bottomStyle:'shorts',shoeColor:'#eeeeee'}}
 ];
 
-[...defaults,...saved].slice(0,6).forEach((o,i)=>{
+[...defaults,...saved].slice(0,6).forEach(o=>{
 const b=document.createElement('button');
 b.className='outfit';
 b.innerHTML='<strong>'+o.name+'</strong><span>Tap to wear this look</span>';
 b.onclick=()=>{
 appearance={...defaultAppearance,...o.data};
-loadAppearance();
-};
-box.append(b);
-});
-}
-
-function loadAppearance(){
-applyAppearance(character,appearance);
+replaceLocalCharacter();
 updatePreview();
 renderWardrobe();
 sendMyPosition();
+};
+box.append(b);
+});
 }
 
 document.getElementById('saveOutfit').onclick=()=>{
@@ -776,14 +707,13 @@ sendMyPosition();
 document.getElementById('enterButton').addEventListener('click',closeCreator);
 document.getElementById('wardrobe').addEventListener('click',openCreator);
 
-// INPUT AND MOVEMENT — ORIGINAL WORKING CONTROLS
+// INPUT AND MOVEMENT — ORIGINAL CONTROLS
 const keys={};
 let yaw=0;
 let pitch=.12;
 let running=false;
 let localMoving=false;
 let localSprinting=false;
-let walkPhase=0;
 
 window.addEventListener('keydown',e=>{
 keys[e.key.toLowerCase()]=true;
@@ -952,7 +882,6 @@ Number(data.x)||0,0,Number(data.z)||0
 other.group.userData.targetRotation=Number(data.rotation)||0;
 other.group.userData.targetMoving=data.moving===true;
 other.group.userData.targetRunning=data.running===true;
-other.group.userData.animationPhase=0;
 
 scene.add(other.group);
 remotePlayers.set(id,other);
@@ -967,8 +896,11 @@ const replacement=createCharacter(data.appearance||defaultAppearance);
 
 replacement.group.position.copy(old.position);
 replacement.group.rotation.copy(old.rotation);
-replacement.group.userData=state;
-replacement.group.userData.appearanceSignature=incoming;
+
+replacement.group.userData.targetPosition=state.targetPosition;
+replacement.group.userData.targetRotation=state.targetRotation;
+replacement.group.userData.targetMoving=state.targetMoving;
+replacement.group.userData.targetRunning=state.targetRunning;
 
 scene.remove(old);
 scene.add(replacement.group);
@@ -995,6 +927,7 @@ state.targetRunning=data.running===true;
 for(const [id,other] of remotePlayers){
 if(!snapshot.hasChild(id)){
 scene.remove(other.group);
+other.mixer.stopAllAction();
 remotePlayers.delete(id);
 }
 }
@@ -1034,7 +967,7 @@ console.error('Position update failed:',error);
 });
 }
 
-// GAME LOOP — MOVEMENT AND CAMERA KEPT
+// GAME LOOP
 const clock=new THREE.Clock();
 const targetCamera=new THREE.Vector3();
 
@@ -1068,31 +1001,21 @@ if(moving){
 forward/=length;
 sideways/=length;
 
+// ORIGINAL MOVEMENT MATH — UNCHANGED
 const dx=-Math.sin(yaw)*forward+Math.cos(yaw)*sideways;
 const dz=-Math.cos(yaw)*forward-Math.sin(yaw)*sideways;
 const speed=sprint?10:5.5;
 
 player.position.x+=dx*speed*delta;
 player.position.z+=dz*speed*delta;
-
-walkPhase+=delta*(sprint?13:9);
 }
 
-// LOCAL CHARACTER FACING
+// ORIGINAL PLAYER FACING
 player.rotation.y=Math.PI+yaw;
 
-const swing=moving?Math.sin(walkPhase)*.65:0;
-
-character.leftLeg.rotation.x=swing;
-character.rightLeg.rotation.x=-swing;
-character.leftArm.rotation.x=-swing*.8;
-character.rightArm.rotation.x=swing*.8;
-
-character.torso.scale.y=.95+Math.sin(time*2)*.012;
-
-player.position.y=moving
-?Math.abs(Math.sin(walkPhase*2))*.045
-:Math.sin(time*2)*.015;
+// PLAY THE ACTUAL MODEL ANIMATIONS
+character.play(moving?(sprint?'run':'walk'):'idle');
+character.update(delta);
 
 // REMOTE CHARACTERS
 for(const other of remotePlayers.values()){
@@ -1110,31 +1033,14 @@ Math.cos(data.targetRotation-other.group.rotation.y)
 
 other.group.rotation.y+=diff*Math.min(1,delta*12);
 
-if(data.targetMoving){
-data.animationPhase+=delta*(data.targetRunning?13:9);
+other.play(data.targetMoving
+?(data.targetRunning?'run':'walk')
+:'idle');
+
+other.update(delta);
 }
 
-const rs=data.targetMoving
-?Math.sin(data.animationPhase)*.65
-:0;
-
-other.leftLeg.rotation.x=rs;
-other.rightLeg.rotation.x=-rs;
-other.leftArm.rotation.x=-rs*.8;
-other.rightArm.rotation.x=rs*.8;
-
-other.torso.scale.y=.95+Math.sin(time*2)*.012;
-
-const bounce=data.targetMoving
-?Math.abs(Math.sin(data.animationPhase*2))*.045
-:Math.sin(time*2)*.015;
-
-other.group.position.y=THREE.MathUtils.lerp(
-other.group.position.y,bounce,Math.min(1,delta*10)
-);
-}
-
-// CAMERA
+// CAMERA — ORIGINAL WORKING CAMERA MATH
 const horizontal=7*Math.cos(pitch);
 
 targetCamera.set(
@@ -1153,8 +1059,9 @@ lastSent=time;
 
 renderer.render(scene,camera);
 
-if(wardrobeOpen){
+if(wardrobeOpen&&previewCharacter){
 previewCharacter.group.rotation.y=previewRotation;
+previewCharacter.update(delta);
 previewRenderer.render(previewScene,previewCamera);
 }
 }
@@ -1168,6 +1075,8 @@ camera.updateProjectionMatrix();
 renderer.setSize(innerWidth,innerHeight);
 resizePreview();
 });
+
+statusText.textContent='🟢 3D characters loaded';
 </script>
 </body>
 </html>
