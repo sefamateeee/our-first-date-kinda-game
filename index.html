@@ -666,125 +666,468 @@ function material(color){
 return new THREE.MeshStandardMaterial({color,roughness:.85});
 }
 
-// GROUND AND ROAD
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),material(0x78ae60));
-ground.rotation.x=-Math.PI/2;
-ground.receiveShadow=true;
-scene.add(ground);
+// ===== MODERN CITY WORLD =====
 
-const road=new THREE.Mesh(new THREE.PlaneGeometry(13,400),material(0x41474b));
-road.rotation.x=-Math.PI/2;
-road.position.y=.035;
+// Collision boundaries for buildings.
+// We will connect these to player movement in the next step.
+const cityCollisionBoxes = [];
+
+const cityGround = new THREE.Mesh(
+new THREE.PlaneGeometry(220, 220),
+material(0x83ad78)
+);
+cityGround.rotation.x = -Math.PI / 2;
+cityGround.receiveShadow = true;
+scene.add(cityGround);
+
+// CITY ROADS
+function cityRoad(x, z, width, length, horizontal = false) {
+const road = new THREE.Mesh(
+new THREE.PlaneGeometry(width, length),
+material(0x41464b)
+);
+road.rotation.x = -Math.PI / 2;
+road.position.set(x, 0.045, z);
+
+if (horizontal) road.rotation.z = 0;
+
 scene.add(road);
 
-for(const x of [-7.2,7.2]){
-const edge=new THREE.Mesh(new THREE.BoxGeometry(.25,.12,400),material(0xe4dfc9));
-edge.position.set(x,.08,0);
+// Road edge markings
+const edgeMaterial = material(0xe8e2d1);
+
+if (!horizontal) {
+for (const side of [-1, 1]) {
+const edge = new THREE.Mesh(
+new THREE.BoxGeometry(0.18, 0.025, length),
+edgeMaterial
+);
+edge.position.set(x + side * (width / 2 - 0.35), 0.075, z);
 scene.add(edge);
 }
-
-for(let z=-190;z<200;z+=9){
-const line=new THREE.Mesh(new THREE.BoxGeometry(.16,.025,4),material(0xf5e7a6));
-line.position.set(0,.105,z);
-scene.add(line);
+} else {
+for (const side of [-1, 1]) {
+const edge = new THREE.Mesh(
+new THREE.BoxGeometry(width, 0.025, 0.18),
+edgeMaterial
+);
+edge.position.set(x, 0.075, z + side * (length / 2 - 0.35));
+scene.add(edge);
+}
+}
 }
 
-for(const x of [-9,9]){
-const p=new THREE.Mesh(new THREE.BoxGeometry(3,.25,400),material(0xbab9a9));
-p.position.set(x,.12,0);
-scene.add(p);
+// Three main north-south streets
+for (const x of [-42, 0, 42]) {
+cityRoad(x, 0, 13, 210);
+}
+
+// Three cross streets
+for (const z of [-42, 0, 42]) {
+cityRoad(0, z, 210, 13, true);
+}
+
+// FOOTPATHS
+function cityFootpath(x, z, width, length) {
+const path = new THREE.Mesh(
+new THREE.PlaneGeometry(width, length),
+material(0xbab8ad)
+);
+path.rotation.x = -Math.PI / 2;
+path.position.set(x, 0.09, z);
+scene.add(path);
+}
+
+for (const x of [-42, 0, 42]) {
+cityFootpath(x - 8.2, 0, 3.4, 210);
+cityFootpath(x + 8.2, 0, 3.4, 210);
+}
+
+for (const z of [-42, 0, 42]) {
+cityFootpath(0, z - 8.2, 210, 3.4);
+cityFootpath(0, z + 8.2, 210, 3.4);
+}
+
+// ROAD MARKINGS
+function cityRoadMark(x, z, width, length, color = 0xf4f0dc) {
+const mark = new THREE.Mesh(
+new THREE.BoxGeometry(width, 0.035, length),
+material(color)
+);
+mark.position.set(x, 0.095, z);
+scene.add(mark);
+}
+
+// Dashed centre lines
+for (const x of [-42, 0, 42]) {
+for (let z = -100; z < 105; z += 9) {
+cityRoadMark(x, z, 0.16, 4);
+}
+}
+
+for (const z of [-42, 0, 42]) {
+for (let x = -100; x < 105; x += 9) {
+cityRoadMark(x, z, 4, 0.16);
+}
+}
+
+// PEDESTRIAN CROSSINGS
+function cityCrossing(x, z, horizontal) {
+for (let i = -5; i <= 5; i++) {
+const stripe = new THREE.Mesh(
+new THREE.BoxGeometry(
+horizontal ? 1.0 : 0.35,
+0.04,
+horizontal ? 0.35 : 1.0
+),
+material(0xf5f3e9)
+);
+
+stripe.position.set(
+x + (horizontal ? i * 0.85 : 0),
+0.105,
+z + (horizontal ? 0 : i * 0.85)
+);
+
+scene.add(stripe);
+}
+}
+
+for (const x of [-42, 0, 42]) {
+for (const z of [-42, 0, 42]) {
+cityCrossing(x, z - 8, false);
+cityCrossing(x, z + 8, false);
+cityCrossing(x - 8, z, true);
+cityCrossing(x + 8, z, true);
+}
 }
 
 // BUILDINGS
-const buildingColors=[0xd6b99b,0xc4a6a0,0xd8d0b5,0xa9c5c6,0xd6d1c4,0xb9ad99,0xe0c5a2,0x9db3a6];
+const cityBuildingColors = [
+0xe2c9aa, 0xc8b7a7, 0xd5d5ca,
+0xa9c5c8, 0xd6c4b9, 0xb6c5a9,
+0xe0d4bd, 0xb9b4c8
+];
 
-function createBuilding(x,z,w,d,h,color){
-const g=new THREE.Group();
-const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material(color));
-body.position.y=h/2+.25;
-body.castShadow=true;
-body.receiveShadow=true;
-g.add(body);
+function cityBuilding(x, z, width, depth, height, color, style = 0) {
+const building = new THREE.Group();
 
-const roof=new THREE.Mesh(new THREE.BoxGeometry(w+.35,.35,d+.35),material(0x56504b));
-roof.position.y=h+.4;
-g.add(roof);
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(width, height, depth),
+material(color)
+);
 
-const side=x<0?1:-1;
-const columns=Math.max(2,Math.floor(d/2.4));
-const rows=Math.max(2,Math.floor(h/2.4));
+body.position.y = height / 2 + 0.15;
+body.castShadow = true;
+body.receiveShadow = true;
+building.add(body);
 
-for(let r=0;r<rows;r++){
-for(let c=0;c<columns;c++){
-const win=new THREE.Mesh(new THREE.BoxGeometry(.09,1.05,.85),material(Math.random()>.25?0x82c5d9:0xffe3a0));
-win.position.set(side*(w/2+.05),1.35+r*2.15,-d/2+1.2+c*(d-1.5)/Math.max(1,columns-1));
-g.add(win);
+// Roof
+const roof = new THREE.Mesh(
+new THREE.BoxGeometry(width + 0.4, 0.35, depth + 0.4),
+material(style === 2 ? 0x41474d : 0x68615a)
+);
+roof.position.y = height + 0.32;
+building.add(roof);
+
+// Front windows
+const floors = Math.max(2, Math.floor(height / 2.5));
+const windowsPerFloor = Math.max(2, Math.floor(width / 2.4));
+
+for (let floor = 0; floor < floors; floor++) {
+for (let w = 0; w < windowsPerFloor; w++) {
+const windowMesh = new THREE.Mesh(
+new THREE.BoxGeometry(1.05, 1.15, 0.09),
+material(Math.random() > 0.25 ? 0x83b9c9 : 0xffdfa0)
+);
+
+windowMesh.position.set(
+-width / 2 + 1.3 + w * ((width - 2.2) / Math.max(1, windowsPerFloor - 1)),
+1.7 + floor * 2.5,
+depth / 2 + 0.055
+);
+
+building.add(windowMesh);
 }
 }
 
-const door=new THREE.Mesh(new THREE.BoxGeometry(.12,2,.95),material(0x594332));
-door.position.set(side*(w/2+.08),1.25,0);
-g.add(door);
+// Shopfront windows on ground floor
+if (style === 1) {
+const shopGlass = new THREE.Mesh(
+new THREE.BoxGeometry(width * 0.72, 1.8, 0.1),
+material(0x75b9c9)
+);
+shopGlass.position.set(0, 1.35, depth / 2 + 0.09);
+building.add(shopGlass);
 
-const sign=new THREE.Mesh(new THREE.BoxGeometry(.16,.55,2.4),material(0x397c72));
-sign.position.set(side*(w/2+.12),h*.65,0);
-g.add(sign);
-
-g.position.set(x,0,z);
-scene.add(g);
+const shopSign = new THREE.Mesh(
+new THREE.BoxGeometry(width * 0.85, 0.65, 0.2),
+material(0x397e75)
+);
+shopSign.position.set(0, 2.65, depth / 2 + 0.12);
+building.add(shopSign);
+} else {
+const door = new THREE.Mesh(
+new THREE.BoxGeometry(1.15, 2.1, 0.12),
+material(0x604633)
+);
+door.position.set(0, 1.2, depth / 2 + 0.08);
+building.add(door);
 }
 
-for(let z=-90;z<=100;z+=19){
-createBuilding(-14,z,9,12,9+Math.random()*12,buildingColors[Math.floor(Math.random()*buildingColors.length)]);
-createBuilding(14,z,9,12,9+Math.random()*16,buildingColors[Math.floor(Math.random()*buildingColors.length)]);
+// Balcony rails
+if (style === 2) {
+for (let floor = 1; floor < floors; floor++) {
+const balcony = new THREE.Mesh(
+new THREE.BoxGeometry(width * 0.65, 0.12, 1.0),
+material(0x555b5b)
+);
+balcony.position.set(0, 1.1 + floor * 2.5, depth / 2 + 0.55);
+building.add(balcony);
 }
+}
+
+building.position.set(x, 0, z);
+scene.add(building);
+
+// Record solid building footprint for player collision
+cityCollisionBoxes.push({
+x: x,
+z: z,
+halfWidth: width / 2 + 0.25,
+halfDepth: depth / 2 + 0.25
+});
+}
+
+// Populate the city blocks
+for (const x of [-72, -22, 22, 72]) {
+for (const z of [-72, -22, 22, 72]) {
+const colour = cityBuildingColors[
+Math.floor(Math.random() * cityBuildingColors.length)
+];
+
+const height = 9 + Math.random() * 15;
+const style = Math.floor(Math.random() * 3);
+
+cityBuilding(
+x, z,
+15 + Math.random() * 4,
+14 + Math.random() * 4,
+height,
+colour,
+style
+);
+}
+}
+
+// EXTRA SHOPS AND CAFES
+cityBuilding(-22, 22, 13, 11, 7, 0xd6b99b, 1);
+cityBuilding(22, -22, 13, 11, 7, 0xa9c5c8, 1);
+cityBuilding(-72, -22, 13, 11, 8, 0xe0c5a2, 1);
+cityBuilding(72, 22, 13, 11, 8, 0xb8c8bb, 1);
 
 // STREETLIGHTS
-function createStreetLight(x,z){
-const g=new THREE.Group();
-const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,5,8),material(0x333b3d));
-pole.position.y=2.5;
-g.add(pole);
+function cityStreetLight(x, z) {
+const lightGroup = new THREE.Group();
 
-const arm=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,1.1),material(0x333b3d));
-arm.position.set(0,4.8,x<0?-.35:.35);
-g.add(arm);
+const pole = new THREE.Mesh(
+new THREE.CylinderGeometry(0.09, 0.14, 5.5, 10),
+material(0x353b3d)
+);
+pole.position.y = 2.75;
+lightGroup.add(pole);
 
-const lamp=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),material(0xffe8a3));
-lamp.position.set(0,4.7,x<0?-.8:.8);
-g.add(lamp);
+const arm = new THREE.Mesh(
+new THREE.BoxGeometry(0.12, 0.12, 1.1),
+material(0x353b3d)
+);
+arm.position.set(0, 5.2, 0.45);
+lightGroup.add(arm);
 
-g.position.set(x,0,z);
-scene.add(g);
+const lamp = new THREE.Mesh(
+new THREE.BoxGeometry(0.55, 0.18, 0.55),
+material(0xffe5a3)
+);
+lamp.position.set(0, 5.05, 0.9);
+lightGroup.add(lamp);
+
+lightGroup.position.set(x, 0, z);
+scene.add(lightGroup);
 }
 
-for(let z=-90;z<110;z+=17){
-createStreetLight(-7.9,z);
-createStreetLight(7.9,z);
+for (let z = -95; z <= 95; z += 25) {
+cityStreetLight(-10.5, z);
+cityStreetLight(10.5, z);
 }
+
+for (let x = -95; x <= 95; x += 25) {
+cityStreetLight(x, -10.5);
+cityStreetLight(x, 10.5);
+}
+
+// TRAFFIC LIGHTS
+function cityTrafficLight(x, z, rotation = 0) {
+const group = new THREE.Group();
+
+const pole = new THREE.Mesh(
+new THREE.CylinderGeometry(0.12, 0.16, 5, 10),
+material(0x303638)
+);
+pole.position.y = 2.5;
+group.add(pole);
+
+const housing = new THREE.Mesh(
+new THREE.BoxGeometry(0.65, 1.8, 0.55),
+material(0x252a2c)
+);
+housing.position.set(0, 4.7, 0);
+group.add(housing);
+
+for (let i = 0; i < 3; i++) {
+const bulb = new THREE.Mesh(
+new THREE.SphereGeometry(0.19, 12, 12),
+material([0xe52d32, 0xf2c744, 0x39b75a][i])
+);
+bulb.position.set(0, 5.25 - i * 0.55, 0.29);
+group.add(bulb);
+}
+
+group.position.set(x, 0, z);
+group.rotation.y = rotation;
+scene.add(group);
+}
+
+for (const x of [-42, 42]) {
+for (const z of [-42, 42]) {
+cityTrafficLight(x - 9, z - 9);
+cityTrafficLight(x + 9, z + 9, Math.PI);
+}
+}
+
+// STOP SIGNS
+function cityStopSign(x, z) {
+const group = new THREE.Group();
+
+const pole = new THREE.Mesh(
+new THREE.CylinderGeometry(0.055, 0.07, 2.6, 8),
+material(0x777777)
+);
+pole.position.y = 1.3;
+group.add(pole);
+
+const sign = new THREE.Mesh(
+new THREE.CylinderGeometry(0.48, 0.48, 0.12, 8),
+material(0xd72d32)
+);
+sign.rotation.y = Math.PI / 2;
+sign.position.set(0, 2.55, 0);
+group.add(sign);
+
+const letters = new THREE.Mesh(
+new THREE.BoxGeometry(0.04, 0.2, 0.55),
+material(0xffffff)
+);
+letters.position.set(0.08, 2.55, 0);
+group.add(letters);
+
+group.position.set(x, 0, z);
+scene.add(group);
+}
+
+cityStopSign(-9.5, -33);
+cityStopSign(9.5, 51);
+cityStopSign(33, 9.5);
+cityStopSign(-51, -9.5);
 
 // TREES
-function createTree(x,z,s=1){
-const g=new THREE.Group();
-const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.32,2.5,8),material(0x80502f));
-trunk.position.y=1.25;
-g.add(trunk);
+function cityTree(x, z, scale = 1) {
+const tree = new THREE.Group();
 
-for(let i=0;i<3;i++){
-const leaves=new THREE.Mesh(new THREE.IcosahedronGeometry(1.25-i*.13,1),material([0x397f43,0x4d994c,0x67a94f][i]));
-leaves.position.set((i-1)*.25,2.8+(i===1?.4:0),0);
-g.add(leaves);
+const trunk = new THREE.Mesh(
+new THREE.CylinderGeometry(0.18, 0.28, 2.4, 8),
+material(0x80502f)
+);
+trunk.position.y = 1.2;
+tree.add(trunk);
+
+const leaves = new THREE.Mesh(
+new THREE.IcosahedronGeometry(1.35, 1),
+material(0x47864b)
+);
+leaves.position.y = 3;
+leaves.castShadow = true;
+tree.add(leaves);
+
+tree.position.set(x, 0, z);
+tree.scale.setScalar(scale);
+scene.add(tree);
+
+cityCollisionBoxes.push({
+x: x,
+z: z,
+halfWidth: 0.65 * scale,
+halfDepth: 0.65 * scale
+});
 }
 
-g.position.set(x,0,z);
-g.scale.setScalar(s);
-scene.add(g);
+// Trees along footpaths, away from intersections
+for (const x of [-11, 11]) {
+for (let z = -90; z <= 90; z += 20) {
+if (Math.abs(z + 42) > 12 && Math.abs(z) > 12 && Math.abs(z - 42) > 12) {
+cityTree(x, z, 0.85);
+}
+}
 }
 
-for(let z=-100;z<110;z+=13){
-createTree(-10.7,z,.8);
-createTree(10.7,z,.8);
+// PARKS
+function cityPark(x, z) {
+const grass = new THREE.Mesh(
+new THREE.BoxGeometry(23, 0.15, 23),
+material(0x6eaa62)
+);
+grass.position.set(x, 0.13, z);
+scene.add(grass);
+
+for (const dx of [-7, 7]) {
+for (const dz of [-7, 7]) {
+cityTree(x + dx, z + dz, 1.05);
 }
+}
+
+const bench = new THREE.Mesh(
+new THREE.BoxGeometry(2.2, 0.45, 0.7),
+material(0x805331)
+);
+bench.position.set(x, 0.65, z);
+scene.add(bench);
+}
+
+cityPark(-72, 22);
+cityPark(72, -22);
+
+// CITY SQUARE / PLAZA
+const plaza = new THREE.Mesh(
+new THREE.BoxGeometry(23, 0.18, 23),
+material(0xc9c5b8)
+);
+plaza.position.set(22, 0.14, 72);
+scene.add(plaza);
+
+// Decorative plaza fountain
+const fountainBase = new THREE.Mesh(
+new THREE.CylinderGeometry(3.2, 3.5, 0.55, 24),
+material(0x858f91)
+);
+fountainBase.position.set(22, 0.5, 72);
+scene.add(fountainBase);
+
+const fountainWater = new THREE.Mesh(
+new THREE.CylinderGeometry(2.7, 2.7, 0.12, 24),
+material(0x65b7d1)
+);
+fountainWater.position.set(22, 0.82, 72);
+scene.add(fountainWater);
+
 
 // LOCAL PLAYER
 let character=createCharacter(appearance);
