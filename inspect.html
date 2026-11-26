@@ -63,6 +63,13 @@ size.y.toFixed(3) + ', ' + size.z.toFixed(3) +
 center.y.toFixed(3) + ', ' + center.z.toFixed(3) +
 '\n';
 }
+ if (object.name === 'character_3') {
+output.textContent += 'HAIR IS SKINNED: ' + !!object.isSkinnedMesh + '\n';
+
+if (object.isSkinnedMesh && object.skeleton) {
+output.textContent += 'HAIR BONES: ' + object.skeleton.bones.map(b => b.name).join(', ') + '\n';
+}
+}
 });
 } catch (error) {
 output.textContent += '\nERROR loading ' + name + ': ' + error.message;
