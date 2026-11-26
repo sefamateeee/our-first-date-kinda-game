@@ -52,6 +52,55 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
+  // ===== DRAG TO ROTATE CAMERA =====
+let isDragging = false;
+let previousX = 0;
+let previousY = 0;
+
+let cameraYaw = 0;
+let cameraPitch = Math.atan2(0.2, 5.5);
+const cameraRadius = 5.5;
+const cameraTargetY = 1.3;
+
+renderer.domElement.style.touchAction = 'none';
+
+renderer.domElement.addEventListener('pointerdown', (event) => {
+isDragging = true;
+previousX = event.clientX;
+previousY = event.clientY;
+renderer.domElement.setPointerCapture(event.pointerId);
+});
+
+renderer.domElement.addEventListener('pointermove', (event) => {
+if (!isDragging) return;
+
+const dx = event.clientX - previousX;
+const dy = event.clientY - previousY;
+
+cameraYaw -= dx * 0.01;
+cameraPitch += dy * 0.01;
+
+cameraPitch = Math.max(-0.3, Math.min(1.2, cameraPitch));
+
+previousX = event.clientX;
+previousY = event.clientY;
+
+camera.position.set(
+cameraRadius * Math.sin(cameraYaw) * Math.cos(cameraPitch),
+cameraTargetY + cameraRadius * Math.sin(cameraPitch),
+cameraRadius * Math.cos(cameraYaw) * Math.cos(cameraPitch)
+);
+
+camera.lookAt(0, cameraTargetY, 0);
+});
+
+renderer.domElement.addEventListener('pointerup', () => {
+isDragging = false;
+});
+
+renderer.domElement.addEventListener('pointercancel', () => {
+isDragging = false;
+});
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 2));
 
