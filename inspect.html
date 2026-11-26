@@ -47,12 +47,20 @@ output.textContent += '\n\n===== ' + name + ' MODEL =====\n';
 
 gltf.scene.traverse(object => {
 if (object.isMesh) {
+const box = new THREE.Box3().setFromObject(object);
+const size = box.getSize(new THREE.Vector3());
+const center = box.getCenter(new THREE.Vector3());
+
 output.textContent +=
 'Mesh: ' + object.name +
 ' | Material: ' +
 (Array.isArray(object.material)
 ? object.material.map(m => m.name).join(', ')
 : object.material.name) +
+' | Size: ' + size.x.toFixed(3) + ', ' +
+size.y.toFixed(3) + ', ' + size.z.toFixed(3) +
+' | Center: ' + center.x.toFixed(3) + ', ' +
+center.y.toFixed(3) + ', ' + center.z.toFixed(3) +
 '\n';
 }
 });
