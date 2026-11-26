@@ -508,7 +508,7 @@ if(document.pointerLockElement!==renderer.domElement) return;
 yaw-=e.movementX*.003;
 
 // Mouse up looks up
-pitch-=e.movementY*.002;
+pitch+=e.movementY*.002;
 pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
 });
 
@@ -536,7 +536,7 @@ const dy=e.clientY-touchY;
 yaw-=dx*.006;
 
 // Finger up looks up
-pitch-=dy*.004;
+pitch+=dy*.004;
 pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
 
 touchX=e.clientX;
