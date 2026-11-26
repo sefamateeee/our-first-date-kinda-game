@@ -8,62 +8,45 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{overflow:hidden;font-family:Arial;background:#9bd8ee}
 canvas{display:block;touch-action:none}
-
 #start{
 position:absolute;inset:0;z-index:10;
 display:flex;align-items:center;justify-content:center;
-background:linear-gradient(#203e3655,#203e36aa);
-color:white;text-align:center;cursor:pointer
+background:#203e3688;color:white;text-align:center
 }
-.panel{
-background:#203e36ee;padding:30px;border-radius:22px;
-border:2px solid #ffffff77;max-width:330px
-}
-.panel h1{margin-bottom:12px;font-size:27px}
+.panel{background:#203e36ee;padding:30px;border-radius:22px;max-width:330px}
+.panel h1{margin-bottom:12px}
 .panel p{line-height:1.6}
-
 #instructions{
-position:absolute;top:14px;left:50%;
-transform:translateX(-50%);z-index:2;
-background:#203e36bb;color:white;
-padding:10px 15px;border-radius:12px;
-text-align:center;font-size:13px;
-pointer-events:none;line-height:1.5
+position:absolute;top:14px;left:50%;transform:translateX(-50%);
+z-index:2;background:#203e36bb;color:white;
+padding:10px 15px;border-radius:12px;text-align:center;
+font-size:12px;pointer-events:none;line-height:1.5
 }
-
-/* MOBILE JOYSTICK */
+#status{
+position:absolute;top:14px;right:14px;z-index:3;
+background:#203e36dd;color:white;padding:9px 12px;
+border-radius:12px;font-size:12px;pointer-events:none
+}
 #joystick{
-display:none;position:absolute;
-bottom:28px;left:25px;
-width:140px;height:140px;
-border-radius:50%;
-background:#203e3655;
-border:2px solid #ffffff99;
-z-index:5;touch-action:none;
+display:none;position:absolute;bottom:28px;left:25px;
+width:140px;height:140px;border-radius:50%;
+background:#203e3655;border:2px solid #ffffff99;
+z-index:5;touch-action:none
 }
 #stick{
-position:absolute;width:58px;height:58px;
-left:39px;top:39px;
-border-radius:50%;
-background:#ffffffbb;
-border:3px solid #ffffff;
-box-shadow:0 3px 12px #0005;
-pointer-events:none;
+position:absolute;width:58px;height:58px;left:39px;top:39px;
+border-radius:50%;background:#ffffffbb;
+border:3px solid white;pointer-events:none
 }
 #runButton{
-display:none;position:absolute;
-right:28px;bottom:35px;
-width:76px;height:76px;
-border-radius:50%;
-border:2px solid #ffffffaa;
-background:#203e36bb;color:white;
-font-weight:bold;font-size:15px;
-z-index:5;touch-action:none;
+display:none;position:absolute;right:28px;bottom:35px;
+width:76px;height:76px;border-radius:50%;
+border:2px solid #ffffffaa;background:#203e36bb;
+color:white;font-weight:bold;font-size:15px;
+z-index:5;touch-action:none
 }
-
 @media(pointer:coarse){
-#joystick{display:block}
-#runButton{display:block}
+#joystick,#runButton{display:block}
 #instructions{font-size:11px}
 }
 </style>
@@ -83,18 +66,112 @@ Mouse or finger – Look around
 </div>
 
 <div id="instructions">
-WASD – Move &nbsp; | &nbsp; SHIFT – Run<br>
+WASD – Move | SHIFT – Run<br>
 Mouse / Finger – Look around
 </div>
-
-<div id="joystick">
-<div id="stick"></div>
-</div>
+<div id="status">Connecting to multiplayer...</div>
+<div id="joystick"><div id="stick"></div></div>
 <button id="runButton">RUN</button>
 
 <script type="module">
 import * as THREE from
 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+
+import {initializeApp} from
+'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+
+import {getAuth,signInAnonymously} from
+'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+
+import {
+getDatabase,ref,set,onValue,onDisconnect
+} from
+'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
+
+// FIREBASE CONNECTION
+const firebaseConfig={
+apiKey:"AIzaSyCIkwXfeAfEZrG1kE0myW8BIRXNq5gOnpE",
+authDomain:"our-first-date-kinda-game.firebaseapp.com",
+databaseURL:"https://our-first-date-kinda-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"our-first-date-kinda-game",
+storageBucket:"our-first-date-kinda-game.firebasestorage.app",
+messagingSenderId:"176526649038",
+appId:"1:176526649038:web:3c6ab02491491e4e8e129f",
+measurementId:"G-49HR8VS7TV"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+
+const statusText=document.getElementById('status');
+
+let myUID=null;
+let myPlayerRef=null;
+let networkReady=false;
+const remotePlayers=new Map();
+
+async function connectMultiplayer(){
+try{
+const result=await signInAnonymously(auth);
+myUID=result.user.uid;
+myPlayerRef=ref(db,'players/'+myUID);
+
+await onDisconnect(myPlayerRef).remove();
+
+await set(myPlayerRef,{
+x:0,z:5,rotation:0,updatedAt:Date.now()
+});
+
+networkReady=true;
+statusText.textContent='🟢 Multiplayer connected';
+
+onValue(ref(db,'players'),snapshot=>{
+snapshot.forEach(child=>{
+const id=child.key;
+const data=child.val();
+
+if(id===myUID||!data)return;
+
+let other=remotePlayers.get(id);
+
+if(!other){
+other=player.clone(true);
+other.position.set(data.x||0,0,data.z||0);
+other.userData.targetPosition=new THREE.Vector3(
+data.x||0,0,data.z||0
+);
+other.userData.targetRotation=data.rotation||0;
+scene.add(other);
+remotePlayers.set(id,other);
+}
+
+other.userData.targetPosition.set(
+Number(data.x)||0,0,Number(data.z)||0
+);
+other.userData.targetRotation=Number(data.rotation)||0;
+});
+
+for(const [id,other] of remotePlayers){
+if(!snapshot.hasChild(id)){
+scene.remove(other);
+remotePlayers.delete(id);
+}
+}
+
+statusText.textContent=
+remotePlayers.size>0
+?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players'
+:'🟢 Connected · Waiting for Tina';
+});
+
+}catch(error){
+console.error('Firebase connection error:',error);
+statusText.textContent='🔴 Connection failed';
+}
+}
+
+connectMultiplayer();
 
 // SCENE
 const scene=new THREE.Scene();
@@ -144,7 +221,6 @@ road.rotation.x=-Math.PI/2;
 road.position.y=.035;
 scene.add(road);
 
-// ROAD EDGES
 for(const x of [-7.2,7.2]){
 const edge=new THREE.Mesh(
 new THREE.BoxGeometry(.25,.12,400),
@@ -154,7 +230,6 @@ edge.position.set(x,.08,0);
 scene.add(edge);
 }
 
-// ROAD MARKINGS
 for(let z=-190;z<200;z+=9){
 const line=new THREE.Mesh(
 new THREE.BoxGeometry(.16,.025,4),
@@ -176,9 +251,8 @@ scene.add(pavement);
 
 // BUILDINGS
 const buildingColors=[
-0xd6b99b,0xc4a6a0,0xd8d0b5,
-0xa9c5c6,0xd6d1c4,0xb9ad99,
-0xe0c5a2,0x9db3a6
+0xd6b99b,0xc4a6a0,0xd8d0b5,0xa9c5c6,
+0xd6d1c4,0xb9ad99,0xe0c5a2,0x9db3a6
 ];
 
 function createBuilding(x,z,w,d,h,color){
@@ -215,27 +289,17 @@ side*(w/2+.05),
 -d/2+1.2+col*(d-1.5)/Math.max(1,columns-1)
 );
 group.add(win);
-
-const frame=new THREE.Mesh(
-new THREE.BoxGeometry(.12,1.2,.98),
-material(0xf1e7d3)
-);
-frame.position.copy(win.position);
-frame.position.x+=side*.04;
-group.add(frame);
 }
 }
 
 const door=new THREE.Mesh(
-new THREE.BoxGeometry(.12,2,.95),
-material(0x594332)
+new THREE.BoxGeometry(.12,2,.95),material(0x594332)
 );
 door.position.set(side*(w/2+.08),1.25,0);
 group.add(door);
 
 const sign=new THREE.Mesh(
-new THREE.BoxGeometry(.16,.55,2.4),
-material(0x397c72)
+new THREE.BoxGeometry(.16,.55,2.4),material(0x397c72)
 );
 sign.position.set(side*(w/2+.12),h*.65,0);
 group.add(sign);
@@ -245,14 +309,10 @@ scene.add(group);
 }
 
 for(let z=-90;z<=100;z+=19){
-createBuilding(
--14,z,9,12,9+Math.random()*12,
-buildingColors[Math.floor(Math.random()*buildingColors.length)]
-);
-createBuilding(
-14,z,9,12,9+Math.random()*16,
-buildingColors[Math.floor(Math.random()*buildingColors.length)]
-);
+createBuilding(-14,z,9,12,9+Math.random()*12,
+buildingColors[Math.floor(Math.random()*buildingColors.length)]);
+createBuilding(14,z,9,12,9+Math.random()*16,
+buildingColors[Math.floor(Math.random()*buildingColors.length)]);
 }
 
 // STREETLIGHTS
@@ -260,22 +320,19 @@ function createStreetLight(x,z){
 const group=new THREE.Group();
 
 const pole=new THREE.Mesh(
-new THREE.CylinderGeometry(.09,.13,5,8),
-material(0x333b3d)
+new THREE.CylinderGeometry(.09,.13,5,8),material(0x333b3d)
 );
 pole.position.y=2.5;
 group.add(pole);
 
 const arm=new THREE.Mesh(
-new THREE.BoxGeometry(.12,.12,1.1),
-material(0x333b3d)
+new THREE.BoxGeometry(.12,.12,1.1),material(0x333b3d)
 );
 arm.position.set(0,4.8,x<0?-.35:.35);
 group.add(arm);
 
 const lamp=new THREE.Mesh(
-new THREE.SphereGeometry(.28,12,10),
-material(0xffe8a3)
+new THREE.SphereGeometry(.28,12,10),material(0xffe8a3)
 );
 lamp.position.set(0,4.7,x<0?-.8:.8);
 group.add(lamp);
@@ -294,11 +351,9 @@ function createTree(x,z,scale=1){
 const group=new THREE.Group();
 
 const trunk=new THREE.Mesh(
-new THREE.CylinderGeometry(.2,.32,2.5,8),
-material(0x80502f)
+new THREE.CylinderGeometry(.2,.32,2.5,8),material(0x80502f)
 );
 trunk.position.y=1.25;
-trunk.castShadow=true;
 group.add(trunk);
 
 for(let i=0;i<3;i++){
@@ -307,7 +362,6 @@ new THREE.IcosahedronGeometry(1.25-i*.13,1),
 material([0x397f43,0x4d994c,0x67a94f][i])
 );
 leaves.position.set((i-1)*.25,2.8+(i===1?.4:0),0);
-leaves.castShadow=true;
 group.add(leaves);
 }
 
@@ -343,7 +397,6 @@ parent.add(mesh);
 return mesh;
 }
 
-// BODY
 const torso=part(
 player,new THREE.CapsuleGeometry(.37,.65,5,10),
 tunic,0,1.45,0
@@ -355,18 +408,15 @@ player,new THREE.TorusGeometry(.19,.055,8,16),
 tunicLight,0,1.85,0
 );
 
-// HEAD
 const head=new THREE.Group();
 head.position.set(0,2.35,0);
 player.add(head);
 
 part(head,new THREE.SphereGeometry(.34,20,16),skin,0,0,0);
-
 part(
 head,new THREE.SphereGeometry(.355,16,12,0,Math.PI*2,0,Math.PI/2),
 hair,0,.08,0
 );
-
 part(head,new THREE.SphereGeometry(.31,12,12),hair,0,-.08,-.16)
 .scale.set(1,.9,.65);
 
@@ -376,7 +426,6 @@ part(head,new THREE.SphereGeometry(.022,8,8),dark,x,-.02,.33);
 }
 part(head,new THREE.SphereGeometry(.045,8,8),skin,0,-.1,.33);
 
-// ARMS
 function createArm(x){
 const pivot=new THREE.Group();
 pivot.position.set(x,1.78,0);
@@ -385,10 +434,10 @@ part(pivot,new THREE.CapsuleGeometry(.12,.52,4,8),tunic,0,-.34,0);
 part(pivot,new THREE.SphereGeometry(.12,10,10),skin,0,-.68,.015);
 return pivot;
 }
+
 const leftArm=createArm(-.48);
 const rightArm=createArm(.48);
 
-// LEGS
 function createLeg(x){
 const pivot=new THREE.Group();
 pivot.position.set(x,.85,0);
@@ -397,6 +446,7 @@ part(pivot,new THREE.CapsuleGeometry(.16,.48,4,8),trousers,0,-.27,0);
 part(pivot,new THREE.BoxGeometry(.3,.2,.48),boots,0,-.61,.1);
 return pivot;
 }
+
 const leftLeg=createLeg(-.2);
 const rightLeg=createLeg(.2);
 
@@ -407,7 +457,7 @@ material(0x704b2c),0,1.12,0
 
 player.position.set(0,0,5);
 
-// INPUT
+// KEYBOARD INPUT
 const keys={};
 let yaw=0;
 let pitch=.12;
@@ -420,11 +470,11 @@ window.addEventListener('keyup',e=>{
 keys[e.key.toLowerCase()]=false;
 });
 window.addEventListener('blur',()=>{
-for(const key in keys) keys[key]=false;
+for(const key in keys)keys[key]=false;
 running=false;
 });
 
-// START
+// START GAME
 document.getElementById('start').addEventListener('click',()=>{
 document.getElementById('start').style.display='none';
 if(matchMedia('(pointer:fine)').matches){
@@ -443,7 +493,7 @@ for(const eventName of ['pointerup','pointerleave','pointercancel']){
 runButton.addEventListener(eventName,()=>running=false);
 }
 
-// VIRTUAL JOYSTICK
+// JOYSTICK
 const joystick=document.getElementById('joystick');
 const stick=document.getElementById('stick');
 
@@ -457,21 +507,6 @@ joyY=0;
 joystickPointer=null;
 stick.style.transform='translate(0px,0px)';
 }
-
-joystick.addEventListener('pointerdown',e=>{
-e.preventDefault();
-if(joystickPointer!==null) return;
-
-joystickPointer=e.pointerId;
-joystick.setPointerCapture(e.pointerId);
-updateJoystick(e);
-});
-
-joystick.addEventListener('pointermove',e=>{
-if(e.pointerId!==joystickPointer) return;
-e.preventDefault();
-updateJoystick(e);
-});
 
 function updateJoystick(e){
 const rect=joystick.getBoundingClientRect();
@@ -491,35 +526,46 @@ dy=dy/distance*maxDistance;
 
 joyX=dx/maxDistance;
 joyY=dy/maxDistance;
-
 stick.style.transform=`translate(${dx}px,${dy}px)`;
 }
 
+joystick.addEventListener('pointerdown',e=>{
+e.preventDefault();
+if(joystickPointer!==null)return;
+joystickPointer=e.pointerId;
+joystick.setPointerCapture(e.pointerId);
+updateJoystick(e);
+});
+
+joystick.addEventListener('pointermove',e=>{
+if(e.pointerId!==joystickPointer)return;
+e.preventDefault();
+updateJoystick(e);
+});
+
 joystick.addEventListener('pointerup',e=>{
-if(e.pointerId===joystickPointer) resetJoystick();
+if(e.pointerId===joystickPointer)resetJoystick();
 });
 joystick.addEventListener('pointercancel',resetJoystick);
 joystick.addEventListener('lostpointercapture',resetJoystick);
 
-// MOUSE CAMERA
+// PC CAMERA
 document.addEventListener('mousemove',e=>{
-if(document.pointerLockElement!==renderer.domElement) return;
+if(document.pointerLockElement!==renderer.domElement)return;
 
 yaw-=e.movementX*.003;
-
-// Mouse up looks up
 pitch+=e.movementY*.002;
 pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
 });
 
-// TOUCH CAMERA - RIGHT SIDE ONLY
+// IPAD CAMERA
 let cameraPointer=null;
 let touchX=0;
 let touchY=0;
 
 renderer.domElement.addEventListener('pointerdown',e=>{
-if(e.pointerType!=='touch') return;
-if(e.clientX<innerWidth*.42) return;
+if(e.pointerType!=='touch')return;
+if(e.clientX<innerWidth*.42)return;
 
 cameraPointer=e.pointerId;
 renderer.domElement.setPointerCapture(e.pointerId);
@@ -528,14 +574,12 @@ touchY=e.clientY;
 });
 
 renderer.domElement.addEventListener('pointermove',e=>{
-if(e.pointerId!==cameraPointer) return;
+if(e.pointerId!==cameraPointer)return;
 
 const dx=e.clientX-touchX;
 const dy=e.clientY-touchY;
 
 yaw-=dx*.006;
-
-// Finger up looks up
 pitch+=dy*.004;
 pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
 
@@ -544,11 +588,27 @@ touchY=e.clientY;
 });
 
 function releaseCamera(e){
-if(e.pointerId===cameraPointer) cameraPointer=null;
+if(e.pointerId===cameraPointer)cameraPointer=null;
 }
 renderer.domElement.addEventListener('pointerup',releaseCamera);
 renderer.domElement.addEventListener('pointercancel',releaseCamera);
 renderer.domElement.addEventListener('lostpointercapture',releaseCamera);
+
+// MULTIPLAYER POSITION SENDING
+let lastSent=0;
+
+function sendMyPosition(){
+if(!networkReady||!myPlayerRef)return;
+
+set(myPlayerRef,{
+x:player.position.x,
+z:player.position.z,
+rotation:player.rotation.y,
+updatedAt:Date.now()
+}).catch(error=>{
+console.error('Position update failed:',error);
+});
+}
 
 // GAME LOOP
 const clock=new THREE.Clock();
@@ -560,20 +620,17 @@ requestAnimationFrame(animate);
 const delta=Math.min(clock.getDelta(),.05);
 const time=clock.elapsedTime;
 
-// KEYBOARD INPUT
 let forward=0;
 let sideways=0;
 
-if(keys.w||keys.arrowup) forward+=1;
-if(keys.s||keys.arrowdown) forward-=1;
-if(keys.d||keys.arrowright) sideways+=1;
-if(keys.a||keys.arrowleft) sideways-=1;
+if(keys.w||keys.arrowup)forward+=1;
+if(keys.s||keys.arrowdown)forward-=1;
+if(keys.d||keys.arrowright)sideways+=1;
+if(keys.a||keys.arrowleft)sideways-=1;
 
-// ADD JOYSTICK INPUT
 forward+=-joyY;
 sideways+=joyX;
 
-// NORMALISE DIAGONAL MOVEMENT
 const length=Math.hypot(forward,sideways);
 const moving=length>.08;
 
@@ -581,7 +638,6 @@ if(moving){
 forward/=length;
 sideways/=length;
 
-// CAMERA-RELATIVE DIRECTIONS
 const dx=-Math.sin(yaw)*forward+Math.cos(yaw)*sideways;
 const dz=-Math.cos(yaw)*forward-Math.sin(yaw)*sideways;
 
@@ -592,10 +648,8 @@ player.position.x+=dx*speed*delta;
 player.position.z+=dz*speed*delta;
 }
 
-// FACE CAMERA DIRECTION
 player.rotation.y=Math.PI+yaw;
 
-// WALKING / RUNNING ANIMATION
 const sprint=keys.shift||running;
 const animationSpeed=sprint?13:9;
 const swing=moving?Math.sin(time*animationSpeed)*.65:0;
@@ -605,13 +659,21 @@ rightLeg.rotation.x=-swing;
 leftArm.rotation.x=-swing*.8;
 rightArm.rotation.x=swing*.8;
 
-// IDLE BREATHING
 torso.scale.y=.95+Math.sin(time*2)*.012;
 
-// WALKING BOUNCE
 player.position.y=moving
 ?Math.abs(Math.sin(time*animationSpeed*2))*.045
 :Math.sin(time*2)*.015;
+
+// SMOOTH REMOTE PLAYER MOVEMENT
+for(const other of remotePlayers.values()){
+if(other.userData.targetPosition){
+other.position.lerp(other.userData.targetPosition,.2);
+}
+if(other.userData.targetRotation!==undefined){
+other.rotation.y=other.userData.targetRotation;
+}
+}
 
 // CAMERA
 const horizontal=7*Math.cos(pitch);
@@ -629,6 +691,12 @@ player.position.x,
 player.position.y+1.45,
 player.position.z
 );
+
+// SEND POSITION ABOUT 10 TIMES PER SECOND
+if(time-lastSent>.1){
+sendMyPosition();
+lastSent=time;
+}
 
 renderer.render(scene,camera);
 }
