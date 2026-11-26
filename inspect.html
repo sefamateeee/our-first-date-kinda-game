@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Character Model Inspector</title>
+<style>
+body {
+background: #171717;
+color: white;
+font-family: Arial;
+padding: 20px;
+}
+pre {
+white-space: pre-wrap;
+line-height: 1.6;
+}
+</style>
+</head>
+<body>
+<h2>Character Model Inspector</h2>
+<pre id="output">Loading models...</pre>
+
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import { GLTFLoader } from
+'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js';
+
+const loader = new GLTFLoader();
+const output = document.getElementById('output');
+
+const models = [
+['BOY', 'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/boy.glb.glb'],
+['GIRL', 'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/girl.glb.glb']
+];
+
+for (const [name, url] of models) {
+try {
+const gltf = await loader.loadAsync(url);
+output.textContent += '\n\n===== ' + name + ' MODEL =====\n';
+
+gltf.scene.traverse(object => {
+if (object.isMesh) {
+output.textContent +=
+'Mesh: ' + object.name +
+' | Material: ' +
+(Array.isArray(object.material)
+? object.material.map(m => m.name).join(', ')
+: object.material.name) +
+'\n';
+}
+});
+} catch (error) {
+output.textContent += '\nERROR loading ' + name + ': ' + error.message;
+}
+}
+</script>
+</body>
+</html>
