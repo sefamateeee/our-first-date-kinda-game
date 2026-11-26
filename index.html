@@ -226,7 +226,7 @@ model.position.y-=fittedBox.min.y;
 
 // Keep the imported model facing the same general direction
 const modelHolder=new THREE.Group();
-modelHolder.rotation.y=Math.PI;
+modelHolder.rotation.y=0;
 modelHolder.add(model);
 group.add(modelHolder);
 
