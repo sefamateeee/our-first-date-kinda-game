@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Showroom</title>
+
+<style>
+body {
+margin: 0;
+overflow: hidden;
+background: #20242b;
+font-family: Arial, sans-serif;
+}
+#info {
+position: absolute;
+top: 15px;
+left: 15px;
+z-index: 5;
+color: white;
+background: #111d;
+padding: 12px 16px;
+border-radius: 8px;
+}
+#status { color: #b8d8ff; font-size: 13px; }
+</style>
+
+<script type="importmap">
+{
+"imports": {
+"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+}
+}
+</script>
+</head>
+
+<body>
+<div id="info">
+<strong>Midnight Streets — Building Showroom</strong>
+<div id="status">Loading buildings...</div>
+<small>Drag to rotate · Scroll to zoom · Right-click to pan</small>
+</div>
+
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9eabb8);
+
+const camera = new THREE.PerspectiveCamera(
+55, window.innerWidth / window.innerHeight, 0.1, 2000
+);
+camera.position.set(38, 35, 48);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 3, 0);
+controls.enableDamping = true;
+controls.update();
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x657080, 2));
+
+const sunlight = new THREE.DirectionalLight(0xffffff, 2.5);
+sunlight.position.set(35, 60, 25);
+scene.add(sunlight);
+
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(180, 180),
+new THREE.MeshStandardMaterial({ color: 0x68716e })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.05;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(180, 90, 0xffffff, 0x87918e);
+grid.position.y = 0.01;
+scene.add(grid);
+
+const buildings = [
+"MS_HV_01_PorchBungalow.glb",
+"MS_HV_02_WideBalconyHouse.glb",
+"MS_HV_03_UrbanTownhouse.glb",
+"MS_HV_04_CornerEntryHouse.glb",
+"MS_HV_05_GatedCarportHouse.glb",
+"MS_HV_06_OlderDuplexRental.glb",
+
+"MS_PF_01_TwoStoreyHouse.glb",
+"MS_PF_02_NarrowTownhouse.glb",
+"MS_PF_03_ThreeStoreyApartment.glb",
+"MS_PF_04_ApartmentBlock.glb",
+"MS_PF_05_CornerShop.glb",
+"MS_PF_06_ClosedStorefront.glb",
+
+"MS_RR_A01_TinySingleRoom.glb",
+"MS_RR_A02_BudgetHouse.glb",
+"MS_RR_B02_StandardFamilyBungalow.glb",
+"MS_RR_D01_StudioUnit.glb",
+"MS_RR_D04_BoardingHouse.glb"
+];
+
+const loader = new GLTFLoader();
+const status = document.getElementById("status");
+
+function makeLabel(name) {
+const canvas = document.createElement("canvas");
+canvas.width = 512;
+canvas.height = 96;
+const ctx = canvas.getContext("2d");
+
+ctx.fillStyle = "rgba(15,20,25,0.85)";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = "white";
+ctx.font = "bold 30px Arial";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText(name.replace(".glb", ""), 256, 48);
+
+const texture = new THREE.CanvasTexture(canvas);
+const sprite = new THREE.Sprite(
+new THREE.SpriteMaterial({ map: texture, transparent: true })
+);
+sprite.scale.set(10, 1.9, 1);
+return sprite;
+}
+
+let loaded = 0;
+let failed = 0;
+
+buildings.forEach((filename, index) => {
+const column = index % 4;
+const row = Math.floor(index / 4);
+
+const positionX = (column - 1.5) * 19;
+const positionZ = (row - 2) * 19;
+
+loader.load(
+filename,
+(gltf) => {
+const model = gltf.scene;
+
+model.traverse((object) => {
+if (object.isMesh) {
+object.castShadow = true;
+object.receiveShadow = true;
+}
+});
+
+const box = new THREE.Box3().setFromObject(model);
+const size = box.getSize(new THREE.Vector3());
+const maxDimension = Math.max(size.x, size.y, size.z);
+
+if (maxDimension > 0) {
+model.scale.setScalar(9 / maxDimension);
+}
+
+const scaledBox = new THREE.Box3().setFromObject(model);
+const center = scaledBox.getCenter(new THREE.Vector3());
+
+model.position.x -= center.x;
+model.position.z -= center.z;
+model.position.y -= scaledBox.min.y;
+
+const group = new THREE.Group();
+group.position.set(positionX, 0, positionZ);
+group.add(model);
+
+const label = makeLabel(filename);
+label.position.set(0, 11, 0);
+group.add(label);
+
+scene.add(group);
+
+loaded++;
+status.textContent = `${loaded} of ${buildings.length} buildings loaded` +
+(failed ? ` · ${failed} failed` : "");
+},
+undefined,
+(error) => {
+failed++;
+console.error("Could not load:", filename, error);
+status.textContent = `${loaded} loaded · ${failed} failed`;
+}
+);
+});
+
+function animate() {
+requestAnimationFrame(animate);
+controls.update();
+renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener("resize", () => {
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
