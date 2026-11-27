@@ -1,1 +1,174 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Midnight Streets - Road Layout Test</title>
+<style>
+body { margin: 0; overflow: hidden; background: #20242b; font-family: Arial, sans-serif; }
+#info {
+position: absolute; top: 12px; left: 12px; z-index: 2;
+color: white; background: #171a20dd; padding: 12px 16px;
+border-radius: 8px; line-height: 1.5;
+}
+</style>
+</head>
+<body>
+<div id="info">
+<strong>Midnight Streets — Road Test</strong><br>
+Loading road models...<br>
+Drag to rotate · Scroll to zoom
+</div>
+
+<script type="importmap">
+{
+"imports": {
+"three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+}
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x89939b);
+
+const camera = new THREE.PerspectiveCamera(
+55, window.innerWidth / window.innerHeight, 0.1, 2000
+);
+camera.position.set(35, 35, 45);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0, 0);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x59616a, 2));
+
+const sun = new THREE.DirectionalLight(0xffffff, 2);
+sun.position.set(30, 50, 20);
+sun.castShadow = true;
+scene.add(sun);
+
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(300, 300),
+new THREE.MeshStandardMaterial({ color: 0x777d78 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.05;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(300, 60, 0x444b50, 0x626a6d);
+grid.position.y = 0;
+scene.add(grid);
+
+const loader = new GLTFLoader();
+
+const roads = [
+{ file: "MS_RD_01_StraightRoad.glb", x: -18, z: 0 },
+{ file: "MS_RD_02_RoadCorner90.glb", x: 0, z: 0 },
+{ file: "MS_RD_03_TJunction.glb", x: 18, z: 0 },
+{ file: "MS_RD_04_Crossroads.glb", x: 36, z: 0 }
+];
+
+let loaded = 0;
+let failed = 0;
+const info = document.getElementById("info");
+
+function makeLabel(text) {
+const canvas = document.createElement("canvas");
+canvas.width = 512;
+canvas.height = 96;
+const ctx = canvas.getContext("2d");
+ctx.fillStyle = "#15191f";
+ctx.fillRect(0, 0, 512, 96);
+ctx.fillStyle = "white";
+ctx.font = "bold 25px Arial";
+ctx.textAlign = "center";
+ctx.fillText(text.replace(".glb", ""), 256, 58);
+
+const texture = new THREE.CanvasTexture(canvas);
+const sprite = new THREE.Sprite(
+new THREE.SpriteMaterial({ map: texture, depthTest: false })
+);
+sprite.scale.set(12, 2.25, 1);
+return sprite;
+}
+
+roads.forEach((road) => {
+loader.load(
+"city-assets/roads/" + road.file,
+(gltf) => {
+const model = gltf.scene;
+
+model.traverse((obj) => {
+if (obj.isMesh) {
+obj.castShadow = true;
+obj.receiveShadow = true;
+}
+});
+
+const bounds = new THREE.Box3().setFromObject(model);
+const center = bounds.getCenter(new THREE.Vector3());
+
+model.position.x -= center.x;
+model.position.z -= center.z;
+model.position.y -= bounds.min.y;
+
+const group = new THREE.Group();
+group.position.set(road.x, 0, road.z);
+group.add(model);
+
+const label = makeLabel(road.file);
+label.position.set(0, 5, 0);
+group.add(label);
+
+scene.add(group);
+
+const size = bounds.getSize(new THREE.Vector3());
+console.log(road.file, "dimensions:", size);
+
+loaded++;
+info.innerHTML =
+"<strong>Midnight Streets — Road Test</strong><br>" +
+loaded + " of 4 road models loaded · " + failed + " failed<br>" +
+"Drag to rotate · Scroll to zoom";
+},
+undefined,
+(error) => {
+failed++;
+console.error("Could not load:", road.file, error);
+info.innerHTML =
+"<strong>Road loading error</strong><br>" +
+loaded + " loaded · " + failed + " failed<br>" +
+"Check the browser console for details.";
+}
+);
+});
+
+function animate() {
+requestAnimationFrame(animate);
+controls.update();
+renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener("resize", () => {
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
