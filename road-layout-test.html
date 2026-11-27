@@ -101,7 +101,7 @@ crossroads: "MS_RD_04_Crossroads.glb"
 };
 
 let loaded = 0;
-const total = 9;
+const total = 16;
 
 function addRoad(key, x, z, rotation = 0) {
 return new Promise((resolve, reject) => {
@@ -141,27 +141,35 @@ resolve(model);
 
 async function buildLayout() {
 try {
-// Central crossroads
+// CENTRAL CROSSROADS
 await addRoad("crossroads", 0, 0);
 
-// Main road approaching from both directions
+// MAIN STREET
 await addRoad("straight", 8, 0);
 await addRoad("straight", -8, 0);
-
-// Roads running north and south
 await addRoad("straight", 0, 8, Math.PI / 2);
 await addRoad("straight", 0, -8, Math.PI / 2);
 
-// Two T-junctions branching off the main street
+// MAIN STREET T-JUNCTIONS
 await addRoad("junction", 16, 0);
 await addRoad("junction", -16, 0, Math.PI);
 
-// Continue the main street beyond both junctions
+// MAIN STREET EXTENSIONS
 await addRoad("straight", 24, 0);
 await addRoad("straight", -24, 0);
 
+// FIRST RESIDENTIAL LOOP
+// These pieces form a separate test area beside the main street.
+await addRoad("junction", 16, 12, Math.PI / 2);
+await addRoad("straight", 16, 20, Math.PI / 2);
+await addRoad("corner", 24, 28, Math.PI);
+await addRoad("straight", 32, 28);
+await addRoad("corner", 40, 20, Math.PI / 2);
+await addRoad("straight", 40, 12, Math.PI / 2);
+await addRoad("corner", 32, 4, 0);
+
 document.getElementById("status").textContent =
-"Main street and two T-junctions loaded.";
+"First residential loop test loaded.";
 
 } catch (error) {
 console.error(error);
