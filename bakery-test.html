@@ -78,6 +78,87 @@ floor.rotation.x = -Math.PI / 2;
 floor.position.y = -0.02;
 floor.receiveShadow = true;
 scene.add(floor);
+// ===== TINA'S BAKERY BUILDING =====
+
+const bakeryBuilding = new THREE.Group();
+scene.add(bakeryBuilding);
+
+// Building dimensions
+const bakeryWidth = 20;
+const bakeryDepth = 16;
+
+// Materials
+const whiteWall = new THREE.MeshStandardMaterial({
+color: 0xf4f3ef,
+roughness: 0.85
+});
+
+const floorMaterial = new THREE.MeshStandardMaterial({
+color: 0xc5a783,
+roughness: 0.8
+});
+
+// Bakery floor
+const bakeryFloor = new THREE.Mesh(
+new THREE.BoxGeometry(bakeryWidth, 0.25, bakeryDepth),
+floorMaterial
+);
+
+bakeryFloor.position.y = 0;
+bakeryBuilding.add(bakeryFloor);
+
+// Foundation
+const foundation = new THREE.Mesh(
+new THREE.BoxGeometry(bakeryWidth + 0.4, 0.35, bakeryDepth + 0.4),
+new THREE.MeshStandardMaterial({ color: 0x777777 })
+);
+
+foundation.position.y = -0.3;
+bakeryBuilding.add(foundation);
+
+// Main exterior walls
+function bakeryWall(width, height, depth, x, y, z) {
+const wall = new THREE.Mesh(
+new THREE.BoxGeometry(width, height, depth),
+whiteWall
+);
+
+wall.position.set(x, y, z);
+wall.castShadow = true;
+wall.receiveShadow = true;
+bakeryBuilding.add(wall);
+return wall;
+}
+
+const wallHeight = 4.2;
+const wallThickness = 0.25;
+
+// Back wall
+bakeryWall(
+bakeryWidth, wallHeight, wallThickness,
+0, wallHeight / 2, -bakeryDepth / 2
+);
+
+// Left wall
+bakeryWall(
+wallThickness, wallHeight, bakeryDepth,
+-bakeryWidth / 2, wallHeight / 2, 0
+);
+
+// Right wall
+bakeryWall(
+wallThickness, wallHeight, bakeryDepth,
+bakeryWidth / 2, wallHeight / 2, 0
+);
+
+// Flat roof
+const bakeryRoof = new THREE.Mesh(
+new THREE.BoxGeometry(bakeryWidth + 0.5, 0.3, bakeryDepth + 0.5),
+new THREE.MeshStandardMaterial({ color: 0xeeeeeb })
+);
+
+bakeryRoof.position.y = wallHeight + 0.15;
+bakeryBuilding.add(bakeryRoof);
 
 const loader = new GLTFLoader();
 
