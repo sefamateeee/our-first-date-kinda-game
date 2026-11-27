@@ -56,8 +56,12 @@ const info=document.getElementById("info");
 const repo="https://api.github.com/repos/sefamateeee/our-first-date-kinda-game/contents/";
 const roadFolder="city-assets/roads";
 
-function findFile(files,part){
-return files.find(f=>f.toLowerCase().includes(part.toLowerCase()) && f.toLowerCase().endsWith(".glb"));
+function findFile(files, part) {
+return files.find(file =>
+typeof file.name === "string" &&
+file.name.toLowerCase().includes(part.toLowerCase()) &&
+file.name.toLowerCase().endsWith(".glb")
+);
 }
 
 function loadModel(file,x,z,scale=1){
