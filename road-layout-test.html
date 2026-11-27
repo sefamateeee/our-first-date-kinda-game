@@ -2,49 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Midnight Streets - Town Layout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Midnight Streets Road Editor</title>
 
 <style>
-body {
-margin: 0;
-overflow: hidden;
-background: #20252a;
-font-family: Arial, sans-serif;
+body { margin:0; overflow:hidden; font-family:Arial; background:#20252a; }
+#panel {
+position:absolute; top:12px; left:12px; z-index:5;
+background:rgba(0,0,0,.88); color:white;
+padding:15px; border-radius:10px; width:230px;
 }
-#info {
-position: absolute;
-top: 12px;
-left: 12px;
-z-index: 2;
-color: white;
-background: rgba(0,0,0,.8);
-padding: 14px;
-border-radius: 8px;
-max-width: 260px;
-line-height: 1.5;
+button, select {
+width:100%; padding:10px; margin-top:7px;
+border:0; border-radius:5px; cursor:pointer;
 }
-#info strong {
-color: #9fe0ff;
+button { background:#8ecae6; color:#14212a; font-weight:bold; }
+#status { font-size:13px; margin-top:10px; color:#b8e7ff; }
+#saved {
+width:100%; height:100px; margin-top:8px;
+font-size:10px; box-sizing:border-box;
 }
 </style>
 
 <script type="importmap">
 {
 "imports": {
-"three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+"three":"https://unpkg.com/three@0.170.0/build/three.module.js"
 }
 }
 </script>
 </head>
 
 <body>
-<div id="info">
-<strong>MIDNIGHT STREETS</strong><br>
-Connected road layout test<br>
-<span id="status">Loading road models...</span><br><br>
-Drag to rotate the camera.<br>
-Scroll to zoom.
+<div id="panel">
+<strong>MIDNIGHT STREETS ROAD EDITOR</strong>
+<div id="status">Loading roads...</div>
+
+<label for="selection">Select a road:</label>
+<select id="selection">
+<option value="">Loading...</option>
+</select>
+
+<button id="move">MOVE ROADS</button>
+<button id="rotate">ROTATE ROADS</button>
+<button id="save">SAVE LAYOUT</button>
+<textarea id="saved" placeholder="Saved road positions appear here"></textarea>
 </div>
 
 <script type="module">
@@ -53,40 +55,48 @@ import { GLTFLoader } from
 "https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from
 "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+import { TransformControls } from
+"https://unpkg.com/three@0.170.0/examples/jsm/controls/TransformControls.js";
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87969c);
 
 const camera = new THREE.PerspectiveCamera(
-55, window.innerWidth / window.innerHeight, 0.1, 1000
+55, innerWidth / innerHeight, 0.1, 1000
 );
-camera.position.set(24, 24, 30);
+camera.position.set(28, 30, 34);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0, 0);
-controls.enableDamping = true;
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.target.set(0,0,0);
+orbit.enableDamping = true;
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x59636a, 2));
+const transform = new TransformControls(camera, renderer.domElement);
+scene.add(transform.getHelper());
 
-const sunlight = new THREE.DirectionalLight(0xffffff, 2);
-sunlight.position.set(20, 35, 15);
-scene.add(sunlight);
+transform.addEventListener("dragging-changed", event => {
+orbit.enabled = !event.value;
+});
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x59636a,2));
+
+const sun = new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(20,35,15);
+scene.add(sun);
 
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(160, 160),
-new THREE.MeshStandardMaterial({ color: 0x64745c })
+new THREE.PlaneGeometry(160,160),
+new THREE.MeshStandardMaterial({color:0x64745c})
 );
-ground.rotation.x = -Math.PI / 2;
+ground.rotation.x = -Math.PI/2;
 ground.position.y = -0.12;
 scene.add(ground);
 
-const grid = new THREE.GridHelper(100, 50, 0x53604e, 0x71806b);
+const grid = new THREE.GridHelper(100,50,0x53604e,0x71806b);
 grid.position.y = -0.1;
 scene.add(grid);
 
@@ -94,93 +104,154 @@ const loader = new GLTFLoader();
 const folder = "city-assets/roads/";
 
 const files = {
-straight: "MS_RD_01_StraightRoad.glb",
-corner: "MS_RD_02_RoadCorner90.glb",
-junction: "MS_RD_03_TJunction.glb",
-crossroads: "MS_RD_04_Crossroads.glb"
+straight:"MS_RD_01_StraightRoad.glb",
+corner:"MS_RD_02_RoadCorner90.glb",
+junction:"MS_RD_03_TJunction.glb",
+crossroads:"MS_RD_04_Crossroads.glb"
 };
 
-let loaded = 0;
-const total = 16;
+const roads = [];
+let selected = null;
+let roadNumber = 0;
 
-function addRoad(key, x, z, rotation = 0) {
-return new Promise((resolve, reject) => {
-loader.load(folder + files[key], (gltf) => {
+function addRoad(type,x,z,rotation=0) {
+return new Promise((resolve,reject)=>{
+loader.load(folder+files[type],gltf=>{
 const model = gltf.scene;
 
-model.rotation.y = rotation;
-
-// Centre the model using its actual bounding box.
-let bounds = new THREE.Box3().setFromObject(model);
+const bounds = new THREE.Box3().setFromObject(model);
 const center = bounds.getCenter(new THREE.Vector3());
+
 model.position.x -= center.x;
 model.position.z -= center.z;
 
-bounds = new THREE.Box3().setFromObject(model);
-model.position.y -= bounds.min.y;
+const adjusted = new THREE.Box3().setFromObject(model);
+model.position.y -= adjusted.min.y;
 
 model.position.x += x;
 model.position.z += z;
+model.rotation.y = rotation;
 
-model.traverse((child) => {
-if (child.isMesh) {
+model.userData.roadId = ++roadNumber;
+model.userData.roadType = type;
+
+model.traverse(child=>{
+if(child.isMesh) {
 child.castShadow = true;
 child.receiveShadow = true;
 }
 });
 
 scene.add(model);
-  const helper = new THREE.BoxHelper(model, 0xffff00);
-scene.add(helper);
+roads.push(model);
 
-const axes = new THREE.AxesHelper(3);
-axes.position.copy(model.position);
-scene.add(axes)
-loaded++;
+const option = document.createElement("option");
+option.value = roadNumber-1;
+option.textContent = roadNumber + " - " + type;
+document.getElementById("selection").appendChild(option);
+
 document.getElementById("status").textContent =
-loaded + " of " + total + " road models loaded";
+roads.length + " roads loaded. Click a road to select it.";
 
 resolve(model);
-}, undefined, reject);
+},undefined,reject);
 });
 }
 
+function selectRoad(model) {
+selected = model;
+transform.attach(model);
+
+document.getElementById("selection").value =
+roads.indexOf(model);
+
+document.getElementById("status").textContent =
+"Selected road " + model.userData.roadId +
+" (" + model.userData.roadType + ")";
+}
+
+document.getElementById("selection").addEventListener("change",e=>{
+const model = roads[Number(e.target.value)];
+if(model) selectRoad(model);
+});
+
+document.getElementById("move").onclick=()=>{
+transform.setMode("translate");
+};
+
+document.getElementById("rotate").onclick=()=>{
+transform.setMode("rotate");
+};
+
+document.getElementById("save").onclick=()=>{
+const layout = roads.map(model=>({
+id:model.userData.roadId,
+type:model.userData.roadType,
+position:{
+x:Number(model.position.x.toFixed(3)),
+y:Number(model.position.y.toFixed(3)),
+z:Number(model.position.z.toFixed(3))
+},
+rotationY:Number(model.rotation.y.toFixed(3))
+}));
+
+document.getElementById("saved").value =
+JSON.stringify(layout,null,2);
+
+document.getElementById("status").textContent =
+"Layout saved below. Copy the positions when ready.";
+};
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
+renderer.domElement.addEventListener("pointerdown",event=>{
+if(transform.dragging) return;
+
+pointer.x = (event.clientX/innerWidth)*2-1;
+pointer.y = -(event.clientY/innerHeight)*2+1;
+
+raycaster.setFromCamera(pointer,camera);
+const hits = raycaster.intersectObjects(roads,true);
+
+if(hits.length) {
+let object = hits[0].object;
+while(object.parent && object.parent !== scene) {
+object = object.parent;
+}
+if(roads.includes(object)) selectRoad(object);
+}
+});
+
 async function buildLayout() {
 try {
-// CENTRAL CROSSROADS
-await addRoad("crossroads", 0, 0);
+await addRoad("crossroads",0,0);
 
-// MAIN STREET
-await addRoad("straight", 8, 0);
-await addRoad("straight", -8, 0);
-await addRoad("straight", 0, 8, Math.PI / 2);
-await addRoad("straight", 0, -8, Math.PI / 2);
+await addRoad("straight",8,0);
+await addRoad("straight",-8,0);
+await addRoad("straight",0,8,Math.PI/2);
+await addRoad("straight",0,-8,Math.PI/2);
 
-// MAIN STREET T-JUNCTIONS
-await addRoad("junction", 16, 0);
-await addRoad("junction", -16, 0, Math.PI);
+await addRoad("junction",16,0);
+await addRoad("junction",-16,0,Math.PI);
 
-// MAIN STREET EXTENSIONS
-await addRoad("straight", 24, 0);
-await addRoad("straight", -24, 0);
+await addRoad("straight",24,0);
+await addRoad("straight",-24,0);
 
-// FIRST RESIDENTIAL LOOP
-// These pieces form a separate test area beside the main street.
-await addRoad("junction", 16, 12, Math.PI / 2);
-await addRoad("straight", 16, 20, Math.PI / 2);
-await addRoad("corner", 24, 28, Math.PI);
-await addRoad("straight", 32, 28);
-await addRoad("corner", 40, 20, Math.PI / 2);
-await addRoad("straight", 40, 12, Math.PI / 2);
-await addRoad("corner", 32, 4, 0);
+await addRoad("junction",16,12,Math.PI/2);
+await addRoad("straight",16,20,Math.PI/2);
+await addRoad("corner",24,28,Math.PI);
+await addRoad("straight",32,28);
+await addRoad("corner",40,20,Math.PI/2);
+await addRoad("straight",40,12,Math.PI/2);
+await addRoad("corner",32,4,0);
 
 document.getElementById("status").textContent =
-"First residential loop test loaded.";
-
-} catch (error) {
+"All 16 roads loaded. Select and move them!";
+} catch(error) {
 console.error(error);
 document.getElementById("status").textContent =
-"Loading failed: " + error.message;
+"Loading error: "+error.message;
 }
 }
 
@@ -188,15 +259,15 @@ buildLayout();
 
 function animate() {
 requestAnimationFrame(animate);
-controls.update();
-renderer.render(scene, camera);
+orbit.update();
+renderer.render(scene,camera);
 }
 animate();
 
-window.addEventListener("resize", () => {
-camera.aspect = window.innerWidth / window.innerHeight;
+window.addEventListener("resize",()=>{
+camera.aspect=innerWidth/innerHeight;
 camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(innerWidth,innerHeight);
 });
 </script>
 </body>
