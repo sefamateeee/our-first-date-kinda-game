@@ -2,285 +2,147 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Midnight Streets - Full Neighbourhood</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Midnight Streets Asset Check</title>
 <style>
-body { margin:0; overflow:hidden; background:#20242b; font-family:Arial,sans-serif; }
-#info {
-position:absolute;top:12px;left:12px;z-index:5;
-color:white;background:#171a20eF;padding:14px 18px;
-border-radius:9px;line-height:1.6;max-width:340px;
-}
+body{margin:0;overflow:hidden;background:#89949c;font-family:Arial}
+#info{position:absolute;top:12px;left:12px;z-index:5;
+background:#171a20;color:white;padding:14px;border-radius:9px;
+max-width:360px;max-height:80vh;overflow:auto;line-height:1.5}
 </style>
 </head>
 <body>
-<div id="info">
-<strong>OUR MIDNIGHT STREETS NEIGHBOURHOOD</strong><br>
-Preparing roads and buildings...
-</div>
+<div id="info">Finding your Midnight Streets assets...</div>
 
 <script type="importmap">
-{
-"imports":{
-"three":"https://unpkg.com/three@0.170.0/build/three.module.js"
-}
-}
+{"imports":{"three":"https://unpkg.com/three@0.170.0/build/three.module.js"}}
 </script>
 
 <script type="module">
 import * as THREE from "three";
-import { GLTFLoader } from "https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+import {GLTFLoader} from "https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
+import {OrbitControls} from "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x89949c);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x89949c);
 
-const camera = new THREE.PerspectiveCamera(
-55, window.innerWidth/window.innerHeight, 0.1, 2000
-);
-camera.position.set(65,75,85);
+const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,2000);
+camera.position.set(35,35,45);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 document.body.appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera,renderer.domElement);
-controls.enableDamping = true;
-controls.target.set(0,0,0);
-controls.maxPolarAngle = Math.PI/2.05;
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x626b70,2.1));
-
-const sun = new THREE.DirectionalLight(0xffffff,2.2);
-sun.position.set(50,90,40);
-sun.castShadow = true;
+scene.add(new THREE.HemisphereLight(0xffffff,0x60666b,2));
+const sun=new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(30,50,20);
 scene.add(sun);
 
-const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(300,300),
+const ground=new THREE.Mesh(
+new THREE.PlaneGeometry(180,180),
 new THREE.MeshStandardMaterial({color:0x747d76})
 );
-ground.rotation.x = -Math.PI/2;
-ground.position.y = -0.12;
-ground.receiveShadow = true;
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.1;
 scene.add(ground);
 
-const grid = new THREE.GridHelper(300,60,0x505b58,0x68716c);
-grid.position.y = -0.1;
-scene.add(grid);
+const loader=new GLTFLoader();
+const info=document.getElementById("info");
 
-const loader = new GLTFLoader();
-const info = document.getElementById("info");
+const repo="https://api.github.com/repos/sefamateeee/our-first-date-kinda-game/contents/";
+const roadFolder="city-assets/roads";
 
-const roadFiles = [
-"MS_RD_01_StraightRoad.glb",
-"MS_RD_02_RoadCorner90.glb",
-"MS_RD_03_TJunction.glb",
-"MS_RD_04_Crossroads.glb"
-];
-
-const buildingFiles = [
-"MS_HV_01_PorchBungalow.glb",
-"MS_HV_02_WideBalconyHouse.glb",
-"MS_HV_03_UrbanTownhouse.glb",
-"MS_HV_04_CornerEntryHouse.glb",
-"MS_HV_05_GatedCarportHouse.glb",
-"MS_HV_06_OlderDuplexRental.glb",
-"MS_PF_01_TwoStoreyHouse.glb",
-"MS_PF_02_NarrowTownhouse.glb",
-"MS_PF_03_ThreeStoreyApartment.glb",
-"MS_PF_04_ApartmentBlock.glb",
-"MS_PF_05_CornerShop.glb",
-"MS_PF_06_ClosedStorefront.glb",
-"MS_RR_A01_TinySingleRoom.glb",
-"MS_RR_A02_BudgetHouse.glb",
-"MS_RR_B02_StandardFamilyBungalow.glb",
-"MS_RR_D01_StudioUnit.glb",
-"MS_RR_D04_BoardingHouse.glb"
-];
-
-let roadsLoaded = 0;
-let buildingsLoaded = 0;
-let failed = 0;
-const roadModels = {};
-
-function label(text, width=11) {
-const canvas = document.createElement("canvas");
-canvas.width=512;
-canvas.height=96;
-const ctx=canvas.getContext("2d");
-ctx.fillStyle="#171b20";
-ctx.fillRect(0,0,512,96);
-ctx.fillStyle="white";
-ctx.font="bold 25px Arial";
-ctx.textAlign="center";
-ctx.fillText(text,256,59);
-const texture=new THREE.CanvasTexture(canvas);
-const sprite=new THREE.Sprite(
-new THREE.SpriteMaterial({map:texture,depthTest:false})
-);
-sprite.scale.set(width,2,1);
-return sprite;
+function findFile(files,part){
+return files.find(f=>f.toLowerCase().includes(part.toLowerCase()) && f.toLowerCase().endsWith(".glb"));
 }
 
-function updateStatus() {
-info.innerHTML =
-"<strong>OUR MIDNIGHT STREETS NEIGHBOURHOOD</strong><br>" +
-"Road models: "+roadsLoaded+"/4<br>" +
-"Buildings: "+buildingsLoaded+"/17<br>" +
-"Failed loads: "+failed+"<br>" +
-"Drag to rotate · Scroll to zoom";
-}
-
-function addRoad(model,x,z,rotation=0) {
-const copy=model.clone(true);
-copy.position.set(x,0,z);
-copy.rotation.y=rotation;
-scene.add(copy);
-}
-
-// First-pass road arrangement.
-// Main shopping street through the middle.
-const roadPlan = [
-// Main street
-["straight",-18,0,0],
-["cross",0,0,0],
-["straight",8,0,0],
-["straight",14,0,0],
-["tee",22,0,0],
-["straight",30,0,0],
-
-// Upper residential street
-["corner",-18,-18,0],
-["straight",-9,-18,0],
-["straight",0,-18,0],
-["straight",9,-18,0],
-["corner",18,-18,Math.PI/2],
-
-// Lower residential street
-["corner",-18,18,-Math.PI/2],
-["straight",-9,18,0],
-["straight",0,18,0],
-["straight",9,18,0],
-["corner",18,18,Math.PI],
-
-// Side connections
-["tee",-18,-9,Math.PI/2],
-["tee",18,-9,-Math.PI/2],
-["tee",-18,9,-Math.PI/2],
-["tee",18,9,Math.PI/2],
-
-// Extra intersections and road sections
-["cross",0,-36,0],
-["straight",0,-28,Math.PI/2],
-["straight",0,28,Math.PI/2],
-["cross",0,36,0]
-];
-
-const roadKeys = {
-"straight":"MS_RD_01_StraightRoad.glb",
-"corner":"MS_RD_02_RoadCorner90.glb",
-"tee":"MS_RD_03_TJunction.glb",
-"cross":"MS_RD_04_Crossroads.glb"
-};
-
-function loadRoads() {
-roadFiles.forEach(file=>{
-loader.load(
-"city-assets/roads/"+file,
-gltf=>{
+function loadModel(file,x,z,scale=1){
+return new Promise(resolve=>{
+loader.load(file,(gltf)=>{
 const model=gltf.scene;
-model.traverse(o=>{
-if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}
-});
-const bounds=new THREE.Box3().setFromObject(model);
-const center=bounds.getCenter(new THREE.Vector3());
+model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+const box=new THREE.Box3().setFromObject(model);
+const center=box.getCenter(new THREE.Vector3());
 model.position.x-=center.x;
 model.position.z-=center.z;
-model.position.y-=bounds.min.y;
-
-const key=Object.keys(roadKeys).find(k=>roadKeys[k]===file);
-roadModels[key]=model;
-
-roadPlan.forEach(item=>{
-if(item[0]===key) addRoad(model,item[1],item[2],item[3]);
+model.position.y-=box.min.y;
+model.scale.setScalar(scale);
+model.position.x+=x;
+model.position.z+=z;
+scene.add(model);
+const size=box.getSize(new THREE.Vector3());
+resolve({ok:true,size});
+},undefined,err=>{
+console.error(file,err);
+resolve({ok:false});
 });
-
-roadsLoaded++;
-updateStatus();
-},
-undefined,
-err=>{
-failed++;
-console.error("Road failed:",file,err);
-updateStatus();
-}
-);
 });
 }
 
-function loadBuildings() {
-buildingFiles.forEach((file,index)=>{
-loader.load(
-file,
-gltf=>{
-const model=gltf.scene;
-model.traverse(o=>{
-if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}
-});
+async function start(){
+try{
+const [roadResponse,rootResponse]=await Promise.all([
+fetch(repo+roadFolder),
+fetch(repo)
+]);
 
-const bounds=new THREE.Box3().setFromObject(model);
-const size=bounds.getSize(new THREE.Vector3());
-const maxDimension=Math.max(size.x,size.y,size.z);
-if(maxDimension>0) model.scale.setScalar(9/maxDimension);
+if(!roadResponse.ok || !rootResponse.ok)
+throw new Error("GitHub could not list the asset folders.");
 
-const scaled=new THREE.Box3().setFromObject(model);
-const center=scaled.getCenter(new THREE.Vector3());
-model.position.x-=center.x;
-model.position.z-=center.z;
-model.position.y-=scaled.min.y;
+const roadItems=await roadResponse.json();
+const rootItems=await rootResponse.json();
 
-const group=new THREE.Group();
-const positions = [
-[-29,-12],[-29,-24],[-29,0],[-29,12],[-29,24],
-[29,-12],[29,-24],[29,0],[29,12],[29,24],
-[-8,-8],[8,-8],[-8,8],[8,8],
-[-42,-10],[-42,10],[42,10]
+const roads=roadItems.filter(f=>f.name.toLowerCase().endsWith(".glb"));
+const buildings=rootItems.filter(f=>f.name.toLowerCase().endsWith(".glb"));
+
+const important=[
+["Straight road","MS_RD_01_StraightRoad"],
+["Road corner","MS_RD_02_RoadCorner90"],
+["T-junction","MS_RD_03"],
+["Crossroads","MS_RD_04"]
 ];
 
-const pos=positions[index];
-group.position.set(pos[0],0,pos[1]);
-group.add(model);
+let html="<strong>MIDNIGHT STREETS ASSET CHECK</strong><br>";
+html+="Road files found: "+roads.length+"<br>";
+html+="Building files found: "+buildings.length+"<br><br>";
+html+="<strong>Road models:</strong><br>";
 
-const title=file
-.replace("MS_HV_","")
-.replace("MS_PF_","")
-.replace("MS_RR_","")
-.replace(".glb","");
+const positions=[[-12,0],[0,0],[12,0],[24,0]];
+let count=0;
 
-const tag=label(title,13);
-tag.position.set(0,11,0);
-group.add(tag);
-
-scene.add(group);
-buildingsLoaded++;
-updateStatus();
-},
-undefined,
-err=>{
-failed++;
-console.error("Building failed:",file,err);
-updateStatus();
+for(let i=0;i<important.length;i++){
+const [title,search]=important[i];
+const file=findFile(roads,search);
+if(!file){
+html+="❌ "+title+" not found<br>";
+continue;
 }
-);
-});
+const result=await loadModel(file.download_url,positions[i][0],positions[i][1]);
+html+=(result.ok?"✅ ":"❌ ")+title+" — "+file.name+"<br>";
+if(result.ok){
+html+="<small>Size: "+result.size.x.toFixed(2)+" × "+
+result.size.y.toFixed(2)+" × "+result.size.z.toFixed(2)+"</small><br>";
+}
+count++;
 }
 
-loadRoads();
-loadBuildings();
+html+="<br><strong>Building filenames:</strong><br>";
+buildings.forEach(f=>html+="• "+f.name+"<br>");
+html+="<br><strong>Road filenames:</strong><br>";
+roads.forEach(f=>html+="• "+f.name+"<br>");
+info.innerHTML=html;
+}catch(error){
+info.innerHTML="<strong>Asset listing failed</strong><br>"+
+error.message+"<br>Check that the GitHub repository is public and the folder path is correct.";
+console.error(error);
+}
+}
+
+start();
 
 function animate(){
 requestAnimationFrame(animate);
@@ -290,9 +152,9 @@ renderer.render(scene,camera);
 animate();
 
 window.addEventListener("resize",()=>{
-camera.aspect=window.innerWidth/window.innerHeight;
+camera.aspect=innerWidth/innerHeight;
 camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setSize(innerWidth,innerHeight);
 });
 </script>
 </body>
