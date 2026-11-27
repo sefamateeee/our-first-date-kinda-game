@@ -130,6 +130,12 @@ child.receiveShadow = true;
 });
 
 scene.add(model);
+  const helper = new THREE.BoxHelper(model, 0xffff00);
+scene.add(helper);
+
+const axes = new THREE.AxesHelper(3);
+axes.position.copy(model.position);
+scene.add(axes)
 loaded++;
 document.getElementById("status").textContent =
 loaded + " of " + total + " road models loaded";
