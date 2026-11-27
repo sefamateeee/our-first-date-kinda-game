@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Our Adventure - Platformer</title>
+
+<script type="importmap">
+{
+"imports": {
+"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+}
+}
+</script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;font-family:Arial;background:#83c9ed}
+canvas{display:block}
+#hud{
+position:fixed;top:15px;left:15px;
+padding:14px 18px;background:#172b42dd;
+color:white;border-radius:12px;line-height:1.7;
+font-size:14px;z-index:3
+}
+#help{
+position:fixed;bottom:15px;left:15px;
+padding:12px 15px;background:#172b42dd;
+color:white;border-radius:12px;line-height:1.7;
+font-size:12px;z-index:3
+}
+#notice{
+position:fixed;top:16px;left:50%;
+transform:translateX(-50%);
+padding:12px 20px;border-radius:12px;
+background:#172b42dd;color:white;
+font-weight:bold;text-align:center;z-index:3
+}
+</style>
+</head>
+<body>
+
+<div id="hud">
+<b>OUR ADVENTURE</b><br>
+Coins: <span id="coins">0</span><br>
+Movement: <span id="action">Standing</span><br>
+Speed: <span id="speed">0</span>
+</div>
+
+<div id="notice">Explore the island and collect the golden coins!</div>
+
+<div id="help">
+WASD / ARROWS – Move<br>
+SPACE – Jump<br>
+SPACE again – Double jump<br>
+Build speed and jump repeatedly – Triple jump<br>
+SHIFT + direction + SPACE – Long jump<br>
+Jump against a wall – Wall kick<br>
+Mouse – Look around<br>
+R – Restart
+</div>
+
+<script type="module">
+
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+
+// ===================================
+// SCENE
+// ===================================
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x83c9ed);
+scene.fog = new THREE.Fog(0x83c9ed,65,180);
+
+const camera = new THREE.PerspectiveCamera(
+65,window.innerWidth/window.innerHeight,0.1,300
+);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.7));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// ===================================
+// LIGHTING
+// ===================================
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x62834e,2));
+
+const sun=new THREE.DirectionalLight(0xffffff,2.4);
+sun.position.set(-35,60,25);
+sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-100;
+sun.shadow.camera.right=100;
+sun.shadow.camera.top=100;
+sun.shadow.camera.bottom=-100;
+scene.add(sun);
+
+// ===================================
+// MATERIALS
+// ===================================
+
+const mat=(color,roughness=0.85)=>new THREE.MeshStandardMaterial({
+color,roughness
+});
+
+const grass=mat(0x55a94d);
+const darkGrass=mat(0x367c3c);
+const dirt=mat(0x94633e);
+const stone=mat(0x929eaa);
+const gold=mat(0xffce28,0.3);
+const white=mat(0xffffff);
+const wood=mat(0x80502d);
+const water= new THREE.MeshStandardMaterial({
+color:0x35b7df,
+roughness:0.25,
+metalness:0.1,
+transparent:true,
+opacity:0.85
+});
+
+// ===================================
+// WORLD AND COLLISION DATA
+// ===================================
+
+const platforms=[];
+const coins=[];
+const decorations=[];
+const obstacles=[];
+
+function addPlatform(x,y,z,w,h,d,material=grass) {
+
+const mesh=new THREE.Mesh(
+new THREE.BoxGeometry(w,h,d),material
+);
+
+mesh.position.set(x,y-h/2,z);
+mesh.receiveShadow=true;
+mesh.castShadow=true;
+scene.add(mesh);
+
+platforms.push({
+x,z,w,d,
+top:y,
+bottom:y-h,
+mesh
+});
+
+return mesh;
+}
+
+// Main island
+addPlatform(0,0,0,100,5,100,grass);
+
+// Starting field
+addPlatform(0,0.4,12,20,0.8,20,grass);
+
+// Main jumping route
+addPlatform(0,2,-3,8,1,8);
+addPlatform(-7,4,-13,7,1,7);
+addPlatform(1,6,-23,7,1,7);
+addPlatform(10,8,-33,7,1,7);
+addPlatform(3,10,-44,8,1,8);
+addPlatform(-7,12,-55,7,1,7);
+addPlatform(-15,14,-66,8,1,8);
+addPlatform(-5,16,-78,12,1,12);
+
+// Side route
+addPlatform(18,2,-10,8,1,8);
+addPlatform(27,4,-17,8,1,8);
+addPlatform(35,6,-27,8,1,8);
+addPlatform(35,8,-39,10,1,10);
+
+// Higher route
+addPlatform(-27,5,-65,9,1,9);
+addPlatform(-34,8,-77,8,1,8);
+addPlatform(-29,11,-89,12,1,12);
+
+// ===================================
+// CASTLE
+// ===================================
+
+function castleTower(x,z,height=15) {
+
+const tower=new THREE.Mesh(
+new THREE.CylinderGeometry(3,3.5,height,8),
+stone
+);
+tower.position.set(x,height/2,z);
+tower.castShadow=true;
+scene.add(tower);
+
+const roof=new THREE.Mesh(
+new THREE.ConeGeometry(4,5,8),
+mat(0x9c3940)
+);
+roof.position.set(x,height+2.5,z);
+roof.castShadow=true;
+scene.add(roof);
+}
+
+addPlatform(0,1,-100,30,2,25,stone);
+castleTower(-10,-105,16);
+castleTower(10,-105,16);
+castleTower(0,-94,21);
+
+const castleDoor=new THREE.Mesh(
+new THREE.BoxGeometry(5,8,0.8),
+wood
+);
+castleDoor.position.set(0,5,-87.7);
+scene.add(castleDoor);
+
+// ===================================
+// HILLS AND DECORATION
+// ===================================
+
+function hill(x,y,z,sx,sy,sz,color) {
+
+const mesh=new THREE.Mesh(
+new THREE.SphereGeometry(1,18,14),
+mat(color)
+);
+
+mesh.position.set(x,y,z);
+mesh.scale.set(sx,sy,sz);
+mesh.castShadow=true;
+mesh.receiveShadow=true;
+scene.add(mesh);
+}
+
+hill(-30,3,20,18,8,15,0x4b9a48);
+hill(35,3,25,20,10,18,0x458d43);
+hill(43,7,-65,13,13,16,0x579e4b);
+hill(-45,6,-35,14,12,15,0x478c43);
+
+function tree(x,z,size=1) {
+
+const trunk=new THREE.Mesh(
+new THREE.CylinderGeometry(.35*size,.5*size,3*size,8),
+wood
+);
+
+trunk.position.set(x,1.5*size,z);
+trunk.castShadow=true;
+scene.add(trunk);
+
+const leaves=new THREE.Mesh(
+new THREE.SphereGeometry(2*size,12,10),
+mat(0x318b42)
+);
+
+leaves.position.set(x,4*size,z);
+leaves.castShadow=true;
+scene.add(leaves);
+}
+
+for(let i=0;i<24;i++) {
+const x=Math.sin(i*8.2)*42;
+const z=Math.cos(i*5.7)*40;
+if(Math.abs(x)<13 && Math.abs(z)<18) continue;
+tree(x,z,0.8+(i%4)*0.15);
+}
+
+// ===================================
+// WATERFALL AND WATER
+// ===================================
+
+const lake=new THREE.Mesh(
+new THREE.CircleGeometry(13,40),
+water
+);
+lake.rotation.x=-Math.PI/2;
+lake.position.set(40,0.05,5);
+scene.add(lake);
+
+const waterfall=new THREE.Mesh(
+new THREE.PlaneGeometry(9,18),
+water
+);
+waterfall.position.set(40,9,-12);
+scene.add(waterfall);
+
+// ===================================
+// COINS
+// ===================================
+
+function addCoin(x,y,z) {
+
+const mesh=new THREE.Mesh(
+new THREE.TorusGeometry(.55,.16,10,24),
+gold
+);
+
+mesh.position.set(x,y,z);
+mesh.castShadow=true;
+scene.add(mesh);
+
+coins.push({mesh,collected:false});
+}
+
+[
+[0,4,-3],
+[-7,6,-13],
+[1,8,-23],
+[10,10,-33],
+[3,12,-44],
+[-7,14,-55],
+[-15,16,-66],
+[-5,18,-78],
+[18,4,-10],
+[27,6,-17],
+[35,8,-27],
+[-34,10,-77],
+[0,5,-100]
+].forEach(p=>addCoin(...p));
+
+// ===================================
+// PLAYER
+// ===================================
+
+const player=new THREE.Group();
+scene.add(player);
+
+function makeFallback() {
+
+const body=new THREE.Mesh(
+new THREE.CapsuleGeometry(.32,.75,5,12),
+mat(0x2876df)
+);
+body.position.y=.75;
+body.castShadow=true;
+player.add(body);
+
+const head=new THREE.Mesh(
+new THREE.SphereGeometry(.28,16,16),
+mat(0xffc59e)
+);
+head.position.y=1.48;
+head.castShadow=true;
+player.add(head);
+}
+
+makeFallback();
+
+// Load our existing character model if available.
+new GLTFLoader().load(
+'./boy.glb.glb',
+gltf=>{
+player.clear();
+const model=gltf.scene;
+model.scale.setScalar(1.2);
+model.traverse(o=>{
+if(o.isMesh){
+o.castShadow=true;
+o.receiveShadow=true;
+}
+});
+player.add(model);
+},
+undefined,
+()=>console.log('Fallback character active')
+);
+
+// ===================================
+// MOVEMENT SETTINGS
+// ===================================
+
+const state={
+x:0,y:0,z:12,
+vx:0,vy:0,vz:0,
+grounded:false,
+jumps:0,
+jumpChain:0,
+lastLand:0,
+wallX:0,
+wallZ:0,
+facing:Math.PI,
+action:'Standing',
+canWallKick:false
+};
+
+const settings={
+walkSpeed:10,
+runSpeed:17,
+groundAcceleration:35,
+airAcceleration:13,
+groundFriction:22,
+airDrag:1.5,
+gravity:28,
+jump:11,
+doubleJump:10,
+tripleJump:14,
+longJump:8,
+longSpeed:17,
+wallKick:12
+};
+
+player.position.set(state.x,state.y,state.z);
+
+// ===================================
+// INPUT
+// ===================================
+
+const keys={};
+
+window.addEventListener('keydown',e=>{
+
+keys[e.code]=true;
+
+if(e.code==='Space'){
+e.preventDefault();
+if(!e.repeat) performJump();
+}
+
+if(e.code==='KeyR') restart();
+
+});
+
+window.addEventListener('keyup',e=>{
+keys[e.code]=false;
+});
+
+// Camera mouse control
+let cameraYaw=0;
+let cameraPitch=0.18;
+let mouseDown=false;
+
+renderer.domElement.addEventListener('mousedown',()=>{
+mouseDown=true;
+});
+
+window.addEventListener('mouseup',()=>{
+mouseDown=false;
+});
+
+window.addEventListener('mousemove',e=>{
+if(!mouseDown)return;
+cameraYaw-=e.movementX*0.004;
+cameraPitch+=e.movementY*0.003;
+cameraPitch=THREE.MathUtils.clamp(cameraPitch,-0.15,0.8);
+});
+
+// ===================================
+// MOVEMENT DIRECTION
+// ===================================
+
+function getInput(){
+
+let forward=0;
+let side=0;
+
+if(keys.KeyW||keys.ArrowUp)forward++;
+if(keys.KeyS||keys.ArrowDown)forward--;
+if(keys.KeyA||keys.ArrowLeft)side--;
+if(keys.KeyD||keys.ArrowRight)side++;
+
+const length=Math.hypot(forward,side);
+
+if(length>0){
+forward/=length;
+side/=length;
+}
+
+const x=side*Math.cos(cameraYaw)-forward*Math.sin(cameraYaw);
+const z=side*Math.sin(cameraYaw)+forward*Math.cos(cameraYaw);
+
+return {x,z,forward,side};
+}
+
+// ===================================
+// JUMP ACTIONS
+// ===================================
+
+function performJump(){
+
+const now=performance.now();
+const input=getInput();
+const speed=Math.hypot(state.vx,state.vz);
+
+if(state.grounded){
+
+if(now-state.lastLand>950)state.jumpChain=0;
+
+state.jumpChain++;
+
+// Long jump
+if((keys.ShiftLeft||keys.ShiftRight)&&speed>2){
+
+const direction=Math.atan2(
+input.x||state.vx,
+input.z||state.vz
+);
+
+state.vx=Math.sin(direction)*settings.longSpeed;
+state.vz=Math.cos(direction)*settings.longSpeed;
+state.vy=settings.longJump;
+
+state.jumpChain=0;
+state.jumps=1;
+state.grounded=false;
+state.action='Long jump';
+return;
+}
+
+// Triple jump requires a moving landing chain
+if(state.jumpChain>=3 && speed>5){
+
+state.vy=settings.tripleJump;
+state.action='Triple jump';
+state.jumpChain=0;
+
+}else{
+
+state.vy=settings.jump;
+state.action='Jumping';
+}
+
+state.jumps=1;
+state.grounded=false;
+return;
+}
+
+// Wall kick
+if(state.canWallKick){
+
+state.vy=settings.wallKick;
+state.vx=state.wallX*10;
+state.vz=state.wallZ*10;
+state.canWallKick=false;
+state.jumps=1;
+state.action='Wall kick';
+return;
+}
+
+// Double jump
+if(state.jumps<2){
+
+state.vy=settings.doubleJump;
+state.jumps=2;
+state.action='Double jump';
+}
+}
+
+// ===================================
+// COLLISION
+// ===================================
+
+const radius=.38;
+const height=1.8;
+
+function overlaps(x,z,p){
+
+return (
+Math.abs(x-p.x)<p.w/2+radius &&
+Math.abs(z-p.z)<p.d/2+radius
+);
+}
+
+function verticalOverlap(p){
+
+return (
+state.y<p.top-.04 &&
+state.y+height>p.bottom+.04
+);
+}
+
+function moveHorizontal(dx,dz){
+
+let nx=state.x+dx;
+let nz=state.z+dz;
+
+state.wallX=0;
+state.wallZ=0;
+
+for(const p of platforms){
+
+if(!verticalOverlap(p))continue;
+
+if(overlaps(nx,state.z,p)){
+nx=state.x;
+state.vx=0;
+state.wallX=dx>0?-1:1;
+}
+
+if(overlaps(nx,nz,p)){
+nz=state.z;
+state.vz=0;
+state.wallZ=dz>0?-1:1;
+}
+}
+
+state.x=nx;
+state.z=nz;
+
+if(state.wallX||state.wallZ){
+state.canWallKick=!state.grounded;
+}
+}
+
+// ===================================
+// FLOOR COLLISION
+// ===================================
+
+function findLanding(oldY,nextY){
+
+let best=null;
+
+if(state.vy>0)return null;
+
+for(const p of platforms){
+
+if(!overlaps(state.x,state.z,p))continue;
+
+if(oldY>=p.top-.12 && nextY<=p.top){
+
+if(!best||p.top>best.top)best=p;
+}
+}
+
+return best;
+}
+
+// ===================================
+// PHYSICS UPDATE
+// ===================================
+
+function approach(value,target,amount){
+
+if(value<target)return Math.min(value+amount,target);
+return Math.max(value-amount,target);
+}
+
+function updatePhysics(dt){
+
+const input=getInput();
+const inputMagnitude=Math.hypot(input.x,input.z);
+const running=keys.ShiftLeft||keys.ShiftRight;
+const maxSpeed=running?settings.runSpeed:settings.walkSpeed;
+
+const targetX=input.x*maxSpeed;
+const targetZ=input.z*maxSpeed;
+
+const acceleration=state.grounded?
+settings.groundAcceleration:
+settings.airAcceleration;
+
+if(inputMagnitude>.01){
+
+state.vx=approach(
+state.vx,targetX,acceleration*dt
+);
+
+state.vz=approach(
+state.vz,targetZ,acceleration*dt
+);
+
+}else if(state.grounded){
+
+state.vx=approach(state.vx,0,settings.groundFriction*dt);
+state.vz=approach(state.vz,0,settings.groundFriction*dt);
+
+}else{
+
+state.vx*=Math.exp(-settings.airDrag*dt);
+state.vz*=Math.exp(-settings.airDrag*dt);
+}
+
+// Gravity
+state.vy-=settings.gravity*dt;
+
+// Horizontal collisions
+moveHorizontal(state.vx*dt,state.vz*dt);
+
+// Vertical movement
+const oldY=state.y;
+const nextY=oldY+state.vy*dt;
+
+const landing=findLanding(oldY,nextY);
+
+if(landing){
+
+state.y=landing.top;
+state.vy=0;
+
+if(!state.grounded){
+state.lastLand=performance.now();
+state.action='Landing';
+}
+
+state.grounded=true;
+state.jumps=0;
+state.canWallKick=false;
+
+}else{
+
+state.y=nextY;
+state.grounded=false;
+}
+
+if(state.y<-30)restart();
+
+const speed=Math.hypot(state.vx,state.vz);
+
+if(state.grounded){
+
+if(speed<.5)state.action='Standing';
+else if(running)state.action='Running';
+else state.action='Walking';
+}
+
+if(speed>.3){
+state.facing=Math.atan2(state.vx,state.vz);
+}
+
+player.position.set(state.x,state.y,state.z);
+player.rotation.y=state.facing;
+
+document.getElementById('action').textContent=state.action;
+document.getElementById('speed').textContent=speed.toFixed(1);
+}
+
+// ===================================
+// CAMERA
+// ===================================
+
+const cameraTarget=new THREE.Vector3();
+
+function updateCamera(dt){
+
+const distance=11;
+const horizontal=distance*Math.cos(cameraPitch);
+
+const desired=new THREE.Vector3(
+player.position.x+Math.sin(cameraYaw)*horizontal,
+player.position.y+4+distance*Math.sin(cameraPitch),
+player.position.z+Math.cos(cameraYaw)*horizontal
+);
+
+camera.position.lerp(desired,1-Math.pow(.001,dt));
+cameraTarget.set(
+player.position.x,
+player.position.y+1.1,
+player.position.z
+);
+
+camera.lookAt(cameraTarget);
+}
+
+// ===================================
+// COLLECTING COINS
+// ===================================
+
+let coinCount=0;
+
+function updateCoins(dt){
+
+for(const coin of coins){
+
+if(coin.collected)continue;
+
+coin.mesh.rotation.y+=dt*2.8;
+
+const dx=player.position.x-coin.mesh.position.x;
+const dy=player.position.y+1-coin.mesh.position.y;
+const dz=player.position.z-coin.mesh.position.z;
+
+if(Math.hypot(dx,dy,dz)<1.3){
+
+coin.collected=true;
+scene.remove(coin.mesh);
+coinCount++;
+
+document.getElementById('coins').textContent=coinCount;
+}
+}
+}
+
+// ===================================
+// RESTART
+// ===================================
+
+function restart(){
+
+state.x=0;
+state.y=0;
+state.z=12;
+
+state.vx=0;
+state.vy=0;
+state.vz=0;
+
+state.grounded=false;
+state.jumps=0;
+state.jumpChain=0;
+state.canWallKick=false;
+
+state.action='Standing';
+
+player.position.set(0,0,12);
+
+coinCount=0;
+
+for(const coin of coins){
+coin.collected=false;
+scene.add(coin.mesh);
+}
+
+document.getElementById('coins').textContent='0';
+}
+
+// ===================================
+// GAME LOOP
+// ===================================
+
+const clock=new THREE.Clock();
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+const dt=Math.min(clock.getDelta(),.033);
+
+updatePhysics(dt);
+updateCamera(dt);
+updateCoins(dt);
+
+renderer.render(scene,camera);
+}
+
+animate();
+
+// ===================================
+// RESIZE
+// ===================================
+
+window.addEventListener('resize',()=>{
+
+camera.aspect=window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+
+renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+</script>
+</body>
+</html>
