@@ -349,20 +349,57 @@ player.add(head);
 
 makeFallback();
 
-// Load our existing character model if available.
+// Load character model and animations
+let mixer=null;
+let idleAction=null;
+let runAction=null;
+let currentAction=null;
+
 new GLTFLoader().load(
 './boy.glb.glb',
 gltf=>{
 player.clear();
+
 const model=gltf.scene;
 model.scale.setScalar(1.2);
+
 model.traverse(o=>{
 if(o.isMesh){
 o.castShadow=true;
 o.receiveShadow=true;
 }
 });
+
 player.add(model);
+
+if(gltf.animations.length>0){
+mixer=new THREE.AnimationMixer(model);
+
+console.log(
+'Available character animations:',
+gltf.animations.map(a=>a.name)
+);
+
+const idleClip=gltf.animations.find(a=>
+/idle|stand/i.test(a.name)
+);
+
+const runClip=gltf.animations.find(a=>
+/run|walk/i.test(a.name)
+);
+
+if(idleClip){
+idleAction=mixer.clipAction(idleClip);
+idleAction.play();
+currentAction=idleAction;
+}
+
+if(runClip){
+runAction=mixer.clipAction(runClip);
+}
+}else{
+console.log('This model has no embedded animations.');
+}
 },
 undefined,
 ()=>console.log('Fallback character active')
@@ -381,7 +418,7 @@ jumpChain:0,
 lastLand:0,
 wallX:0,
 wallZ:0,
-facing:Math.PI,
+facing:Math.0,
 action:'Standing',
 canWallKick:false
 };
@@ -720,7 +757,7 @@ state.facing=Math.atan2(state.vx,state.vz);
 }
 
 player.position.set(state.x,state.y,state.z);
-player.rotation.y=state.facing;
+player.rotation.y=state.facing+Mate.PI;
 
 document.getElementById('action').textContent=state.action;
 document.getElementById('speed').textContent=speed.toFixed(1);
@@ -828,6 +865,20 @@ requestAnimationFrame(animate);
 const dt=Math.min(clock.getDelta(),.033);
 
 updatePhysics(dt);
+  if(mixer){
+const moving=Math.hypot(state.vx,state.vz)>.5;
+const nextAction=moving && state.grounded
+? runAction
+: idleAction;
+
+if(nextAction && nextAction!==currentAction){
+currentAction?.fadeOut(0.15);
+nextAction.reset().fadeIn(0.15).play();
+currentAction=nextAction;
+}
+
+mixer.update(dt);
+}
 updateCamera(dt);
 updateCoins(dt);
 
