@@ -74,8 +74,42 @@ document.body.appendChild(renderer.domElement);
 const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.target.set(0,0,0);
 orbit.enableDamping = true;
-
+orbit.enableDamping = false;
 const transform = new TransformControls(camera, renderer.domElement);
+  // Zoom towards the mouse cursor instead of the centre
+const zoomRaycaster = new THREE.Raycaster();
+const zoomMouse = new THREE.Vector2();
+const zoomPlane = new THREE.Plane(
+new THREE.Vector3(0, 1, 0), 0
+);
+
+renderer.domElement.addEventListener("wheel", event => {
+event.preventDefault();
+
+zoomMouse.x = (event.clientX / innerWidth) * 2 - 1;
+zoomMouse.y = -(event.clientY / innerHeight) * 2 + 1;
+
+zoomRaycaster.setFromCamera(zoomMouse, camera);
+
+const before = new THREE.Vector3();
+zoomRaycaster.ray.intersectPlane(zoomPlane, before);
+
+const zoomFactor = event.deltaY > 0 ? 1.12 : 0.88;
+
+camera.position.sub(orbit.target).multiplyScalar(zoomFactor);
+orbit.update();
+
+zoomRaycaster.setFromCamera(zoomMouse, camera);
+
+const after = new THREE.Vector3();
+zoomRaycaster.ray.intersectPlane(zoomPlane, after);
+
+const shift = before.sub(after);
+camera.position.add(shift);
+orbit.target.add(shift);
+
+orbit.update();
+}, { passive: false });
 scene.add(transform.getHelper());
 
 transform.addEventListener("dragging-changed", event => {
