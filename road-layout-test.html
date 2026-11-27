@@ -101,7 +101,7 @@ crossroads: "MS_RD_04_Crossroads.glb"
 };
 
 let loaded = 0;
-const total = 4;
+const total = 8;
 
 function addRoad(key, x, z, rotation = 0) {
 return new Promise((resolve, reject) => {
@@ -141,19 +141,27 @@ resolve(model);
 
 async function buildLayout() {
 try {
-// Central crossroads.
+// Central crossroads
 await addRoad("crossroads", 0, 0);
 
-// Four connecting straight road sections.
-await addRoad("straight", 8, 0, 0);
-await addRoad("straight", -8, 0, 0);
+// Main road approaching from both directions
+await addRoad("straight", 8, 0);
+await addRoad("straight", -8, 0);
+
+// Roads running north and south
 await addRoad("straight", 0, 8, Math.PI / 2);
 await addRoad("straight", 0, -8, Math.PI / 2);
 
-// T-junction and corner models are loaded for the next
-// layout stage, once the main connections are checked.
+// Two T-junctions branching off the main street
+await addRoad("junction", 16, 0);
+await addRoad("junction", -16, 0, Math.PI);
+
+// Continue the main street beyond both junctions
+await addRoad("straight", 24, 0);
+await addRoad("straight", -24, 0);
+
 document.getElementById("status").textContent =
-"Main road layout loaded. Checking connections.";
+"Main street and two T-junctions loaded.";
 
 } catch (error) {
 console.error(error);
