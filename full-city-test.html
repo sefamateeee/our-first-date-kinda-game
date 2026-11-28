@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our First Date - Full City Preview</title>
+
+<style>
+html,body {
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#87969c;
+font-family:Arial,sans-serif;
+}
+
+#hud {
+position:absolute;
+top:12px;
+left:12px;
+z-index:5;
+max-width:310px;
+padding:13px 15px;
+border-radius:10px;
+background:#111d;
+color:#fff;
+box-sizing:border-box;
+}
+
+#status {
+font-size:12px;
+line-height:1.45;
+color:#bce7ff;
+margin-top:8px;
+white-space:pre-line;
+}
+
+button {
+border:0;
+border-radius:6px;
+padding:8px 10px;
+margin:8px 5px 0 0;
+background:#8ecae6;
+color:#10202a;
+font-weight:bold;
+cursor:pointer;
+}
+
+#hint {
+font-size:11px;
+color:#ddd;
+line-height:1.4;
+margin-top:8px;
+}
+</style>
+
+<script type="importmap">
+{
+"imports": {
+"three":"https://unpkg.com/three@0.170.0/build/three.module.js"
+}
+}
+</script>
+</head>
+
+<body>
+
+<div id="hud">
+<strong>OUR FIRST DATE — FULL CITY PREVIEW</strong>
+
+<div id="status">Preparing the neighbourhood...</div>
+
+<button id="overview">CITY OVERVIEW</button>
+<button id="street">STREET VIEW</button>
+
+<div id="hint">
+Drag to orbit · Right-drag to pan · Scroll to zoom.
+This is a separate preview page; it does not change your multiplayer game.
+</div>
+</div>
+
+<script type="module">
+
+import * as THREE from "three";
+
+import {
+GLTFLoader
+} from "https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
+
+import {
+OrbitControls
+} from "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+
+
+// ========================================
+// SCENE
+// ========================================
+
+const status = document.getElementById("status");
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x9bb4c3);
+
+scene.fog = new THREE.Fog(
+0x9bb4c3,
+105,
+230
+);
+
+const camera = new THREE.PerspectiveCamera(
+55,
+innerWidth/innerHeight,
+0.1,
+800
+);
+
+camera.position.set(62,62,75);
+
+const renderer = new THREE.WebGLRenderer({
+antialias:true
+});
+
+renderer.setSize(innerWidth,innerHeight);
+
+renderer.setPixelRatio(
+Math.min(devicePixelRatio,2)
+);
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+renderer.toneMappingExposure = 1.15;
+
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+document.body.appendChild(renderer.domElement);
+
+
+// ========================================
+// CAMERA
+// ========================================
+
+const controls = new OrbitControls(
+camera,
+renderer.domElement
+);
+
+controls.target.set(0,0,3);
+
+controls.enableDamping = true;
+
+controls.dampingFactor = 0.07;
+
+controls.maxPolarAngle = Math.PI*0.48;
+
+controls.minDistance = 5;
+
+controls.maxDistance = 180;
+
+controls.mouseButtons = {
+LEFT:THREE.MOUSE.ROTATE,
+MIDDLE:THREE.MOUSE.DOLLY,
+RIGHT:THREE.MOUSE.PAN
+};
+
+
+// ========================================
+// LIGHTING
+// ========================================
+
+scene.add(
+new THREE.HemisphereLight(
+0xffffff,
+0x687080,
+2.0
+)
+);
+
+const sunlight = new THREE.DirectionalLight(
+0xffffff,
+2.4
+);
+
+sunlight.position.set(55,85,35);
+
+sunlight.castShadow = true;
+
+sunlight.shadow.mapSize.set(2048,2048);
+
+sunlight.shadow.camera.left = -90;
+sunlight.shadow.camera.right = 90;
+sunlight.shadow.camera.top = 90;
+sunlight.shadow.camera.bottom = -90;
+
+scene.add(sunlight);
+
+
+// ========================================
+// GROUND
+// ========================================
+
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(190,180),
+new THREE.MeshStandardMaterial({
+color:0x718365,
+roughness:1
+})
+);
+
+ground.rotation.x = -Math.PI/2;
+
+ground.position.set(0,-0.22,3);
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+
+// ========================================
+// ASSET LOADER
+// ========================================
+
+const loader = new GLTFLoader();
+
+const roadFolder = "./city-assets/roads/";
+
+const roads = [];
+
+const buildingRoots = [];
+
+const failedAssets = [];
+
+const roadFiles = {
+
+straight:"MS_RD_01_StraightRoad.glb",
+
+corner:"MS_RD_02_RoadCorner90.glb",
+
+crossroads:"MS_RD_04_Crossroads.glb",
+
+transition64:"MS_RD_06_Transition_6to4.glb"
+
+};
+
+
+function loadGLB(url) {
+
+return new Promise((resolve,reject) => {
+
+loader.load(
+url,
+gltf => resolve(gltf.scene),
+undefined,
+reject
+);
+
+});
+
+}
+
+
+function enableShadows(root) {
+
+root.traverse(object => {
+
+if (object.isMesh) {
+
+object.castShadow = true;
+
+object.receiveShadow = true;
+
+}
+
+});
+
+}
+
+
+// ========================================
+// YOUR EXACT SAVED ROAD LAYOUT
+// ALL 36 PIECES
+// ========================================
+
+const savedRoads = [
+
+{id:1,type:"crossroads",x:-27.429,y:0.16,z:5,rot:0},
+
+{id:2,type:"crossroads",x:17.6,y:0.16,z:5,rot:0},
+
+{id:3,type:"straight",x:-18,y:0.16,z:2,rot:0},
+
+{id:4,type:"straight",x:-12,y:0.16,z:2,rot:0},
+
+{id:5,type:"straight",x:-6,y:0.16,z:2,rot:0},
+
+{id:6,type:"straight",x:0,y:0.16,z:2,rot:0},
+
+{id:7,type:"straight",x:6,y:0.16,z:2,rot:0},
+
+{id:8,type:"straight",x:12,y:0.16,z:2,rot:0},
+
+{id:9,type:"transition64",x:-19.622,y:0.16,z:4.504,rot:3.142},
+
+{id:10,type:"straight",x:-20.626,y:0.16,z:14,rot:1.571},
+
+{id:11,type:"straight",x:-20.646,y:0.16,z:20,rot:1.571},
+
+{id:12,type:"transition64",x:-25.784,y:0.16,z:-5,rot:0},
+
+{id:13,type:"straight",x:-20.903,y:0.16,z:-6.391,rot:1.571},
+
+{id:14,type:"straight",x:-20.882,y:0.16,z:-12.266,rot:1.571},
+
+{id:15,type:"transition64",x:26.123,y:0.16,z:4.22,rot:3.142},
+
+{id:16,type:"straight",x:25.101,y:0.16,z:14.193,rot:1.571},
+
+{id:17,type:"straight",x:25.094,y:0.16,z:20,rot:1.571},
+
+{id:18,type:"transition64",x:19.453,y:0.16,z:-5,rot:0},
+
+{id:19,type:"straight",x:24.375,y:0.16,z:-8.602,rot:1.571},
+
+{id:20,type:"straight",x:24.392,y:0.16,z:-14.162,rot:1.571},
+
+{id:21,type:"corner",x:-17.172,y:0.16,z:18.984,rot:-0.032},
+
+{id:22,type:"corner",x:17.379,y:0.16,z:18.001,rot:-1.557},
+
+{id:23,type:"straight",x:-18,y:0.16,z:26,rot:0},
+
+{id:24,type:"straight",x:-12,y:0.16,z:26,rot:0},
+
+{id:25,type:"straight",x:-6,y:0.16,z:26,rot:0},
+
+{id:26,type:"straight",x:0,y:0.16,z:26,rot:0},
+
+{id:27,type:"straight",x:6,y:0.16,z:26,rot:0},
+
+{id:28,type:"straight",x:12,y:0.16,z:26,rot:0},
+
+{id:29,type:"corner",x:-16.874,y:0.16,z:-18.121,rot:1.547},
+
+{id:30,type:"corner",x:16.833,y:0.173,z:-18.225,rot:-0.01},
+
+{id:31,type:"straight",x:-18,y:0.16,z:-22,rot:0},
+
+{id:32,type:"straight",x:-12,y:0.16,z:-22,rot:0},
+
+{id:33,type:"straight",x:-6,y:0.16,z:-22,rot:0},
+
+{id:34,type:"straight",x:0,y:0.16,z:-22,rot:0},
+
+{id:35,type:"straight",x:6,y:0.16,z:-22,rot:0},
+
+{id:36,type:"straight",x:12,y:0.16,z:-22,rot:0}
+
+];
+
+
+// ========================================
+// ORIGINAL ROAD LOADING METHOD
+// ========================================
+
+async function addRoad(
+type,
+x,
+z,
+rotation=0,
+y=0.16
+) {
+
+const model = await loadGLB(
+roadFolder+roadFiles[type]
+);
+
+// Preserve the original editor's centering method.
+
+const bounds = new THREE.Box3().setFromObject(model);
+
+const center = bounds.getCenter(
+new THREE.Vector3()
+);
+
+model.position.x -= center.x;
+
+model.position.z -= center.z;
+
+const adjusted = new THREE.Box3().setFromObject(model);
+
+model.position.y -= adjusted.min.y;
+
+// Store the actual local road dimensions before rotation.
+
+model.updateMatrixWorld(true);
+
+const localBounds = new THREE.Box3().setFromObject(model);
+
+model.userData.localRoadSize =
+localBounds.getSize(new THREE.Vector3());
+
+model.userData.localRoadTop = localBounds.max.y;
+
+model.position.x += x;
+
+model.position.z += z;
+
+model.position.y += y;
+
+model.rotation.y = rotation;
+
+model.userData.roadType = type;
+
+enableShadows(model);
+
+scene.add(model);
+
+roads.push(model);
+
+return model;
+
+}
+
+
+// ========================================
+// NORMALISE MARKING ASSETS
+// ========================================
+
+function normaliseAsset(root) {
+
+const bounds = new THREE.Box3().setFromObject(root);
+
+const center = bounds.getCenter(
+new THREE.Vector3()
+);
+
+root.position.x -= center.x;
+
+root.position.z -= center.z;
+
+const adjusted = new THREE.Box3().setFromObject(root);
+
+root.position.y -= adjusted.min.y;
+
+root.updateMatrixWorld(true);
+
+return new THREE.Box3().setFromObject(root);
+
+}
+
+
+// ========================================
+// ATTACH MARKINGS TO ROAD PIECES
+// ========================================
+
+async function addOverlayToRoad(
+parent,
+filename,
+options={}
+) {
+
+const root = await loadGLB(
+roadFolder+filename
+);
+
+const markBounds = normaliseAsset(root);
+
+const markSize = markBounds.getSize(
+new THREE.Vector3()
+);
+
+const roadSize = parent.userData.localRoadSize;
+
+// Fit the marking to the road's actual dimensions.
+
+const sx = roadSize.x / Math.max(markSize.x,0.001);
+
+const sz = roadSize.z / Math.max(markSize.z,0.001);
+
+root.scale.set(sx,1,sz);
+
+root.position.y =
+parent.userData.localRoadTop +
+(options.lift ?? 0.012);
+
+root.position.x = options.x ?? 0;
+
+root.position.z = options.z ?? 0;
+
+root.rotation.y = options.rotation ?? 0;
+
+parent.add(root);
+
+enableShadows(root);
+
+return root;
+
+}
+
+
+// ========================================
+// YELLOW BUS STOP LINE
+// ========================================
+
+function addYellowBusStopLine(parent) {
+
+const size = parent.userData.localRoadSize;
+
+const lineLength = Math.min(
+3.8,
+size.x*0.72
+);
+
+const line = new THREE.Mesh(
+
+new THREE.BoxGeometry(
+lineLength,
+0.035,
+0.13
+),
+
+new THREE.MeshStandardMaterial({
+color:0xffd21c,
+roughness:0.75,
+metalness:0
+})
+
+);
+
+line.position.set(
+0,
+parent.userData.localRoadTop+0.025,
+size.z/2-0.22
+);
+
+line.castShadow = false;
+
+parent.add(line);
+
+}
+
+
+// ========================================
+// SIDEWALKS
+// ========================================
+
+function addSidewalkStrip(parent,side) {
+
+const size = parent.userData.localRoadSize;
+
+const sidewalk = new THREE.Mesh(
+
+new THREE.BoxGeometry(
+size.x,
+0.13,
+1.05
+),
+
+new THREE.MeshStandardMaterial({
+color:0xb9b7ae,
+roughness:1
+})
+
+);
+
+sidewalk.position.set(
+0,
+parent.userData.localRoadTop-0.015,
+side*(size.z/2+0.525)
+);
+
+sidewalk.receiveShadow = true;
+
+parent.add(sidewalk);
+
+}
+
+
+// ========================================
+// FENCES
+// ========================================
+
+function addFenceLine(x,zStart,zEnd) {
+
+const group = new THREE.Group();
+
+const length = Math.abs(zEnd-zStart);
+
+const postMat = new THREE.MeshStandardMaterial({
+color:0x6a5742
+});
+
+const railMat = new THREE.MeshStandardMaterial({
+color:0x8a765b
+});
+
+const postGeo = new THREE.BoxGeometry(
+0.16,
+1.15,
+0.16
+);
+
+const railGeo = new THREE.BoxGeometry(
+0.12,
+0.12,
+length
+);
+
+const count = Math.max(
+2,
+Math.floor(length/2.5)
+);
+
+for(let i=0;i<=count;i++) {
+
+const z = -length/2 + length*i/count;
+
+const post = new THREE.Mesh(postGeo,postMat);
+
+post.position.set(0,0.575,z);
+
+group.add(post);
+
+}
+
+for(const y of [0.42,0.85]) {
+
+const rail = new THREE.Mesh(railGeo,railMat);
+
+rail.position.set(0,y,0);
+
+group.add(rail);
+
+}
+
+group.position.set(
+x,
+0,
+(zStart+zEnd)/2
+);
+
+scene.add(group);
+
+}
+
+
+function addFenceHorizontal(xStart,xEnd,z) {
+
+const length = xEnd-xStart;
+
+const group = new THREE.Group();
+
+const postMat = new THREE.MeshStandardMaterial({
+color:0x6a5742
+});
+
+const railMat = new THREE.MeshStandardMaterial({
+color:0x8a765b
+});
+
+const postGeo = new THREE.BoxGeometry(
+0.16,
+1.15,
+0.16
+);
+
+const count = Math.max(
+2,
+Math.floor(length/2.5)
+);
+
+for(let i=0;i<=count;i++) {
+
+const x = -length/2 + length*i/count;
+
+const post = new THREE.Mesh(postGeo,postMat);
+
+post.position.set(x,0.575,0);
+
+group.add(post);
+
+}
+
+for(const y of [0.42,0.85]) {
+
+const rail = new THREE.Mesh(
+new THREE.BoxGeometry(length,0.12,0.12),
+railMat
+);
+
+rail.position.set(0,y,0);
+
+group.add(rail);
+
+}
+
+group.position.set(
+(xStart+xEnd)/2,
+0,
+z
+);
+
+scene.add(group);
+
+}
+
+
+// ========================================
+// BUILDING LOADER
+// ========================================
+
+async function addBuilding(
+filename,
+x,
+z,
+rotation=0,
+label="Building"
+) {
+
+try {
+
+const url = "./"+encodeURIComponent(filename);
+
+const root = await loadGLB(url);
+
+let bounds = normaliseAsset(root);
+
+const size = bounds.getSize(
+new THREE.Vector3()
+);
+
+// Keep the buildings at neighbourhood scale.
+
+const footprint = Math.max(size.x,size.z);
+
+const scale = Math.min(
+1.25,
+7.0/Math.max(footprint,0.001)
+);
+
+root.scale.setScalar(scale);
+
+root.updateMatrixWorld(true);
+
+bounds = new THREE.Box3().setFromObject(root);
+
+const center = bounds.getCenter(
+new THREE.Vector3()
+);
+
+root.position.x -= center.x;
+
+root.position.z -= center.z;
+
+const afterScale = new THREE.Box3().setFromObject(root);
+
+root.position.y -= afterScale.min.y;
+
+root.position.x += x;
+
+root.position.z += z;
+
+root.rotation.y = rotation;
+
+root.userData.cityBuilding = label;
+
+enableShadows(root);
+
+scene.add(root);
+
+buildingRoots.push(root);
+
+return root;
+
+} catch(error) {
+
+failedAssets.push(filename);
+
+console.warn(
+"Could not load building:",
+filename,
+error
+);
+
+return null;
+
+}
+
+}
+
+
+// ========================================
+// PARKING LOT
+// ========================================
+
+function addParkingLot() {
+
+const pad = new THREE.Mesh(
+
+new THREE.BoxGeometry(
+15,
+0.16,
+10
+),
+
+new THREE.MeshStandardMaterial({
+color:0x55595a,
+roughness:1
+})
+
+);
+
+pad.position.set(-38,-0.04,1);
+
+pad.receiveShadow = true;
+
+scene.add(pad);
+
+const white = new THREE.MeshStandardMaterial({
+color:0xf2f0df
+});
+
+for(let i=0;i<4;i++) {
+
+const stripe = new THREE.Mesh(
+
+new THREE.BoxGeometry(
+0.09,
+0.025,
+4.8
+),
+
+white
+
+);
+
+stripe.position.set(
+-43.2+i*3.1,
+0.055,
+1
+);
+
+scene.add(stripe);
+
+}
+
+}
+
+
+// ========================================
+// BUILD THE FULL CITY
+// ========================================
+
+async function buildCity() {
+
+let loadedRoads = 0;
+
+status.textContent =
+"Loading your exact road layout...";
+
+// --------------------------------------
+// LOAD YOUR 36 ROADS
+// --------------------------------------
+
+for(const r of savedRoads) {
+
+const model = await addRoad(
+r.type,
+r.x,
+r.z,
+r.rot,
+r.y
+);
+
+model.userData.savedId = r.id;
+
+loadedRoads++;
+
+status.textContent =
+`Roads: ${loadedRoads}/36`;
+
+}
+
+
+// --------------------------------------
+// WHITE DASHED CENTRE LINES
+// --------------------------------------
+
+status.textContent =
+"Adding white centre lines and crossings...";
+
+for(const road of roads) {
+
+if(road.userData.roadType==="straight") {
+
+await addOverlayToRoad(
+road,
+"MS_RD_20_DashedCenter.glb"
+);
+
+}
+
+}
+
+
+// --------------------------------------
+// CROSSWALKS
+// --------------------------------------
+
+// Put crosswalks on the straight approach pieces,
+// not stretched across the large junction models.
+
+const crosswalkApproaches = roads.filter(r=>
+
+r.userData.roadType==="straight" &&
+
+Math.abs(r.position.z-2)<0.1 &&
+
+(
+Math.abs(r.position.x+18)<0.1 ||
+Math.abs(r.position.x-12)<0.1
+)
+
+);
+
+for(const road of crosswalkApproaches) {
+
+await addOverlayToRoad(
+road,
+"MS_RD_10_Crosswalk.glb",
+{lift:0.018}
+);
+
+}
+
+
+// --------------------------------------
+// STOP LINES
+// --------------------------------------
+
+const stopApproaches = roads.filter(r=>
+
+r.userData.roadType==="straight" &&
+
+Math.abs(r.position.z-2)<0.1 &&
+
+(
+Math.abs(r.position.x+12)<0.1 ||
+Math.abs(r.position.x-6)<0.1
+)
+
+);
+
+for(const road of stopApproaches) {
+
+await addOverlayToRoad(
+road,
+"MS_RD_20_StopLine.glb",
+{lift:0.022}
+);
+
+}
+
+
+// --------------------------------------
+// YELLOW BUS STOP LINE
+// --------------------------------------
+
+const busStopRoad = roads.find(r=>
+
+r.userData.roadType==="straight" &&
+
+Math.abs(r.position.x-6)<0.1 &&
+
+Math.abs(r.position.z-2)<0.1
+
+);
+
+if(busStopRoad) {
+
+addYellowBusStopLine(busStopRoad);
+
+}
+
+
+// --------------------------------------
+// SIDEWALKS
+// --------------------------------------
+
+for(const road of roads) {
+
+if(road.userData.roadType==="straight") {
+
+addSidewalkStrip(road,1);
+
+addSidewalkStrip(road,-1);
+
+}
+
+}
+
+
+// --------------------------------------
+// ALL 15 RESIDENTIAL HOUSES
+// --------------------------------------
+
+status.textContent =
+"Placing all houses, shops and Tina's bakery...";
+
+const homes = [
+
+["MS_HV_01_PorchBungalow.glb",-12,15,0],
+
+["MS_HV_02_WideBalconyHouse.glb",-12,6,0],
+
+["MS_HV_03_UrbanTownhouse.glb",-12,-3,0],
+
+["MS_HV_04_CornerEntryHouse.glb",-12,-12,0],
+
+["MS_HV_05_GatedCarportHouse.glb",32,15,Math.PI],
+
+["MS_HV_06_OlderDuplexRental.glb",32,6,Math.PI],
+
+["MS_PF_01_TwoStoreyHouse.glb",32,-3,Math.PI],
+
+["MS_PF_02_NarrowTownhouse.glb",32,-12,Math.PI],
+
+["MS_PF_03_ThreeStoreyApartment.glb",-14,34,Math.PI],
+
+["MS_PF_04_ApartmentBlock.glb",-4,34,Math.PI],
+
+["MS_RR_A01_TinySingleRoom.glb",6,34,Math.PI],
+
+["MS_RR_A02_BudgetHouse.glb",16,34,Math.PI],
+
+["MS_RR_B02_StandardFamilyBungalow.glb",-13,-30,0],
+
+["MS_RR_D01_StudioUnit.glb",-3,-30,0],
+
+["MS_RR_D04_BoardingHouse.glb",8,-30,0]
+
+];
+
+
+for(let i=0;i<homes.length;i++) {
+
+const [file,x,z,rot] = homes[i];
+
+await addBuilding(
+file,
+x,
+z,
+rot,
+"Home "+(i+1)
+);
+
+status.textContent =
+`Buildings: ${i+1}/18`;
+
+}
+
+
+// --------------------------------------
+// SHOPS AND TINA'S BAKERY
+// --------------------------------------
+
+await addBuilding(
+"MS_PF_05_CornerShop.glb",
+-37,
+9,
+Math.PI/2,
+"Corner shop"
+);
+
+await addBuilding(
+"MS_PF_06_ClosedStorefront.glb",
+-5,
+-8,
+0,
+"Storefront"
+);
+
+await addBuilding(
+"tinas bakery.glb",
+8,
+-8,
+0,
+"Tina's bakery"
+);
+
+
+// --------------------------------------
+// PARKING LOT
+// --------------------------------------
+
+addParkingLot();
+
+
+// --------------------------------------
+// RESIDENTIAL FENCES
+// --------------------------------------
+
+addFenceLine(-28,-15,22);
+
+addFenceLine(16,-15,22);
+
+addFenceHorizontal(-18,18,18);
+
+addFenceHorizontal(-18,18,-14);
+
+
+// --------------------------------------
+// STREET TREES
+// --------------------------------------
+
+const treeMat = new THREE.MeshStandardMaterial({
+color:0x416b45
+});
+
+const trunkMat = new THREE.MeshStandardMaterial({
+color:0x66503b
+});
+
+
+function addTree(x,z,s=1) {
+
+const trunk = new THREE.Mesh(
+
+new THREE.CylinderGeometry(
+0.18*s,
+0.24*s,
+2.2*s,
+7
+),
+
+trunkMat
+
+);
+
+trunk.position.set(x,1.1*s,z);
+
+trunk.castShadow = true;
+
+scene.add(trunk);
+
+
+const crown = new THREE.Mesh(
+
+new THREE.IcosahedronGeometry(
+1.15*s,
+1
+),
+
+treeMat
+
+);
+
+crown.position.set(x,2.65*s,z);
+
+crown.castShadow = true;
+
+scene.add(crown);
+
+}
+
+
+[
+
+[-34,18],
+[-34,-15],
+[38,18],
+[38,-15],
+[-27,34],
+[24,34],
+[-27,-32],
+[24,-32],
+[-4,13],
+[10,13],
+[-4,-13],
+[10,-13]
+
+].forEach(p => addTree(p[0],p[1],0.9));
+
+
+// --------------------------------------
+// CAMERA POSITION
+// --------------------------------------
+
+controls.target.set(0,1,3);
+
+camera.position.set(64,65,76);
+
+controls.update();
+
+
+// --------------------------------------
+// LOADING REPORT
+// --------------------------------------
+
+const failedText = failedAssets.length
+
+? "\nFiles not found:\n"+failedAssets.join("\n")
+
+: "";
+
+
+status.textContent =
+
+`City preview loaded.
+36 saved road pieces
+15 houses + 2 shop shells + Tina's bakery
+Road markings, crossings, sidewalks, fences and parking lot`+
+
+failedText;
+
+}
+
+
+// ========================================
+// CAMERA BUTTONS
+// ========================================
+
+document.getElementById("overview").onclick = () => {
+
+controls.target.set(0,1,3);
+
+camera.position.set(64,65,76);
+
+controls.update();
+
+};
+
+
+document.getElementById("street").onclick = () => {
+
+controls.target.set(-17,1,3);
+
+camera.position.set(-8,12,17);
+
+controls.update();
+
+};
+
+
+// ========================================
+// START CITY
+// ========================================
+
+buildCity().catch(error => {
+
+console.error(error);
+
+status.textContent =
+"City loading stopped: "+error.message+
+"\nCheck the filenames in the GitHub repository.";
+
+});
+
+
+// ========================================
+// ANIMATION
+// ========================================
+
+function animate() {
+
+requestAnimationFrame(animate);
+
+controls.update();
+
+renderer.render(scene,camera);
+
+}
+
+animate();
+
+
+// ========================================
+// RESIZE
+// ========================================
+
+window.addEventListener("resize",() => {
+
+camera.aspect = innerWidth/innerHeight;
+
+camera.updateProjectionMatrix();
+
+renderer.setSize(innerWidth,innerHeight);
+
+});
+
+</script>
+
+</body>
+</html>
