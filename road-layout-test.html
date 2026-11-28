@@ -3,82 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Midnight Streets Town Road Editor</title>
+<title>Midnight Streets - Saved Road Layout</title>
 
 <style>
 body {
-margin: 0;
-overflow: hidden;
-font-family: Arial, sans-serif;
-background: #20252a;
+margin:0;
+overflow:hidden;
+font-family:Arial,sans-serif;
+background:#20252a;
 }
 
 #panel {
-position: absolute;
-top: 12px;
-left: 12px;
-z-index: 5;
-background: rgba(0,0,0,.9);
-color: white;
-padding: 14px;
-border-radius: 10px;
-width: 230px;
-max-height: calc(100vh - 50px);
-overflow-y: auto;
+position:absolute;
+top:12px;
+left:12px;
+z-index:5;
+width:245px;
+max-height:calc(100vh - 48px);
+overflow:auto;
+box-sizing:border-box;
+padding:14px;
+border-radius:10px;
+color:white;
+background:rgba(0,0,0,.9);
 }
 
-button, select {
-width: 100%;
-padding: 10px;
-margin-top: 7px;
-border: 0;
-border-radius: 5px;
-cursor: pointer;
+button,select {
+width:100%;
+box-sizing:border-box;
+padding:9px;
+margin-top:7px;
+border:0;
+border-radius:5px;
+cursor:pointer;
 }
 
 button {
-background: #8ecae6;
-color: #14212a;
-font-weight: bold;
-}
-
-button:active {
-background: #64b5d5;
+background:#8ecae6;
+color:#14212a;
+font-weight:bold;
 }
 
 #status {
-font-size: 12px;
-margin-top: 10px;
-color: #b8e7ff;
-line-height: 1.4;
-}
-
-#saved {
-width: 100%;
-height: 110px;
-margin-top: 8px;
-font-size: 10px;
-box-sizing: border-box;
+font-size:12px;
+color:#b8e7ff;
+line-height:1.4;
+margin-top:10px;
+overflow-wrap:anywhere;
 }
 
 label {
-display: block;
-margin-top: 12px;
-font-size: 13px;
+display:block;
+margin-top:12px;
+font-size:13px;
+}
+
+textarea {
+width:100%;
+height:105px;
+box-sizing:border-box;
+margin-top:7px;
+font-size:10px;
 }
 
 .small {
-font-size: 11px;
-color: #ccc;
-line-height: 1.4;
-margin-top: 8px;
+color:#ccc;
+font-size:11px;
+line-height:1.4;
+margin-top:8px;
 }
 </style>
 
 <script type="importmap">
 {
 "imports": {
-"three": "https://unpkg.com/three@0.170.0/build/three.module.js"
+"three":"https://unpkg.com/three@0.170.0/build/three.module.js"
 }
 }
 </script>
@@ -88,29 +87,35 @@ margin-top: 8px;
 
 <div id="panel">
 
-<strong>MIDNIGHT STREETS TOWN EDITOR</strong>
+<strong>MIDNIGHT STREETS — SAVED ROAD LAYOUT</strong>
 
-<div id="status">Loading town roads...</div>
+<div id="status">Loading your saved road layout...</div>
 
-<label for="selection">Select a road:</label>
+<label for="selection">Select a road or marking:</label>
 <select id="selection">
-<option value="">Loading roads...</option>
+<option value="">Loading...</option>
 </select>
 
-<button id="move">MOVE ROAD</button>
-<button id="rotate">ROTATE ROAD</button>
-<button id="detach">DESELECT ROAD</button>
+<button id="move">MOVE SELECTED</button>
+<button id="rotate">ROTATE SELECTED</button>
+<button id="detach">DESELECT</button>
 <button id="resetView">RESET CAMERA VIEW</button>
 <button id="save">SAVE LAYOUT</button>
 
-<label>Saved road positions:</label>
-<textarea id="saved" placeholder="Press SAVE LAYOUT. Copy everything here and send it to me."></textarea>
+<label for="saved">Saved layout backup:</label>
+<textarea id="saved" placeholder="Press SAVE LAYOUT, then copy this backup."></textarea>
 
 <div class="small">
-Move: drag the red or blue arrows.<br>
-Rotate: drag the green ring.<br>
-Zoom: scroll towards your mouse cursor.<br>
-Camera: hold the right mouse button and drag.
+Your 36 manually aligned road pieces are restored from the saved coordinates.
+
+Dashed white centre markings are added to the straight road pieces. Crosswalks and stop lines are placed at the two main junctions. A yellow bus-stop edge line is added beside the main road.
+
+<br><br>
+
+Left-drag: orbit camera.
+Right-drag: pan.
+Scroll: zoom towards cursor.
+Use the move/rotate buttons to edit selected pieces.
 </div>
 
 </div>
@@ -119,19 +124,22 @@ Camera: hold the right mouse button and drag.
 
 import * as THREE from "three";
 
-import { GLTFLoader } from
-"https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
+import {
+GLTFLoader
+} from "https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
 
-import { OrbitControls } from
-"https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+import {
+OrbitControls
+} from "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
 
-import { TransformControls } from
-"https://unpkg.com/three@0.170.0/examples/jsm/controls/TransformControls.js";
+import {
+TransformControls
+} from "https://unpkg.com/three@0.170.0/examples/jsm/controls/TransformControls.js";
 
 
-// --------------------------------------
+// ========================================
 // SCENE
-// --------------------------------------
+// ========================================
 
 const scene = new THREE.Scene();
 
@@ -139,119 +147,103 @@ scene.background = new THREE.Color(0x87969c);
 
 const camera = new THREE.PerspectiveCamera(
 55,
-window.innerWidth / window.innerHeight,
+innerWidth / innerHeight,
 0.1,
 1000
 );
 
-camera.position.set(48, 48, 58);
+camera.position.set(48,48,58);
 
 const renderer = new THREE.WebGLRenderer({
-antialias: true
+antialias:true
 });
 
-renderer.setSize(
-window.innerWidth,
-window.innerHeight
-);
+renderer.setSize(innerWidth,innerHeight);
 
 renderer.setPixelRatio(
-Math.min(window.devicePixelRatio, 2)
+Math.min(devicePixelRatio,2)
 );
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 document.body.appendChild(renderer.domElement);
 
 
-// --------------------------------------
+// ========================================
 // CAMERA CONTROLS
-// --------------------------------------
+// ========================================
 
 const orbit = new OrbitControls(
 camera,
 renderer.domElement
 );
 
-orbit.target.set(0, 0, 0);
+orbit.target.set(0,2,3);
+
 orbit.enableDamping = true;
 orbit.dampingFactor = 0.08;
-
-// We use our own cursor-focused zoom.
 orbit.enableZoom = false;
 
 orbit.mouseButtons = {
-LEFT: THREE.MOUSE.ROTATE,
-MIDDLE: THREE.MOUSE.DOLLY,
-RIGHT: THREE.MOUSE.PAN
+LEFT:THREE.MOUSE.ROTATE,
+MIDDLE:THREE.MOUSE.DOLLY,
+RIGHT:THREE.MOUSE.PAN
 };
 
-
-// --------------------------------------
-// CURSOR-FOCUSED ZOOM
-// --------------------------------------
-
-const zoomRaycaster = new THREE.Raycaster();
-const zoomMouse = new THREE.Vector2();
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 
 const zoomPlane = new THREE.Plane(
-new THREE.Vector3(0, 1, 0),
+new THREE.Vector3(0,1,0),
 0
 );
 
-renderer.domElement.addEventListener(
-"wheel",
-event => {
+renderer.domElement.addEventListener("wheel",event => {
 
 event.preventDefault();
 
-zoomMouse.x =
-(event.clientX / window.innerWidth) * 2 - 1;
+pointer.set(
+(event.clientX/innerWidth)*2-1,
+-(event.clientY/innerHeight)*2+1
+);
 
-zoomMouse.y =
--(event.clientY / window.innerHeight) * 2 + 1;
-
-zoomRaycaster.setFromCamera(zoomMouse, camera);
+raycaster.setFromCamera(pointer,camera);
 
 const before = new THREE.Vector3();
 
-if (!zoomRaycaster.ray.intersectPlane(
-zoomPlane,
-before
-)) return;
+if (!raycaster.ray.intersectPlane(zoomPlane,before)) {
+return;
+}
 
-// Smaller number = gentler zoom.
-const zoomFactor = Math.exp(
+const factor = Math.exp(
 THREE.MathUtils.clamp(
-event.deltaY * 0.00035,
+event.deltaY*0.00035,
 -0.12,
 0.12
 )
 );
 
-const distance = camera.position.distanceTo(
-orbit.target
-);
-
-const newDistance = THREE.MathUtils.clamp(
-distance * zoomFactor,
+const distance = THREE.MathUtils.clamp(
+camera.position.distanceTo(orbit.target)*factor,
 5,
 180
 );
 
-camera.position.sub(orbit.target)
+camera.position
+.sub(orbit.target)
 .normalize()
-.multiplyScalar(newDistance)
+.multiplyScalar(distance)
 .add(orbit.target);
 
 orbit.update();
 
-zoomRaycaster.setFromCamera(zoomMouse, camera);
+raycaster.setFromCamera(pointer,camera);
 
 const after = new THREE.Vector3();
 
-if (!zoomRaycaster.ray.intersectPlane(
-zoomPlane,
-after
-)) return;
+if (!raycaster.ray.intersectPlane(zoomPlane,after)) {
+return;
+}
 
 const shift = before.sub(after);
 
@@ -260,14 +252,12 @@ orbit.target.add(shift);
 
 orbit.update();
 
-},
-{ passive: false }
-);
+},{passive:false});
 
 
-// --------------------------------------
-// LIGHTING
-// --------------------------------------
+// ========================================
+// LIGHTING AND GROUND
+// ========================================
 
 scene.add(
 new THREE.HemisphereLight(
@@ -282,23 +272,20 @@ const sun = new THREE.DirectionalLight(
 2
 );
 
-sun.position.set(30, 50, 20);
+sun.position.set(30,50,20);
+
 scene.add(sun);
 
-
-// --------------------------------------
-// GROUND AND GRID
-// --------------------------------------
-
 const ground = new THREE.Mesh(
-new THREE.PlaneGeometry(220, 220),
+new THREE.PlaneGeometry(220,220),
 new THREE.MeshStandardMaterial({
-color: 0x64745c
+color:0x64745c
 })
 );
 
-ground.rotation.x = -Math.PI / 2;
+ground.rotation.x = -Math.PI/2;
 ground.position.y = -0.15;
+
 scene.add(ground);
 
 const grid = new THREE.GridHelper(
@@ -309,79 +296,68 @@ const grid = new THREE.GridHelper(
 );
 
 grid.position.y = -0.1;
+
 scene.add(grid);
 
 
-// --------------------------------------
-// ROAD ASSETS
-// --------------------------------------
+// ========================================
+// ASSETS
+// ========================================
 
 const loader = new GLTFLoader();
 
 const folder = "city-assets/roads/";
 
 const files = {
-straight: "MS_RD_01_StraightRoad.glb",
-corner: "MS_RD_02_RoadCorner90.glb",
-junction: "MS_RD_03_TJunction.glb",
-crossroads: "MS_RD_04_Crossroads.glb",
-transition64: "MS_RD_06_Transition_6to4.glb",
 
-dashedCenter: "MS_RD_20_DashedCenter.glb",
-doubleYellow: "MS_RD_20_DoubleYellow.glb",
-solidWhite: "MS_RD_20_SolidWhite.glb",
-stopLine: "MS_RD_20_StopLine.glb",
-directionArrow: "MS_RD_20_DirectionArrow.glb",
-parkingBay: "MS_RD_20_ParkingBay.glb",
-crosswalk: "MS_RD_10_Crosswalk.glb"
+straight:"MS_RD_01_StraightRoad.glb",
+
+corner:"MS_RD_02_RoadCorner90.glb",
+
+crossroads:"MS_RD_04_Crossroads.glb",
+
+transition64:"MS_RD_06_Transition_6to4.glb",
+
+dashedCenter:"MS_RD_20_DashedCenter.glb",
+
+stopLine:"MS_RD_20_StopLine.glb",
+
+crosswalk:"MS_RD_10_Crosswalk.glb"
+
 };
 
-const roads = [];
+const objects = [];
 
 let selected = null;
-let roadNumber = 0;
+
+let objectNumber = 0;
 
 
-// --------------------------------------
-// ADD A ROAD MODEL
-// --------------------------------------
+// ========================================
+// ADD OBJECT TO EDITOR
+// ========================================
 
-function addRoad(type, x, z, rotation = 0) {
-
-return new Promise((resolve, reject) => {
-
-loader.load(
-folder + files[type],
-
-gltf => {
-
-const model = gltf.scene;
-
-// Centre model around its origin.
-const bounds = new THREE.Box3()
-.setFromObject(model);
-
-const center = bounds.getCenter(
-new THREE.Vector3()
-);
-
-model.position.x -= center.x;
-model.position.z -= center.z;
-
-const adjusted = new THREE.Box3()
-.setFromObject(model);
-
-model.position.y -= adjusted.min.y;
+function addToEditor(
+model,
+type,
+x,
+y,
+z,
+rotation=0,
+isMarking=false
+) {
 
 model.position.x += x;
+model.position.y += y;
 model.position.z += z;
 
 model.rotation.y = rotation;
 
-roadNumber++;
+objectNumber++;
 
-model.userData.roadId = roadNumber;
-model.userData.roadType = type;
+model.userData.objectId = objectNumber;
+model.userData.objectType = type;
+model.userData.isMarking = isMarking;
 
 model.traverse(child => {
 
@@ -393,30 +369,79 @@ child.receiveShadow = true;
 });
 
 scene.add(model);
-roads.push(model);
+
+objects.push(model);
 
 const option = document.createElement("option");
 
-option.value = roads.length - 1;
+option.value = String(objects.length-1);
 
 option.textContent =
-roadNumber + " - " + type;
+`${objectNumber} — ${type}${isMarking ? " (marking)" : ""}`;
 
-document.getElementById("selection")
-.appendChild(option);
+document.getElementById("selection").appendChild(option);
 
-document.getElementById("status")
-.textContent =
-roads.length + " road pieces loaded.";
+return model;
+}
+
+
+// ========================================
+// LOAD GLB
+// ========================================
+
+function loadAsset(
+type,
+x,
+z,
+rotation=0,
+y=0.16,
+isMarking=false
+) {
+
+return new Promise((resolve,reject) => {
+
+loader.load(
+folder+files[type],
+
+gltf => {
+
+const model = gltf.scene;
+
+const bounds = new THREE.Box3().setFromObject(model);
+
+const center = bounds.getCenter(
+new THREE.Vector3()
+);
+
+model.position.x -= center.x;
+model.position.z -= center.z;
+
+const adjusted = new THREE.Box3().setFromObject(model);
+
+model.position.y -= adjusted.min.y;
+
+addToEditor(
+model,
+type,
+x,
+y,
+z,
+rotation,
+isMarking
+);
 
 resolve(model);
 
 },
 
-
 undefined,
 
-reject
+error => reject(
+new Error(
+`Could not load ${files[type]}: ${error.message || error}`
+)
+)
+
 );
 
 });
@@ -424,30 +449,127 @@ reject
 }
 
 
-// --------------------------------------
-// SELECT A ROAD
-// --------------------------------------
+// ========================================
+// YELLOW BUS STOP LINE
+// ========================================
 
-function selectRoad(model) {
+function addYellowBusStopLine() {
 
-selected = model;
+const line = new THREE.Mesh(
 
-transform.attach(model);
+new THREE.BoxGeometry(
+12,
+0.035,
+0.13
+),
 
-document.getElementById("selection").value =
-roads.indexOf(model);
+new THREE.MeshStandardMaterial({
+color:0xffd21c,
+roughness:0.75
+})
 
-document.getElementById("status").textContent =
-"Selected road " +
-model.userData.roadId +
-" (" + model.userData.roadType + ")";
+);
+
+line.position.set(6,0.265,3.72);
+
+addToEditor(
+line,
+"yellowBusStopLine",
+0,
+0,
+0,
+0,
+true
+);
 
 }
 
 
-// --------------------------------------
-// TRANSFORM CONTROLS
-// --------------------------------------
+// ========================================
+// YOUR ORIGINAL SAVED ROAD POSITIONS
+// ALL 36 PIECES
+// ========================================
+
+const savedRoads = [
+
+{id:1,type:"crossroads",x:-27.429,y:0.16,z:5,rot:0},
+
+{id:2,type:"crossroads",x:17.6,y:0.16,z:5,rot:0},
+
+{id:3,type:"straight",x:-18,y:0.16,z:2,rot:0},
+
+{id:4,type:"straight",x:-12,y:0.16,z:2,rot:0},
+
+{id:5,type:"straight",x:-6,y:0.16,z:2,rot:0},
+
+{id:6,type:"straight",x:0,y:0.16,z:2,rot:0},
+
+{id:7,type:"straight",x:6,y:0.16,z:2,rot:0},
+
+{id:8,type:"straight",x:12,y:0.16,z:2,rot:0},
+
+{id:9,type:"transition64",x:-19.622,y:0.16,z:4.504,rot:3.142},
+
+{id:10,type:"straight",x:-20.626,y:0.16,z:14,rot:1.571},
+
+{id:11,type:"straight",x:-20.646,y:0.16,z:20,rot:1.571},
+
+{id:12,type:"transition64",x:-25.784,y:0.16,z:-5,rot:0},
+
+{id:13,type:"straight",x:-20.903,y:0.16,z:-6.391,rot:1.571},
+
+{id:14,type:"straight",x:-20.882,y:0.16,z:-12.266,rot:1.571},
+
+{id:15,type:"transition64",x:26.123,y:0.16,z:4.22,rot:3.142},
+
+{id:16,type:"straight",x:25.101,y:0.16,z:14.193,rot:1.571},
+
+{id:17,type:"straight",x:25.094,y:0.16,z:20,rot:1.571},
+
+{id:18,type:"transition64",x:19.453,y:0.16,z:-5,rot:0},
+
+{id:19,type:"straight",x:24.375,y:0.16,z:-8.602,rot:1.571},
+
+{id:20,type:"straight",x:24.392,y:0.16,z:-14.162,rot:1.571},
+
+{id:21,type:"corner",x:-17.172,y:0.16,z:18.984,rot:-0.032},
+
+{id:22,type:"corner",x:17.379,y:0.16,z:18.001,rot:-1.557},
+
+{id:23,type:"straight",x:-18,y:0.16,z:26,rot:0},
+
+{id:24,type:"straight",x:-12,y:0.16,z:26,rot:0},
+
+{id:25,type:"straight",x:-6,y:0.16,z:26,rot:0},
+
+{id:26,type:"straight",x:0,y:0.16,z:26,rot:0},
+
+{id:27,type:"straight",x:6,y:0.16,z:26,rot:0},
+
+{id:28,type:"straight",x:12,y:0.16,z:26,rot:0},
+
+{id:29,type:"corner",x:-16.874,y:0.16,z:-18.121,rot:1.547},
+
+{id:30,type:"corner",x:16.833,y:0.173,z:-18.225,rot:-0.01},
+
+{id:31,type:"straight",x:-18,y:0.16,z:-22,rot:0},
+
+{id:32,type:"straight",x:-12,y:0.16,z:-22,rot:0},
+
+{id:33,type:"straight",x:-6,y:0.16,z:-22,rot:0},
+
+{id:34,type:"straight",x:0,y:0.16,z:-22,rot:0},
+
+{id:35,type:"straight",x:6,y:0.16,z:-22,rot:0},
+
+{id:36,type:"straight",x:12,y:0.16,z:-22,rot:0}
+
+];
+
+
+// ========================================
+// EDITOR CONTROLS
+// ========================================
 
 const transform = new TransformControls(
 camera,
@@ -464,20 +586,31 @@ orbit.enabled = !event.value;
 );
 
 
-// --------------------------------------
-// EDITOR BUTTONS
-// --------------------------------------
+function selectObject(model) {
 
-document.getElementById("selection")
-.addEventListener("change", event => {
+selected = model;
 
-const model = roads[
-Number(event.target.value)
-];
+transform.attach(model);
 
-if (model) selectRoad(model);
+document.getElementById("selection").value =
+String(objects.indexOf(model));
 
-});
+document.getElementById("status").textContent =
+`Selected ${model.userData.objectType} #${model.userData.objectId}.`;
+
+}
+
+
+document.getElementById("selection").addEventListener(
+"change",
+event => {
+
+const obj = objects[Number(event.target.value)];
+
+if (obj) selectObject(obj);
+
+}
+);
 
 
 document.getElementById("move").onclick = () => {
@@ -493,204 +626,255 @@ transform.setMode("rotate");
 document.getElementById("detach").onclick = () => {
 
 transform.detach();
+
 selected = null;
 
 document.getElementById("selection").value = "";
 
 document.getElementById("status").textContent =
-"No road selected.";
+"Nothing selected.";
 
 };
 
 
 document.getElementById("resetView").onclick = () => {
 
-camera.position.set(48, 48, 58);
+camera.position.set(48,48,58);
 
-orbit.target.set(0, 0, 0);
+orbit.target.set(0,2,3);
 
 orbit.update();
 
 };
 
 
+// ========================================
+// SAVE LAYOUT
+// ========================================
+
 document.getElementById("save").onclick = () => {
 
-const layout = roads.map(model => ({
+const layout = objects.map(obj => ({
 
-id: model.userData.roadId,
+id:obj.userData.objectId,
 
-type: model.userData.roadType,
+type:obj.userData.objectType,
 
-position: {
-x: Number(model.position.x.toFixed(3)),
-y: Number(model.position.y.toFixed(3)),
-z: Number(model.position.z.toFixed(3))
+marking:!!obj.userData.isMarking,
+
+position:{
+x:+obj.position.x.toFixed(3),
+y:+obj.position.y.toFixed(3),
+z:+obj.position.z.toFixed(3)
 },
 
-rotationY: Number(
-model.rotation.y.toFixed(3)
-)
+rotationY:+obj.rotation.y.toFixed(3)
 
 }));
 
 document.getElementById("saved").value =
-JSON.stringify(layout, null, 2);
+JSON.stringify(layout,null,2);
 
 document.getElementById("status").textContent =
-"Layout ready! Copy the saved positions below.";
+"Backup created. Copy the full text from the box.";
 
 };
 
 
-// --------------------------------------
-// CLICK A ROAD TO SELECT IT
-// --------------------------------------
-
-const raycaster = new THREE.Raycaster();
-
-const pointer = new THREE.Vector2();
+// ========================================
+// CLICK TO SELECT
+// ========================================
 
 renderer.domElement.addEventListener(
 "pointerdown",
 event => {
 
-if (event.button !== 0) return;
-if (transform.dragging) return;
+if (event.button !== 0 || transform.dragging) {
+return;
+}
 
-pointer.x =
-(event.clientX / window.innerWidth) * 2 - 1;
+pointer.set(
+(event.clientX/innerWidth)*2-1,
+-(event.clientY/innerHeight)*2+1
+);
 
-pointer.y =
--(event.clientY / window.innerHeight) * 2 + 1;
+raycaster.setFromCamera(pointer,camera);
 
-raycaster.setFromCamera(pointer, camera);
+const hits = raycaster.intersectObjects(objects,true);
 
-const hits = raycaster.intersectObjects(
-roads,
+if (!hits.length) return;
+
+let obj = hits[0].object;
+
+while (obj.parent && obj.parent !== scene) {
+obj = obj.parent;
+}
+
+if (objects.includes(obj)) {
+selectObject(obj);
+}
+
+}
+);
+
+
+// ========================================
+// BUILD THE SAVED ROAD LAYOUT
+// ========================================
+
+async function buildLayout() {
+
+const status = document.getElementById("status");
+
+try {
+
+document.getElementById("selection").innerHTML =
+'<option value="">Choose an object...</option>';
+
+
+// Restore your exact 36 road positions.
+
+for (const r of savedRoads) {
+
+const model = await loadAsset(
+r.type,
+r.x,
+r.z,
+r.rot,
+r.y,
+false
+);
+
+model.userData.objectId = r.id;
+
+}
+
+
+// WHITE DASHED CENTRE MARKINGS
+
+const dashedPositions = [
+
+[-18,2,0],
+[-12,2,0],
+[-6,2,0],
+[0,2,0],
+[6,2,0],
+[12,2,0],
+
+[-18,26,0],
+[-12,26,0],
+[-6,26,0],
+[0,26,0],
+[6,26,0],
+[12,26,0],
+
+[-18,-22,0],
+[-12,-22,0],
+[-6,-22,0],
+[0,-22,0],
+[6,-22,0],
+[12,-22,0],
+
+[-20.626,14,Math.PI/2],
+[-20.646,20,Math.PI/2],
+
+[-20.903,-6.391,Math.PI/2],
+[-20.882,-12.266,Math.PI/2],
+
+[25.101,14.193,Math.PI/2],
+[25.094,20,Math.PI/2],
+
+[24.375,-8.602,Math.PI/2],
+[24.392,-14.162,Math.PI/2]
+
+];
+
+
+for (const [x,z,rot] of dashedPositions) {
+
+await loadAsset(
+"dashedCenter",
+x,
+z,
+rot,
+0.255,
 true
 );
 
-if (hits.length) {
-
-let object = hits[0].object;
-
-while (
-object.parent &&
-object.parent !== scene
-) {
-object = object.parent;
 }
 
-if (roads.includes(object)) {
-selectRoad(object);
-}
 
-}
+// CROSSWALKS
 
-}
+await loadAsset(
+"crosswalk",
+-27.429,
+5,
+0,
+0.255,
+true
+);
+
+await loadAsset(
+"crosswalk",
+17.6,
+5,
+0,
+0.255,
+true
 );
 
 
-// --------------------------------------
-// BUILD THE TOWN ROAD LAYOUT
-// --------------------------------------
+// STOP LINES
 
-async function buildLayout() {
-try {
-// Clear previous layout
-for (const road of roads) {
-scene.remove(road);
+await loadAsset(
+"stopLine",
+-23.0,
+5,
+0,
+0.255,
+true
+);
+
+await loadAsset(
+"stopLine",
+13.2,
+5,
+0,
+0.255,
+true
+);
+
+
+// YELLOW BUS STOP LINE
+
+addYellowBusStopLine();
+
+
+status.textContent =
+`Loaded ${savedRoads.length} saved road pieces plus road markings.`;
+
 }
 
-roads.length = 0;
-roadNumber = 0;
+catch(error) {
 
-document.getElementById("selection").innerHTML = "";
-
-// =================================
-// MAIN ROAD THROUGH THE MIDDLE
-// =================================
-
-await addRoad("crossroads", -24, 0);
-await addRoad("crossroads", 24, 0);
-
-for (const x of [-15, -9, -3, 3, 9, 15]) {
-await addRoad("straight", x, 0);
-}
-
-// =================================
-// LEFT SIDE - UPPER ENTRANCE
-// =================================
-
-await addRoad("transition64", -24, 7, Math.PI);
-await addRoad("straight", -24, 12, Math.PI / 2);
-await addRoad("straight", -24, 18, Math.PI / 2);
-
-// =================================
-// LEFT SIDE - LOWER ENTRANCE
-// =================================
-
-await addRoad("transition64", -24, -7, 0);
-await addRoad("straight", -24, -12, Math.PI / 2);
-await addRoad("straight", -24, -18, Math.PI / 2);
-
-// =================================
-// RIGHT SIDE - UPPER ENTRANCE
-// =================================
-
-await addRoad("transition64", 24, 7, Math.PI);
-await addRoad("straight", 24, 12, Math.PI / 2);
-await addRoad("straight", 24, 18, Math.PI / 2);
-
-// =================================
-// RIGHT SIDE - LOWER ENTRANCE
-// =================================
-
-await addRoad("transition64", 24, -7, 0);
-await addRoad("straight", 24, -12, Math.PI / 2);
-await addRoad("straight", 24, -18, Math.PI / 2);
-
-// =================================
-// TOP CORNERS AND ROAD
-// =================================
-
-await addRoad("corner", -24, 24, 0);
-await addRoad("corner", 24, 24, Math.PI / 2);
-
-for (const x of [-15, -9, -3, 3, 9, 15]) {
-await addRoad("straight", x, 24);
-}
-
-// =================================
-// BOTTOM CORNERS AND ROAD
-// =================================
-
-await addRoad("corner", -24, -24, Math.PI * 1.5);
-await addRoad("corner", 24, -24, Math.PI);
-
-for (const x of [-15, -9, -3, 3, 9, 15]) {
-await addRoad("straight", x, -24);
-}
-
-document.getElementById("status").textContent =
-roads.length + " road pieces loaded.";
-
-} catch (error) {
 console.error(error);
 
-document.getElementById("status").textContent =
-"Loading error: " + error.message;
+status.textContent =
+"Loading problem: " + error.message +
+". Check that the asset filenames and folder are correct.";
+
 }
+
 }
 
 
-buildLayout();
+await buildLayout();
 
 
-// --------------------------------------
+// ========================================
 // ANIMATION
-// --------------------------------------
+// ========================================
 
 function animate() {
 
@@ -698,28 +882,24 @@ requestAnimationFrame(animate);
 
 orbit.update();
 
-renderer.render(scene, camera);
+renderer.render(scene,camera);
 
 }
 
 animate();
 
 
-// --------------------------------------
+// ========================================
 // RESIZE
-// --------------------------------------
+// ========================================
 
-window.addEventListener("resize", () => {
+window.addEventListener("resize",() => {
 
-camera.aspect =
-window.innerWidth / window.innerHeight;
+camera.aspect = innerWidth/innerHeight;
 
 camera.updateProjectionMatrix();
 
-renderer.setSize(
-window.innerWidth,
-window.innerHeight
-);
+renderer.setSize(innerWidth,innerHeight);
 
 });
 
