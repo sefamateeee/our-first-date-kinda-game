@@ -13,40 +13,40 @@
 <title>Our First Date Kinda Game ❤️</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{overflow:hidden;font-family:Georgia,serif;background:#3d2b4a}
+body{overflow:hidden;font-family:Georgia,serif;background:#1a1410}
 canvas{display:block;touch-action:none}
-#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#2d1b3d,#4a2c5a 48%,#2d1b3d);overflow:hidden}
-#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#8b5a8c 0,#5d3a6b 48%,#2d1b3d 100%)}
-#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#6b4a7a55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#4a2c5a40 77px 81px);opacity:.75}
-#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#5a3a6b 0 118px,#7a4d8a 120px 124px);border-top:9px solid #3d254a;box-shadow:0 -12px 35px #1a0d2488}
+#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#2d1b1a,#5a3a2a 48%,#2d1b1a);overflow:hidden}
+#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#8b5a4c 0,#5d4a3a 48%,#2d1b1a 100%)}
+#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#6b5a4a55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#5a3a2a40 77px 81px);opacity:.75}
+#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#5a4a3b 0 118px,#7a6d4a 120px 124px);border-top:9px solid #3d2a1a;box-shadow:0 -12px 35px #1a0d1488}
 #roomTitle{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:clamp(20px,3vw,32px);letter-spacing:3px;text-shadow:0 3px 5px #1a0d24;text-align:center;z-index:1;white-space:nowrap}
 #start .layout{position:relative;z-index:2;width:100%;height:100%;display:grid;grid-template-columns:minmax(190px,25%) 1fr minmax(190px,25%);gap:12px;padding:72px 18px 18px}
-.ward-panel{background:linear-gradient(145deg,#4a2c5aed,#2d1b3df2);border:2px solid #b88cc5;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b0b2b88;overflow:auto;min-height:0}
-.ward-panel h2{font-size:17px;color:#e7c7f0;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b88cc566;padding-bottom:9px}
-.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a77cb144;border-radius:8px;background:#674a85;color:#fff1f8;font:13px Arial;cursor:pointer}
-.category.active{background:#b887c2;color:#21162f;border-color:#f0d0f1}
+.ward-panel{background:linear-gradient(145deg,#4a3a2aed,#2d1b1df2);border:2px solid #b89c85;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b0b1b88;overflow:auto;min-height:0}
+.ward-panel h2{font-size:17px;color:#f0d8c7;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b89c8566;padding-bottom:9px}
+.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a79b8144;border-radius:8px;background:#675a4a;color:#fff8f1;font:13px Arial;cursor:pointer}
+.category.active{background:#b8a782;color:#2f1f12;border-color:#f0e0d0}
 .category span:first-child{font-weight:bold}
 .arrows{display:flex;gap:5px}
-.arrows button,.small-btn{border:0;border-radius:6px;background:#e4c4ea;color:#34153e;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
+.arrows button,.small-btn{border:0;border-radius:6px;background:#e4d4c0;color:#3d2a1a;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
 #previewWrap{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
 #previewCanvas{width:100%;height:100%;max-height:calc(100vh - 115px);border-radius:16px;touch-action:none}
-.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a284dcc;border:1px solid #d1a9d9;border-radius:20px;padding:8px 18px;color:#f7e6f8;font:12px Arial;white-space:nowrap}
-#selectedName{font-size:13px;color:#f3d6e8;margin:-4px 0 12px}
+.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a2a1dcc;border:1px solid #d1b9a9;border-radius:20px;padding:8px 18px;color:#f7efe6;font:12px Arial;white-space:nowrap}
+#selectedName{font-size:13px;color:#f3e6d8;margin:-4px 0 12px}
 #swatches{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
-.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7e8f3;box-shadow:0 2px 4px #0008;cursor:pointer}
+.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7efe8;box-shadow:0 2px 4px #0008;cursor:pointer}
 .swatch.selected{outline:3px solid #e4bd79;outline-offset:3px}
 #savedOutfits{display:grid;gap:8px}
-.outfit{padding:10px;border:1px solid #a77cb1;border-radius:8px;background:#674a85;color:#fff1f8;text-align:left;font:13px Arial;cursor:pointer}
-.outfit strong{display:block;color:#f0d2e8;margin-bottom:3px}
-#saveOutfit{width:100%;padding:10px;border:1px solid #e7c7f0;border-radius:8px;background:#8b62a4;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
-#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2d3f5;border-radius:30px;background:linear-gradient(#e6bd81,#ad78a6);color:#2d1d2c;font:bold 16px Georgia;box-shadow:0 4px 14px #1b0b1b99;cursor:pointer;white-space:nowrap}
-#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#3d2b4abb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
-#status{position:absolute;top:14px;right:14px;z-index:3;background:#3d2b4add;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
-#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#4a2c5ae8;color:white;border:1px solid #e7c7f0;border-radius:12px;padding:12px 16px;font-weight:bold}
-#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#3d2b4a55;border:2px solid #ffffff99;z-index:5;touch-action:none}
+.outfit{padding:10px;border:1px solid #a79b81;border-radius:8px;background:#675a4a;color:#fff8f1;text-align:left;font:13px Arial;cursor:pointer}
+.outfit strong{display:block;color:#f0e2d8;margin-bottom:3px}
+#saveOutfit{width:100%;padding:10px;border:1px solid #e7d7c0;border-radius:8px;background:#8b7a62;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
+#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2e3d5;border-radius:30px;background:linear-gradient(#e6bd81,#ad8a78);color:#2d1d1c;font:bold 16px Georgia;box-shadow:0 4px 14px #1b0b1b99;cursor:pointer;white-space:nowrap}
+#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#2d1b1abb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
+#status{position:absolute;top:14px;right:14px;z-index:3;background:#2d1b1add;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
+#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#4a3a2ae8;color:white;border:1px solid #e7d7c0;border-radius:12px;padding:12px 16px;font-weight:bold}
+#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#2d1b1a55;border:2px solid #ffffff99;z-index:5;touch-action:none}
 #stick{position:absolute;width:58px;height:58px;left:39px;top:39px;border-radius:50%;background:#ffffffbb;border:3px solid white;pointer-events:none}
-#runButton{display:none;position:absolute;right:28px;bottom:130px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#3d2b4abb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
-#jumpButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffb347aa;background:#3d2b4abb;color:#ffb347;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
+#runButton{display:none;position:absolute;right:28px;bottom:130px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#2d1b1abb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
+#jumpButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffb347aa;background:#2d1b1abb;color:#ffb347;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
 @media(max-width:700px){
 #start .layout{grid-template-columns:minmax(112px,30%) 1fr minmax(112px,30%);gap:6px;padding:64px 6px 82px}
 .ward-panel{padding:8px;border-radius:9px}
@@ -638,8 +638,8 @@ model
 // MAIN CITY SCENE - YOUR EXACT ROAD LAYOUT
 // ========================================
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x1a1020);
-scene.fog=new THREE.Fog(0x1a1020, 80, 220);
+scene.background=new THREE.Color(0x1a1410);
+scene.fog=new THREE.Fog(0x1a1410, 80, 220);
 
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,500);
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -684,7 +684,7 @@ const cityCollisionBoxes=[];
 // Ground with sunset tint
 const cityGround=new THREE.Mesh(
 new THREE.PlaneGeometry(240, 220),
-material(0x2a1f2e)
+material(0x2a201a)
 );
 cityGround.rotation.x=-Math.PI/2;
 cityGround.position.set(0, -0.02, 3);
@@ -758,7 +758,7 @@ const savedRoads=[
 function createProceduralRoadMesh(type){
 const group=new THREE.Group();
 const roadMat=new THREE.MeshStandardMaterial({color:0x2a1f2e,roughness:0.95,metalness:0.05});
-const curbMat=new THREE.MeshStandardMaterial({color:0x4a3a5a,roughness:0.8});
+const curbMat=new THREE.MeshStandardMaterial({color:0x4a3a2a,roughness:0.8});
 const lineMat=new THREE.MeshBasicMaterial({color:0xffb366,transparent:true,opacity:0.9});
 const crosswalkMat=new THREE.MeshBasicMaterial({color:0xffcc88,transparent:true,opacity:0.85});
 
@@ -836,7 +836,7 @@ const group=new THREE.Group();
 let color=0x4a3a5a,isStore=false,isApartment=false,isBakery=false;
 if(filename.includes("bakery")){color=0x8b4a1a;isStore=true;isBakery=true;}
 else if(filename.includes("Shop")||filename.includes("Storefront")){color=0x2a5a6a;isStore=true;}
-else if(filename.includes("Apartment")||filename.includes("Block")||filename.includes("Boarding")||filename.includes("Studio")||filename.includes("Budget")){color=0x5a2a7a;isApartment=true;}
+else if(filename.includes("Apartment")||filename.includes("Block")||filename.includes("Boarding")||filename.includes("Studio")||filename.includes("Budget")){color=0x5a4a2a;isApartment=true;}
 else if(filename.includes("Bungalow")||filename.includes("House")||filename.includes("Duplex")||filename.includes("Rental")){color=0x7a2a1a;}
 else if(filename.includes("Townhouse")||filename.includes("Entry")||filename.includes("Gated")){color=0x6a2a1a;}
 
@@ -847,7 +847,7 @@ const depth=7.5;
 const body=new THREE.Mesh(new THREE.BoxGeometry(width,height,depth),material(color));
 body.position.y=height/2;body.castShadow=true;body.receiveShadow=true;group.add(body);
 
-const roof=new THREE.Mesh(new THREE.BoxGeometry(width+0.6,0.5,depth+0.6),material(0x1a102a));
+const roof=new THREE.Mesh(new THREE.BoxGeometry(width+0.6,0.5,depth+0.6),material(0x1a1410));
 roof.position.y=height+0.25;group.add(roof);
 
 const door=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.5,0.15),material(0x2a1a0a));
@@ -960,7 +960,7 @@ scene.add(light);
 
 const pole=new THREE.Mesh(
 new THREE.CylinderGeometry(0.08,0.12,5,8),
-new THREE.MeshStandardMaterial({color:0x3a2a4a,roughness:0.7})
+new THREE.MeshStandardMaterial({color:0x3a2a2a,roughness:0.7})
 );
 pole.position.set(x,2.5,z);pole.castShadow=true;scene.add(pole);
 
@@ -1026,11 +1026,11 @@ let coyoteTimer=0;
 // WARDROBE PREVIEW SCENE
 // ========================================
 const previewScene=new THREE.Scene();
-previewScene.background=new THREE.Color(0x5a3a6a);
-previewScene.fog=new THREE.Fog(0x5a3a6a,10,24);
-previewScene.add(new THREE.HemisphereLight(0xffccaa,0x6a4a7a,2));
+previewScene.background=new THREE.Color(0x3d2a1a);
+previewScene.fog=new THREE.Fog(0x3d2a1a,10,24);
+previewScene.add(new THREE.HemisphereLight(0xffddaa,0x3d2a1a,2));
 
-const previewLight=new THREE.DirectionalLight(0xffddaa,2.5);
+const previewLight=new THREE.DirectionalLight(0xffeecc,2.5);
 previewLight.position.set(-3,7,5);
 previewLight.castShadow=true;
 previewScene.add(previewLight);
@@ -1047,11 +1047,11 @@ alpha:false
 previewRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
 previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
 
-const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x7a5a8a));
+const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x5d4a3a));
 previewFloor.position.y=-.08;
 previewScene.add(previewFloor);
 
-const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x5a3a6a));
+const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x3d2a1a));
 previewRug.position.y=0;
 previewScene.add(previewRug);
 
