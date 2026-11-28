@@ -638,8 +638,8 @@ model
 // MAIN CITY SCENE - YOUR EXACT ROAD LAYOUT
 // ========================================
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x3d2b4a);
-scene.fog=new THREE.Fog(0x3d2b4a, 60, 180);
+scene.background=new THREE.Color(0x1a1020);
+scene.fog=new THREE.Fog(0x1a1020, 80, 220);
 
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,500);
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -653,10 +653,10 @@ renderer.toneMappingExposure=1.1;
 document.body.appendChild(renderer.domElement);
 
 // SUNSET LIGHTING
-const ambient=new THREE.HemisphereLight(0xffb380, 0x4a305a, 0.6);
+const ambient=new THREE.HemisphereLight(0xffcc99, 0x2a1a3a, 0.55);
 scene.add(ambient);
 
-const sun=new THREE.DirectionalLight(0xff8c42, 2.8);
+const sun=new THREE.DirectionalLight(0xff9944, 3.0);
 sun.position.set(-40, 35, -20);
 sun.castShadow=true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -667,11 +667,11 @@ sun.shadow.camera.bottom=-80;
 sun.shadow.bias=-0.0005;
 scene.add(sun);
 
-const fillLight=new THREE.DirectionalLight(0xff6b4a, 0.5);
+const fillLight=new THREE.DirectionalLight(0xffaa66, 0.45);
 fillLight.position.set(30, 20, 30);
 scene.add(fillLight);
 
-const rimLight=new THREE.DirectionalLight(0xff9966, 0.4);
+const rimLight=new THREE.DirectionalLight(0xffbb77, 0.35);
 rimLight.position.set(0, 15, 40);
 scene.add(rimLight);
 
@@ -684,7 +684,7 @@ const cityCollisionBoxes=[];
 // Ground with sunset tint
 const cityGround=new THREE.Mesh(
 new THREE.PlaneGeometry(240, 220),
-material(0x2d1f3a)
+material(0x2a1f2e)
 );
 cityGround.rotation.x=-Math.PI/2;
 cityGround.position.set(0, -0.02, 3);
@@ -695,9 +695,9 @@ scene.add(cityGround);
 const horizonGlow=new THREE.Mesh(
 new THREE.PlaneGeometry(300, 100),
 new THREE.MeshBasicMaterial({
-color:0xff6b3a,
+color:0xff8c42,
 transparent:true,
-opacity:0.15,
+opacity:0.2,
 side:THREE.DoubleSide,
 depthWrite:false
 })
@@ -1422,10 +1422,15 @@ const moving=length>.08;
 const sprint=keys.shift||running;
 localMoving=moving;localSprinting=moving&&sprint;
 
-if(moving){
+// Calculate move direction in world space (relative to camera yaw)
+let dx=0, dz=0;
+if(length>.001){
 forward/=length;sideways/=length;
-const dx=-Math.sin(yaw)*forward+Math.cos(yaw)*sideways;
-const dz=-Math.cos(yaw)*forward-Math.sin(yaw)*sideways;
+dx=-Math.sin(camYaw)*forward+Math.cos(camYaw)*sideways;
+dz=-Math.cos(camYaw)*forward-Math.sin(camYaw)*sideways;
+}
+
+if(moving){
 const speed=sprint?10:5.5;
 const newX=player.position.x+dx*speed*delta;
 const newZ=player.position.z+dz*speed*delta;
@@ -1465,8 +1470,7 @@ coyoteTimer-=delta;
 
 // Face movement direction when moving
 if(moving){
-const targetYaw=Math.atan2(dx,dz);
-yaw=targetYaw;
+yaw=Math.atan2(dx,dz);
 }
 player.rotation.y=yaw;
 
