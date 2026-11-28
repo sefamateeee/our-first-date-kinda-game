@@ -648,8 +648,8 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.5;
+renderer.toneMapping=THREE.NoToneMapping;
+renderer.toneMappingExposure=1;
 document.body.appendChild(renderer.domElement);
 
 // BRIGHTER SUNSET LIGHTING — FIX BLACK SCENERY
@@ -687,6 +687,13 @@ scene.add(fillLight);
 const rimLight = new THREE.DirectionalLight(0xffffff, 1.0);
 rimLight.position.set(0, 25, 40);
 scene.add(rimLight);
+  // EMERGENCY LIGHTING FIX
+const emergencyLight = new THREE.AmbientLight(0xffffff, 5);
+scene.add(emergencyLight);
+
+const emergencySun = new THREE.DirectionalLight(0xffffff, 3);
+emergencySun.position.set(0, 100, 0);
+scene.add(emergencySun);
 
 function material(color){
 return new THREE.MeshStandardMaterial({color, roughness:.85});
