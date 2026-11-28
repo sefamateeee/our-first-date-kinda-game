@@ -63,6 +63,28 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x555555, 2));
+  const straightLoader = new GLTFLoader();
+
+straightLoader.load(
+  “city-assets/roads/MS_RD_01_StraightRoad.glb”,
+  straightGltf => {
+    const straight = straightGltf.scene;
+
+    const bounds = new THREE.Box3().setFromObject(straight);
+    const center = bounds.getCenter(new THREE.Vector3());
+
+    straight.position.x -= center.x;
+    straight.position.z -= center.z;
+
+    const adjusted = new THREE.Box3().setFromObject(straight);
+    straight.position.y -= adjusted.min.y;
+
+    // Place the straight road beside the narrow end.
+    straight.position.z -= 4;
+
+    scene.add(straight);
+  }
+)
 
 const light = new THREE.DirectionalLight(0xffffff, 2);
 light.position.set(5, 10, 5);
