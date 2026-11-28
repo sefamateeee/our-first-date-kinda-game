@@ -132,8 +132,9 @@ right: 12px;
 <h1>OUR CITY — EDITOR</h1>
 
 <p>
-Preview and arrange the Midnight Streets city layout.
-Your original road positions are kept as the starting layout.
+Updated compact city layout.
+Arrange the buildings using the controls below.
+Your road layout is preserved.
 </p>
 
 <label>Choose a building to move</label>
@@ -200,15 +201,15 @@ OrbitControls
 
 
 const status = document.getElementById('status');
-
 const loader = new GLTFLoader();
 
 const scene = new THREE.Scene();
 
 scene.background = new THREE.Color(0xb9c9d0);
-
 scene.fog = new THREE.Fog(0xb9c9d0, 150, 300);
 
+
+// CAMERA
 
 const camera = new THREE.PerspectiveCamera(
 48,
@@ -219,6 +220,8 @@ innerWidth / innerHeight,
 
 camera.position.set(62, 72, 78);
 
+
+// RENDERER
 
 const renderer = new THREE.WebGLRenderer({
 antialias: true
@@ -231,17 +234,16 @@ Math.min(devicePixelRatio, 1.7)
 );
 
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-
 renderer.toneMappingExposure = 1.15;
 
 renderer.shadowMap.enabled = true;
-
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 document.body.appendChild(renderer.domElement);
 
+
+// CAMERA CONTROLS
 
 const controls = new OrbitControls(
 camera,
@@ -249,13 +251,10 @@ renderer.domElement
 );
 
 controls.enableDamping = true;
-
 controls.dampingFactor = 0.075;
 
 controls.enableRotate = true;
-
 controls.enablePan = true;
-
 controls.enableZoom = true;
 
 controls.mouseButtons = {
@@ -265,15 +264,12 @@ RIGHT: THREE.MOUSE.PAN
 };
 
 controls.minDistance = 34;
-
 controls.maxDistance = 145;
 
 controls.minPolarAngle = 0.18;
-
 controls.maxPolarAngle = 1.48;
 
 controls.target.set(0, 0, 3);
-
 controls.screenSpacePanning = true;
 
 renderer.domElement.addEventListener(
@@ -298,7 +294,6 @@ const sun = new THREE.DirectionalLight(
 );
 
 sun.position.set(-45, 75, -30);
-
 sun.castShadow = true;
 
 sun.shadow.mapSize.set(2048, 2048);
@@ -310,14 +305,12 @@ sun.shadow.camera.bottom = -85;
 
 scene.add(sun);
 
-
 const fill = new THREE.DirectionalLight(
 0xffffff,
 1.15
 );
 
 fill.position.set(35, 35, 45);
-
 scene.add(fill);
 
 
@@ -332,13 +325,13 @@ roughness: 1
 );
 
 ground.rotation.x = -Math.PI / 2;
-
 ground.position.set(0, -0.12, 3);
-
 ground.receiveShadow = true;
 
 scene.add(ground);
 
+
+// SUBTLE EDITOR GRID
 
 const grid = new THREE.GridHelper(
 180,
@@ -348,9 +341,7 @@ const grid = new THREE.GridHelper(
 );
 
 grid.position.set(0, -0.105, 3);
-
 grid.material.opacity = 0.2;
-
 grid.material.transparent = true;
 
 scene.add(grid);
@@ -366,7 +357,9 @@ transition64: 'MS_RD_06_Transition_6to4.glb'
 };
 
 
-// ORIGINAL SAVED ROAD POSITIONS — 36 PIECES
+// ORIGINAL SAVED ROAD POSITIONS
+// All 36 road pieces retained.
+// Corner 21 has been nudged slightly toward the upper road.
 
 const savedRoads = [
 
@@ -396,7 +389,7 @@ const savedRoads = [
 [19,'straight',24.375,.16,-8.602,1.571],
 [20,'straight',24.392,.16,-14.162,1.571],
 
-[21,'corner',-17.172,.16,18.984,-.032],
+[21,'corner',-17.172,.16,19.734,-.032],
 [22,'corner',17.379,.16,18.001,-1.557],
 
 [23,'straight',-18,.16,26,0],
@@ -430,7 +423,6 @@ new THREE.Vector3()
 );
 
 root.position.x -= center.x;
-
 root.position.z -= center.z;
 
 const after = new THREE.Box3().setFromObject(root);
@@ -438,25 +430,19 @@ const after = new THREE.Box3().setFromObject(root);
 root.position.y -= after.min.y;
 
 root.traverse(o => {
-
 if (o.isMesh) {
-
 o.castShadow = true;
-
 o.receiveShadow = true;
-
 }
-
 });
 
 return root;
-
 }
 
 
-// FALLBACK ROAD IF ASSET IS MISSING
+// FALLBACK ROAD
 
-function fallbackRoad(type) {
+function fallbackRoad() {
 
 const group = new THREE.Group();
 
@@ -469,13 +455,11 @@ roughness: 0.96
 );
 
 road.position.y = 0.08;
-
 road.receiveShadow = true;
 
 group.add(road);
 
 return group;
-
 }
 
 
@@ -501,22 +485,20 @@ model = normalizeModel(gltf.scene);
 
 console.warn('Road asset missing:', roadFiles[type]);
 
-model = fallbackRoad(type);
+model = fallbackRoad();
 
 }
 
 model.position.set(x,y,z);
-
 model.rotation.y = rot;
 
 scene.add(model);
-
 roadModels.push(model);
 
 }
 
 
-// BUILDINGS
+// BUILDING FILES
 
 const buildingFiles = [
 
@@ -545,37 +527,47 @@ const buildingFiles = [
 ];
 
 
-// INITIAL GRASS POSITIONS
+// COMPACT BUILDING POSITIONS
+// The spacing is tighter than the previous layout.
+// Buildings are scaled to a maximum footprint of 5.6 units.
+// Slots are 7 units apart to leave room between buildings.
 
-const initialSpots = [
+const compactSpots = [
 
-[-13,12],
-[-5,12],
-[3,12],
-[11,12],
+[-14,10],
+[-7,10],
+[0,10],
+[7,10],
 
-[-13,19],
-[-5,19],
-[3,19],
-[11,19],
+[-14,16.5],
+[-7,16.5],
+[0,16.5],
+[7,16.5],
 
-[-13,-7],
-[-5,-7],
-[3,-7],
-[11,-7],
+[-14,-6],
+[-7,-6],
+[0,-6],
+[7,-6],
 
-[-13,-15],
-[-5,-15],
-[3,-15],
-[11,-15],
+[-14,-12.5],
+[-7,-12.5],
+[0,-12.5],
+[7,-12.5],
 
-[-30,12],
-[-30,-8]
+[14,-6]
 
 ];
 
 
-// SIMPLE PLACEHOLDER IF A BUILDING CANNOT LOAD
+// THE CORNER SHOP IS RESERVED FOR THE SPAWN STORE.
+// The other buildings use the compact residential positions.
+
+const shopIndex = 10;
+
+const shopPosition = [-42,16];
+
+
+// FALLBACK BUILDING
 
 function fallbackBuilding(name) {
 
@@ -588,9 +580,7 @@ const shop =
 /Shop|Storefront|bakery/i.test(name);
 
 const w = shop ? 6.2 : 5.3;
-
 const d = shop ? 5.4 : 5.6;
-
 const h = apartment ? 7.2 : 5.0;
 
 const body = new THREE.Mesh(
@@ -602,9 +592,7 @@ roughness: 0.9
 );
 
 body.position.y = h / 2;
-
 body.castShadow = true;
-
 body.receiveShadow = true;
 
 group.add(body);
@@ -617,15 +605,13 @@ color: 0x51443a
 );
 
 roof.position.y = h + 0.15;
-
 group.add(roof);
 
 return group;
-
 }
 
 
-// LOAD ALL BUILDINGS
+// LOAD BUILDINGS
 
 const buildingEntries = [];
 
@@ -634,7 +620,6 @@ for (let i = 0; i < buildingFiles.length; i++) {
 const file = buildingFiles[i];
 
 let root;
-
 let real = true;
 
 try {
@@ -650,10 +635,12 @@ root = normalizeModel(gltf.scene);
 console.warn('Building asset missing:', file);
 
 real = false;
-
 root = fallbackBuilding(file);
 
 }
+
+
+// FIT LARGE BUILDINGS INTO THE COMPACT LAYOUT
 
 const box = new THREE.Box3().setFromObject(root);
 
@@ -669,31 +656,40 @@ const scale = Math.min(
 );
 
 root.scale.setScalar(scale);
-
 root.updateMatrixWorld(true);
 
 const after = new THREE.Box3().setFromObject(root);
 
 root.position.y -= after.min.y;
 
-const spot = initialSpots[i] || [0,-7];
+
+// POSITION THE STORE SEPARATELY
+
+let spot;
+
+if (i === shopIndex) {
+
+spot = shopPosition;
+
+} else {
+
+const compactIndex = i < shopIndex ? i : i - 1;
+
+spot = compactSpots[compactIndex] || [14,-13];
+
+}
 
 root.position.set(spot[0],0,spot[1]);
 
 root.userData.editorName = file;
-
 root.userData.file = file;
-
 root.userData.realAsset = real;
 
 root.traverse(o => {
 
 if (o.isMesh) {
-
 o.castShadow = true;
-
 o.receiveShadow = true;
-
 }
 
 });
@@ -703,16 +699,104 @@ scene.add(root);
 buildingEntries.push({
 
 file,
-
 root,
-
 start: root.position.clone(),
-
 startRotation: 0
 
 });
 
 }
+
+
+// CAR PARK OUTSIDE THE SPAWN STORE
+
+const carPark = new THREE.Group();
+
+const asphaltMaterial = new THREE.MeshStandardMaterial({
+color: 0x393d3e,
+roughness: 0.98
+});
+
+const parkingLineMaterial = new THREE.MeshStandardMaterial({
+color: 0xe8e5d7,
+roughness: 0.9
+});
+
+
+// Main asphalt parking area
+
+const parkingSurface = new THREE.Mesh(
+new THREE.BoxGeometry(16,0.12,7),
+asphaltMaterial
+);
+
+parkingSurface.position.set(-42,0.015,8.5);
+parkingSurface.receiveShadow = true;
+
+carPark.add(parkingSurface);
+
+
+// Parking bay divider lines
+
+for (let i = 0; i <= 6; i++) {
+
+const line = new THREE.Mesh(
+new THREE.BoxGeometry(0.075,0.025,4.8),
+parkingLineMaterial
+);
+
+line.position.set(
+-49.2 + i * 2.4,
+0.09,
+8.5
+);
+
+carPark.add(line);
+
+}
+
+
+// Back edge of parking bays
+
+const backLine = new THREE.Mesh(
+new THREE.BoxGeometry(14.4,0.025,0.075),
+parkingLineMaterial
+);
+
+backLine.position.set(-42,0.09,10.9);
+
+carPark.add(backLine);
+
+
+// Small access strip between the car park and road
+
+const driveway = new THREE.Mesh(
+new THREE.BoxGeometry(6,0.1,2.2),
+asphaltMaterial
+);
+
+driveway.position.set(-42,0.025,3.9);
+driveway.receiveShadow = true;
+
+carPark.add(driveway);
+
+
+// Add a small pedestrian path beside the parking area
+
+const footpath = new THREE.Mesh(
+new THREE.BoxGeometry(2,0.12,7),
+new THREE.MeshStandardMaterial({
+color: 0xaaa99c,
+roughness: 1
+})
+);
+
+footpath.position.set(-32.8,0.025,8.5);
+footpath.receiveShadow = true;
+
+carPark.add(footpath);
+
+scene.add(carPark);
 
 
 // BUILDING SELECTOR
@@ -727,7 +811,10 @@ const opt = document.createElement('option');
 
 opt.value = String(i);
 
-opt.textContent = entry.file;
+opt.textContent =
+entry.file === buildingFiles[shopIndex]
+? entry.file + ' — SPAWN STORE'
+: entry.file;
 
 select.append(opt);
 
@@ -737,16 +824,12 @@ select.append(opt);
 let selectedIndex = 0;
 
 select.addEventListener('change', () => {
-
 selectedIndex = Number(select.value);
-
 });
 
 
 function selected() {
-
 return buildingEntries[selectedIndex];
-
 }
 
 
@@ -759,7 +842,6 @@ const e = selected();
 if (!e) return;
 
 e.root.position.x += dx;
-
 e.root.position.z += dz;
 
 }
@@ -799,7 +881,7 @@ if (e) e.root.rotation.y += Math.PI / 2;
 };
 
 
-// RESET
+// RESET SELECTED
 
 document.getElementById('resetSelected').onclick = () => {
 
@@ -808,7 +890,6 @@ const e = selected();
 if (e) {
 
 e.root.position.copy(e.start);
-
 e.root.rotation.y = e.startRotation;
 
 }
@@ -816,12 +897,13 @@ e.root.rotation.y = e.startRotation;
 };
 
 
+// RESET ALL
+
 document.getElementById('resetAll').onclick = () => {
 
 buildingEntries.forEach(e => {
 
 e.root.position.copy(e.start);
-
 e.root.rotation.y = e.startRotation;
 
 });
@@ -829,7 +911,9 @@ e.root.rotation.y = e.startRotation;
 };
 
 
-// SAVE
+// SAVE LAYOUT
+
+const SAVE_KEY = 'ofd_city_editor_layout_v3';
 
 document.getElementById('save').onclick = () => {
 
@@ -846,12 +930,12 @@ rotation: e.root.rotation.y
 }));
 
 localStorage.setItem(
-'ofd_city_editor_layout_v2',
+SAVE_KEY,
 JSON.stringify(data)
 );
 
 status.textContent =
-'Saved this building arrangement in this browser.';
+'Saved your updated building arrangement in this browser.';
 
 };
 
@@ -860,12 +944,10 @@ status.textContent =
 
 document.getElementById('clearSave').onclick = () => {
 
-localStorage.removeItem(
-'ofd_city_editor_layout_v2'
-);
+localStorage.removeItem(SAVE_KEY);
 
 status.textContent =
-'Saved arrangement cleared. Reload the page to restore the starting layout.';
+'Saved arrangement cleared. Reload to restore the new starting layout.';
 
 };
 
@@ -875,7 +957,7 @@ status.textContent =
 try {
 
 const saved = JSON.parse(
-localStorage.getItem('ofd_city_editor_layout_v2') || 'null'
+localStorage.getItem(SAVE_KEY) || 'null'
 );
 
 if (Array.isArray(saved)) {
@@ -917,8 +999,18 @@ panel.classList.contains('hidden')
 };
 
 
+// STATUS
+
+const missing = buildingEntries.filter(
+e => !e.root.userData.realAsset
+).length;
+
 status.textContent =
-`Loaded ${roadModels.length} road pieces and ${buildingEntries.length} building models. Missing assets are shown as placeholders.`;
+`Loaded ${roadModels.length} road pieces and ${buildingEntries.length} buildings.
+Spawn store: CornerShop.
+Car park: added.
+Missing building assets: ${missing}.
+Compact layout loaded.`;
 
 
 // RESIZE
