@@ -653,7 +653,7 @@ renderer.toneMappingExposure=1.1;
 document.body.appendChild(renderer.domElement);
 
 // SUNSET LIGHTING
-const ambient=new THREE.HemisphereLight(0xffcc99, 0x2a1a3a, 0.55);
+const ambient=new THREE.HemisphereLight(0xffcc99, 0x3a2a1a, 0.55);
 scene.add(ambient);
 
 const sun=new THREE.DirectionalLight(0xff9944, 3.0);
@@ -757,7 +757,7 @@ const savedRoads=[
 
 function createProceduralRoadMesh(type){
 const group=new THREE.Group();
-const roadMat=new THREE.MeshStandardMaterial({color:0x2a1f2e,roughness:0.95,metalness:0.05});
+const roadMat=new THREE.MeshStandardMaterial({color:0x2a201a,roughness:0.95,metalness:0.05});
 const curbMat=new THREE.MeshStandardMaterial({color:0x4a3a2a,roughness:0.8});
 const lineMat=new THREE.MeshBasicMaterial({color:0xffb366,transparent:true,opacity:0.9});
 const crosswalkMat=new THREE.MeshBasicMaterial({color:0xffcc88,transparent:true,opacity:0.85});
@@ -833,10 +833,10 @@ await addRoad(r.type,r.x,r.z,r.rot,r.y);
 // ========================================
 function createProceduralBuildingMesh(filename,label){
 const group=new THREE.Group();
-let color=0x4a3a5a,isStore=false,isApartment=false,isBakery=false;
+let color=0x5a4a3a,isStore=false,isApartment=false,isBakery=false;
 if(filename.includes("bakery")){color=0x8b4a1a;isStore=true;isBakery=true;}
 else if(filename.includes("Shop")||filename.includes("Storefront")){color=0x2a5a6a;isStore=true;}
-else if(filename.includes("Apartment")||filename.includes("Block")||filename.includes("Boarding")||filename.includes("Studio")||filename.includes("Budget")){color=0x5a4a2a;isApartment=true;}
+else if(filename.includes("Apartment")||filename.includes("Block")||filename.includes("Boarding")||filename.includes("Studio")||filename.includes("Budget")){color=0x5a4a3a;isApartment=true;}
 else if(filename.includes("Bungalow")||filename.includes("House")||filename.includes("Duplex")||filename.includes("Rental")){color=0x7a2a1a;}
 else if(filename.includes("Townhouse")||filename.includes("Entry")||filename.includes("Gated")){color=0x6a2a1a;}
 
@@ -991,9 +991,9 @@ lightPositions.forEach(p=>createStreetLamp(p[0],p[1]));
 // TREES
 // ========================================
 function addTree(x,z,s=1){
-const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.18*s,0.24*s,2.2*s,7),material(0x2a1a2a));
+const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.18*s,0.24*s,2.2*s,7),material(0x3a2a1a));
 trunk.position.set(x,1.1*s,z);trunk.castShadow=true;scene.add(trunk);
-const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s,1),material(0x1a3a1f));
+const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s,1),material(0x2a3a1a));
 crown.position.set(x,2.65*s,z);crown.castShadow=true;scene.add(crown);
 
 cityCollisionBoxes.push({x,z,halfWidth:0.65*s,halfDepth:0.65*s});
@@ -1028,7 +1028,7 @@ let coyoteTimer=0;
 const previewScene=new THREE.Scene();
 previewScene.background=new THREE.Color(0x3d2a1a);
 previewScene.fog=new THREE.Fog(0x3d2a1a,10,24);
-previewScene.add(new THREE.HemisphereLight(0xffddaa,0x3d2a1a,2));
+previewScene.add(new THREE.HemisphereLight(0xffddaa,0x3d2a1a,2.2));
 
 const previewLight=new THREE.DirectionalLight(0xffeecc,2.5);
 previewLight.position.set(-3,7,5);
