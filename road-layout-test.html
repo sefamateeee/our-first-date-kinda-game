@@ -587,6 +587,51 @@ selectRoad(object);
 // --------------------------------------
 
 async function buildLayout() {
+  async function inspectRoadDimensions() {
+const assets = [
+"MS_RD_05_NarrowRoad.glb",
+"MS_RD_06_Transition_4to3.glb",
+"MS_RD_06_Transition_6to4.glb"
+];
+
+const results = [];
+
+for (const filename of assets) {
+try {
+const gltf = await loader.loadAsync(
+"city-assets/roads/" + filename
+);
+
+gltf.scene.updateMatrixWorld(true);
+
+const bounds = new THREE.Box3()
+.setFromObject(gltf.scene);
+
+const size = bounds.getSize(
+new THREE.Vector3()
+);
+
+results.push(
+filename +
+"\nX: " + size.x.toFixed(2) +
+" | Y: " + size.y.toFixed(2) +
+" | Z: " + size.z.toFixed(2)
+);
+
+} catch (error) {
+results.push(filename + " — FAILED TO LOAD");
+}
+}
+
+document.getElementById("saved").value =
+results.join("\n\n");
+
+document.getElementById("status").textContent =
+"Road measurements complete!";
+}
+
+inspectRoadDimensions();
+
 try {
 
 // =================================
