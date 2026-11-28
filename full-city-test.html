@@ -649,30 +649,43 @@ renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.1;
+renderer.toneMappingExposure=1.5;
 document.body.appendChild(renderer.domElement);
 
-// SUNSET LIGHTING
-const ambient=new THREE.HemisphereLight(0xffcc99, 0x3a2a1a, 0.55);
+// BRIGHTER SUNSET LIGHTING — FIX BLACK SCENERY
+
+// Strong overall illumination
+const ambient = new THREE.AmbientLight(0xffffff, 1.8);
 scene.add(ambient);
 
-const sun=new THREE.DirectionalLight(0xff9944, 3.0);
-sun.position.set(-40, 35, -20);
-sun.castShadow=true;
+// Sky and ground illumination
+const hemisphere = new THREE.HemisphereLight(
+0xffe0bd,
+0x75604d,
+2.0
+);
+scene.add(hemisphere);
+
+// Main sunset sunlight
+const sun = new THREE.DirectionalLight(0xffd0a0, 4.0);
+sun.position.set(-40, 60, -20);
+sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left=-80;
-sun.shadow.camera.right=80;
-sun.shadow.camera.top=80;
-sun.shadow.camera.bottom=-80;
-sun.shadow.bias=-0.0005;
+sun.shadow.camera.left = -80;
+sun.shadow.camera.right = 80;
+sun.shadow.camera.top = 80;
+sun.shadow.camera.bottom = -80;
+sun.shadow.bias = -0.0005;
 scene.add(sun);
 
-const fillLight=new THREE.DirectionalLight(0xffaa66, 0.45);
-fillLight.position.set(30, 20, 30);
+// Warm secondary illumination
+const fillLight = new THREE.DirectionalLight(0xffd6ad, 1.5);
+fillLight.position.set(30, 30, 30);
 scene.add(fillLight);
 
-const rimLight=new THREE.DirectionalLight(0xffbb77, 0.35);
-rimLight.position.set(0, 15, 40);
+// Soft light from behind
+const rimLight = new THREE.DirectionalLight(0xffffff, 1.0);
+rimLight.position.set(0, 25, 40);
 scene.add(rimLight);
 
 function material(color){
