@@ -723,150 +723,84 @@ selectObject(obj);
 // ========================================
 
 async function buildLayout() {
-
-const status = document.getElementById("status");
-
 try {
-
-document.getElementById("selection").innerHTML =
-'<option value="">Choose an object...</option>';
-
-
-// Restore your exact 36 road positions.
-
-for (const r of savedRoads) {
-
-const model = await loadAsset(
-r.type,
-r.x,
-r.z,
-r.rot,
-r.y,
-false
-);
-
-model.userData.objectId = r.id;
-
+// Remove the old automatically generated layout.
+for (const road of roads) {
+scene.remove(road);
 }
 
+roads.length = 0;
+roadNumber = 0;
+selected = null;
+transform.detach();
 
-// WHITE DASHED CENTRE MARKINGS
+document.getElementById("selection").innerHTML = "";
 
-const dashedPositions = [
+// Your exact saved 36-piece layout.
+const savedRoads = [
+["crossroads",-27.429,0.16,5,0],
+["crossroads",17.6,0.16,5,0],
 
-[-18,2,0],
-[-12,2,0],
-[-6,2,0],
-[0,2,0],
-[6,2,0],
-[12,2,0],
+["straight",-18,0.16,2,0],
+["straight",-12,0.16,2,0],
+["straight",-6,0.16,2,0],
+["straight",0,0.16,2,0],
+["straight",6,0.16,2,0],
+["straight",12,0.16,2,0],
 
-[-18,26,0],
-[-12,26,0],
-[-6,26,0],
-[0,26,0],
-[6,26,0],
-[12,26,0],
+["transition64",-19.622,0.16,4.504,3.142],
+["straight",-20.626,0.16,14,1.571],
+["straight",-20.646,0.16,20,1.571],
 
-[-18,-22,0],
-[-12,-22,0],
-[-6,-22,0],
-[0,-22,0],
-[6,-22,0],
-[12,-22,0],
+["transition64",-25.784,0.16,-5,0],
+["straight",-20.903,0.16,-6.391,1.571],
+["straight",-20.882,0.16,-12.266,1.571],
 
-[-20.626,14,Math.PI/2],
-[-20.646,20,Math.PI/2],
+["transition64",26.123,0.16,4.22,3.142],
+["straight",25.101,0.16,14.193,1.571],
+["straight",25.094,0.16,20,1.571],
 
-[-20.903,-6.391,Math.PI/2],
-[-20.882,-12.266,Math.PI/2],
+["transition64",19.453,0.16,-5,0],
+["straight",24.375,0.16,-8.602,1.571],
+["straight",24.392,0.16,-14.162,1.571],
 
-[25.101,14.193,Math.PI/2],
-[25.094,20,Math.PI/2],
+["corner",-17.172,0.16,18.984,-0.032],
+["corner",17.379,0.16,18.001,-1.557],
 
-[24.375,-8.602,Math.PI/2],
-[24.392,-14.162,Math.PI/2]
+["straight",-18,0.16,26,0],
+["straight",-12,0.16,26,0],
+["straight",-6,0.16,26,0],
+["straight",0,0.16,26,0],
+["straight",6,0.16,26,0],
+["straight",12,0.16,26,0],
 
+["corner",-16.874,0.16,-18.121,1.547],
+["corner",16.833,0.173,-18.225,-0.01],
+
+["straight",-18,0.16,-22,0],
+["straight",-12,0.16,-22,0],
+["straight",-6,0.16,-22,0],
+["straight",0,0.16,-22,0],
+["straight",6,0.16,-22,0],
+["straight",12,0.16,-22,0]
 ];
 
-
-for (const [x,z,rot] of dashedPositions) {
-
-await loadAsset(
-"dashedCenter",
-x,
-z,
-rot,
-0.255,
-true
-);
-
+for (const [type,x,y,z,rotation] of savedRoads) {
+const road = await addRoad(type,x,z,rotation);
+road.position.y = y;
 }
 
+document.getElementById("status").textContent =
+roads.length + " saved road pieces restored.";
 
-// CROSSWALKS
-
-await loadAsset(
-"crosswalk",
--27.429,
-5,
-0,
-0.255,
-true
-);
-
-await loadAsset(
-"crosswalk",
-17.6,
-5,
-0,
-0.255,
-true
-);
-
-
-// STOP LINES
-
-await loadAsset(
-"stopLine",
--23.0,
-5,
-0,
-0.255,
-true
-);
-
-await loadAsset(
-"stopLine",
-13.2,
-5,
-0,
-0.255,
-true
-);
-
-
-// YELLOW BUS STOP LINE
-
-addYellowBusStopLine();
-
-
-status.textContent =
-`Loaded ${savedRoads.length} saved road pieces plus road markings.`;
-
-}
-
-catch(error) {
-
+} catch (error) {
 console.error(error);
 
-status.textContent =
-"Loading problem: " + error.message +
-". Check that the asset filenames and folder are correct.";
-
+document.getElementById("status").textContent =
+"Loading error: " + error.message;
+}
 }
 
-}
 
 
 await buildLayout();
