@@ -35,7 +35,7 @@ position: fixed;
 z-index: 5;
 top: 12px;
 left: 12px;
-width: 280px;
+width: 300px;
 max-height: calc(100vh - 24px);
 overflow: auto;
 padding: 14px;
@@ -64,7 +64,7 @@ font-size: 12px;
 margin: 10px 0 5px;
 }
 
-select, button {
+select, button, input {
 font: 13px Arial;
 border-radius: 7px;
 border: 1px solid #9aac91;
@@ -74,6 +74,7 @@ color: #1c2a20;
 }
 
 select { width: 100%; }
+input { width: 100%; }
 
 button {
 cursor: pointer;
@@ -122,9 +123,32 @@ right: 12px;
 }
 
 .hidden { display: none !important; }
+
+.section {
+border-top: 1px solid #3a4a3a;
+padding-top: 12px;
+margin-top: 12px;
+}
+
+.section:first-child {
+border-top: none;
+padding-top: 0;
+margin-top: 0;
+}
+
+.small-btn {
+padding: 6px 10px;
+font-size: 11px;
+}
+
+.coord-display {
+font-family: monospace;
+font-size: 11px;
+color: #a8d8a0;
+margin: 4px 0;
+}
 </style>
 </head>
-
 <body>
 
 <div id="panel">
@@ -132,49 +156,148 @@ right: 12px;
 <h1>OUR CITY — EDITOR</h1>
 
 <p>
-Updated compact city layout.
-Arrange the buildings using the controls below.
-Your road layout is preserved.
+Grid-based city layout editor.
+Roads snap to 6-unit grid. Buildings sit in blocks between roads.
+Use the controls below to arrange buildings. All changes auto-save.
 </p>
 
+<!-- ROAD NETWORK SECTION -->
+<div class="section">
+<h2 style="font-size:13px;margin:0 0 8px;color:#f4d9a5">ROAD NETWORK</h2>
+<label>Road piece to add</label>
+<select id="roadTypeSelect">
+<option value="straight">Straight (6×6)</option>
+<option value="corner">Corner 90°</option>
+<option value="crossroads">Crossroads (4-way)</option>
+<option value="transition64">Transition 6→4 lane</option>
+</select>
+
+<div class="row">
+<button id="addRoadAtCursor">Add at cursor</button>
+<button id="rebuildRoads">Rebuild full grid</button>
+</div>
+
+<label>Grid position (X, Z in tiles)</label>
+<div class="row">
+<input id="roadGridX" type="number" placeholder="Grid X" value="0" style="width:48%">
+<input id="roadGridZ" type="number" placeholder="Grid Z" value="0" style="width:48%">
+</div>
+<div class="row">
+<button id="placeRoadAtGrid">Place at grid</button>
+<button id="removeRoadAtGrid">Remove at grid</button>
+</div>
+
+<div id="roadCount" class="coord-display">Road pieces: 0</div>
+</div>
+
+<!-- BUILDING SECTION -->
+<div class="section">
+<h2 style="font-size:13px;margin:0 0 8px;color:#f4d9a5">BUILDINGS</h2>
 <label>Choose a building to move</label>
 <select id="buildingSelect">
 <option value="">Loading buildings...</option>
 </select>
 
+<div class="coord-display" id="buildingPos">Position: —, — | Rotation: —</div>
+
 <label>Move selected building</label>
 
 <div class="row">
-<button data-move="0,-1">↑ North</button>
-<button data-move="0,1">↓ South</button>
+<button data-move="0,-7">↑ North (lot)</button>
+<button data-move="0,7">↓ South (lot)</button>
 </div>
 
 <div class="row">
-<button data-move="-1,0">← West</button>
-<button data-move="1,0">East →</button>
+<button data-move="-7,0">← West (lot)</button>
+<button data-move="7,0">East → (lot)</button>
 </div>
 
 <div class="row">
-<button data-move="0,-0.25">Fine ↑</button>
-<button data-move="0,0.25">Fine ↓</button>
+<button data-move="0,-0.5">Fine ↑</button>
+<button data-move="0,0.5">Fine ↓</button>
 </div>
 
 <div class="row">
-<button id="rotateLeft">Rotate ↶</button>
-<button id="rotateRight">Rotate ↷</button>
+<button data-move="-0.5,0">Fine ←</button>
+<button data-move="0.5,0">Fine →</button>
 </div>
 
 <div class="row">
-<button id="resetSelected">Reset selected</button>
-<button id="resetAll">Reset all</button>
+<button id="rotateLeft">Rotate ↶ 90°</button>
+<button id="rotateRight">Rotate ↷ 90°</button>
 </div>
 
 <div class="row">
-<button id="save">Save layout</button>
-<button id="clearSave">Clear saved</button>
+<button id="snapToLot">Snap to nearest lot</button>
+<button id="snapToGrid">Snap to 6-unit grid</button>
 </div>
 
+<div class="row">
+<button id="resetSelected" class="small-btn">Reset selected</button>
+<button id="resetAll" class="small-btn">Reset all buildings</button>
+</div>
+
+<div class="row">
+<button id="randomizeTypes">Randomize types</button>
+<button id="placeAllInBlocks">Place all in blocks</button>
+</div>
+</div>
+
+<!-- CITY OBJECTS SECTION -->
+<div class="section">
+<h2 style="font-size:13px;margin:0 0 8px;color:#f4d9a5">CITY OBJECTS</h2>
+<div class="row">
+<button id="addStreetlamp">Add streetlamp</button>
+<button id="addTree">Add tree</button>
+</div>
+<div class="row">
+<button id="placeLampsAtIntersections">Lamps at all intersections</button>
+<button id="placeTreesAtBlocks">Trees at block corners</button>
+</div>
+<div class="row">
+<button id="removeAllLamps">Remove all lamps</button>
+<button id="removeAllTrees">Remove all trees</button>
+</div>
+<div id="objectCounts" class="coord-display">Lamps: 0 | Trees: 0</div>
+</div>
+
+<!-- PREVIEW / TEST SECTION -->
+<div class="section">
+<h2 style="font-size:13px;margin:0 0 8px;color:#f4d9a5">PREVIEW & TEST</h2>
+<div class="row">
+<button id="spawnPreviewCharacter">Spawn preview character</button>
+<button id="removePreviewCharacter">Remove preview</button>
+</div>
+<div class="row">
+<button id="testWalkPath">Test walk path</button>
+<button id="clearTestPath">Clear path</button>
+</div>
+<label>Character appearance</label>
+<select id="previewGender">
+<option value="boy">Boy</option>
+<option value="girl">Girl</option>
+</select>
+<select id="previewOutfit">
+<option value="casual">Casual</option>
+<option value="formal">Formal</option>
+<option value="summer">Summer</option>
+</select>
+</div>
+
+<!-- SAVE / LOAD SECTION -->
+<div class="section">
+<h2 style="font-size:13px;margin:0 0 8px;color:#f4d9a5">SAVE / LOAD</h2>
+<div class="row">
+<button id="saveLayout">Save layout to localStorage</button>
+<button id="exportJSON">Export as JSON</button>
+</div>
+<div class="row">
+<button id="clearSave">Clear saved layout</button>
+<button id="importJSON">Import JSON file</button>
+</div>
+<input id="importFile" type="file" accept=".json" style="display:none">
 <div id="status">Loading city assets...</div>
+</div>
 
 </div>
 
@@ -199,17 +322,37 @@ import {
 OrbitControls
 } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js';
 
+import { clone as cloneSkeleton } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/utils/SkeletonUtils.js';
 
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+import { getDatabase, ref, set, onValue, onDisconnect } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
+
+
+// ========================================
+// UI ELEMENTS
+// ========================================
 const status = document.getElementById('status');
 const loader = new GLTFLoader();
 
-const scene = new THREE.Scene();
+// Firebase config (for multiplayer preview)
+const firebaseConfig = {
+apiKey: "AIzaSyCIkwXfeAfEZrG1kE0myW8BIRXNq5gOnpE",
+authDomain: "our-first-date-kinda-game.firebaseapp.com",
+databaseURL: "https://our-first-date-kinda-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId: "our-first-date-kinda-game",
+storageBucket: "our-first-date-kinda-game.firebasestorage.app",
+messagingSenderId: "176526649038",
+appId: "1:176526649038:web:3c6ab02491491e4e8e129f",
+measurementId: "G-49HR8VS7TV"
+};
 
+// ========================================
+// THREE.JS SETUP
+// ========================================
+const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xb9c9d0);
 scene.fog = new THREE.Fog(0xb9c9d0, 150, 300);
-
-
-// CAMERA
 
 const camera = new THREE.PerspectiveCamera(
 48,
@@ -217,138 +360,101 @@ innerWidth / innerHeight,
 0.1,
 600
 );
-
 camera.position.set(62, 72, 78);
 
-
-// RENDERER
-
-const renderer = new THREE.WebGLRenderer({
-antialias: true
-});
-
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(innerWidth, innerHeight);
-
-renderer.setPixelRatio(
-Math.min(devicePixelRatio, 1.7)
-);
-
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
-
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
 document.body.appendChild(renderer.domElement);
 
-
-// CAMERA CONTROLS
-
-const controls = new OrbitControls(
-camera,
-renderer.domElement
-);
-
+const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.075;
-
 controls.enableRotate = true;
 controls.enablePan = true;
 controls.enableZoom = true;
-
 controls.mouseButtons = {
 LEFT: THREE.MOUSE.ROTATE,
 MIDDLE: THREE.MOUSE.DOLLY,
 RIGHT: THREE.MOUSE.PAN
 };
-
 controls.minDistance = 34;
 controls.maxDistance = 145;
-
 controls.minPolarAngle = 0.18;
 controls.maxPolarAngle = 1.48;
-
 controls.target.set(0, 0, 3);
 controls.screenSpacePanning = true;
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
 
-renderer.domElement.addEventListener(
-'contextmenu',
-e => e.preventDefault()
-);
+// ========================================
+// EDITOR LIGHTING (PRESERVED - DO NOT CHANGE)
+// ========================================
+scene.add(new THREE.HemisphereLight(0xffffff, 0x65745c, 2.0));
 
-
-// LIGHTING
-
-scene.add(
-new THREE.HemisphereLight(
-0xffffff,
-0x65745c,
-2.0
-)
-);
-
-const sun = new THREE.DirectionalLight(
-0xfff0d8,
-3.1
-);
-
+const sun = new THREE.DirectionalLight(0xfff0d8, 3.1);
 sun.position.set(-45, 75, -30);
 sun.castShadow = true;
-
 sun.shadow.mapSize.set(2048, 2048);
-
 sun.shadow.camera.left = -85;
 sun.shadow.camera.right = 85;
 sun.shadow.camera.top = 85;
 sun.shadow.camera.bottom = -85;
-
 scene.add(sun);
 
-const fill = new THREE.DirectionalLight(
-0xffffff,
-1.15
-);
-
+const fill = new THREE.DirectionalLight(0xffffff, 1.15);
 fill.position.set(35, 35, 45);
 scene.add(fill);
 
-
-// GRASS GROUND
-
+// ========================================
+// GROUND & GRID
+// ========================================
 const ground = new THREE.Mesh(
 new THREE.PlaneGeometry(240, 220),
-new THREE.MeshStandardMaterial({
-color: 0x71915d,
-roughness: 1
-})
+new THREE.MeshStandardMaterial({ color: 0x71915d, roughness: 1 })
 );
-
 ground.rotation.x = -Math.PI / 2;
 ground.position.set(0, -0.12, 3);
 ground.receiveShadow = true;
-
 scene.add(ground);
 
-
-// SUBTLE EDITOR GRID
-
-const grid = new THREE.GridHelper(
-180,
-90,
-0x82947a,
-0x9aaa91
-);
-
+const grid = new THREE.GridHelper(180, 90, 0x82947a, 0x9aaa91);
 grid.position.set(0, -0.105, 3);
 grid.material.opacity = 0.2;
 grid.material.transparent = true;
-
 scene.add(grid);
 
+// ========================================
+// GRID CONSTANTS
+// ========================================
+const GRID_SIZE = 6;
+const ROAD_WIDTH = 6;
+const LOT_SIZE = 7; // 7 units between building centers in a block
+const BLOCK_SIZE = 30; // 5 road tiles = 30 units
 
+function snapToGrid(val, grid = GRID_SIZE) {
+return Math.round(val / grid) * grid;
+}
+
+function snapToLot(val) {
+return Math.round(val / LOT_SIZE) * LOT_SIZE;
+}
+
+function worldToGrid(x, z) {
+return { gx: Math.round(x / GRID_SIZE), gz: Math.round(z / GRID_SIZE) };
+}
+
+function gridToWorld(gx, gz) {
+return { x: gx * GRID_SIZE, z: gz * GRID_SIZE };
+}
+
+// ========================================
 // ROAD ASSETS
-
+// ========================================
 const roadFiles = {
 straight: 'MS_RD_01_StraightRoad.glb',
 corner: 'MS_RD_02_RoadCorner90.glb',
@@ -356,691 +462,1115 @@ crossroads: 'MS_RD_04_Crossroads.glb',
 transition64: 'MS_RD_06_Transition_6to4.glb'
 };
 
-
-// ORIGINAL SAVED ROAD POSITIONS
-// All 36 road pieces retained.
-// Corner 21 has been nudged slightly toward the upper road.
-
+// Original saved roads (preserved for reference)
 const savedRoads = [
-
 [1,'crossroads',-27.429,.16,5,0],
 [2,'crossroads',17.6,.16,5,0],
-
 [3,'straight',-18,.16,2,0],
 [4,'straight',-12,.16,2,0],
 [5,'straight',-6,.16,2,0],
 [6,'straight',0,.16,2,0],
 [7,'straight',6,.16,2,0],
 [8,'straight',12,.16,2,0],
-
 [9,'transition64',-19.622,.16,4.504,3.142],
 [10,'straight',-20.626,.16,14,1.571],
 [11,'straight',-20.646,.16,20,1.571],
-
 [12,'transition64',-25.784,.16,-5,0],
 [13,'straight',-20.903,.16,-6.391,1.571],
 [14,'straight',-20.882,.16,-12.266,1.571],
-
 [15,'transition64',26.123,.16,4.22,3.142],
 [16,'straight',25.101,.16,14.193,1.571],
 [17,'straight',25.094,.16,20,1.571],
-
 [18,'transition64',19.453,.16,-5,0],
 [19,'straight',24.375,.16,-8.602,1.571],
 [20,'straight',24.392,.16,-14.162,1.571],
-
 [21,'corner',-17.172,.16,19.734,-.032],
 [22,'corner',17.379,.16,18.001,-1.557],
-
 [23,'straight',-18,.16,26,0],
 [24,'straight',-12,.16,26,0],
 [25,'straight',-6,.16,26,0],
 [26,'straight',0,.16,26,0],
 [27,'straight',6,.16,26,0],
 [28,'straight',12,.16,26,0],
-
 [29,'corner',-16.874,.16,-18.121,1.547],
 [30,'corner',16.833,.173,-18.225,-.01],
-
 [31,'straight',-18,.16,-22,0],
 [32,'straight',-12,.16,-22,0],
 [33,'straight',-6,.16,-22,0],
 [34,'straight',0,.16,-22,0],
 [35,'straight',6,.16,-22,0],
 [36,'straight',12,.16,-22,0]
-
 ];
 
+// Grid-based road layout (algorithmically generated)
+const roadLayout = [
+// Horizontal roads at gz = -1, 0, 1 (z = -6, 0, 6)
+// Row gz = -1 (south main road)
+{type:"crossroads", gx:-5, gz:-1, rot:0},
+{type:"straight", gx:-4, gz:-1, rot:0},
+{type:"straight", gx:-3, gz:-1, rot:0},
+{type:"straight", gx:-2, gz:-1, rot:0},
+{type:"straight", gx:-1, gz:-1, rot:0},
+{type:"straight", gx:0, gz:-1, rot:0},
+{type:"straight", gx:1, gz:-1, rot:0},
+{type:"straight", gx:2, gz:-1, rot:0},
+{type:"straight", gx:3, gz:-1, rot:0},
+{type:"straight", gx:4, gz:-1, rot:0},
+{type:"crossroads", gx:5, gz:-1, rot:0},
 
-// NORMALISE MODEL ORIGIN
+// Row gz = 0 (center cross street)
+{type:"crossroads", gx:-5, gz:0, rot:0},
+{type:"straight", gx:-4, gz:0, rot:0},
+{type:"straight", gx:-3, gz:0, rot:0},
+{type:"straight", gx:-2, gz:0, rot:0},
+{type:"straight", gx:-1, gz:0, rot:0},
+{type:"straight", gx:0, gz:0, rot:0},
+{type:"straight", gx:1, gz:0, rot:0},
+{type:"straight", gx:2, gz:0, rot:0},
+{type:"straight", gx:3, gz:0, rot:0},
+{type:"straight", gx:4, gz:0, rot:0},
+{type:"crossroads", gx:5, gz:0, rot:0},
 
+// Row gz = 1 (north main road)
+{type:"crossroads", gx:-5, gz:1, rot:0},
+{type:"straight", gx:-4, gz:1, rot:0},
+{type:"straight", gx:-3, gz:1, rot:0},
+{type:"straight", gx:-2, gz:1, rot:0},
+{type:"straight", gx:-1, gz:1, rot:0},
+{type:"straight", gx:0, gz:1, rot:0},
+{type:"straight", gx:1, gz:1, rot:0},
+{type:"straight", gx:2, gz:1, rot:0},
+{type:"straight", gx:3, gz:1, rot:0},
+{type:"straight", gx:4, gz:1, rot:0},
+{type:"crossroads", gx:5, gz:1, rot:0},
+
+// Vertical roads at gx = -5, -3, -1, 1, 3, 5
+{type:"straight", gx:-5, gz:-2, rot:Math.PI/2},
+{type:"straight", gx:-5, gz:0, rot:Math.PI/2},
+{type:"straight", gx:-5, gz:2, rot:Math.PI/2},
+{type:"straight", gx:-3, gz:-2, rot:Math.PI/2},
+{type:"straight", gx:-3, gz:-1, rot:Math.PI/2},
+{type:"straight", gx:-3, gz:0, rot:Math.PI/2},
+{type:"straight", gx:-3, gz:1, rot:Math.PI/2},
+{type:"straight", gx:-3, gz:2, rot:Math.PI/2},
+{type:"straight", gx:-1, gz:-2, rot:Math.PI/2},
+{type:"straight", gx:-1, gz:-1, rot:Math.PI/2},
+{type:"straight", gx:-1, gz:0, rot:Math.PI/2},
+{type:"straight", gx:-1, gz:1, rot:Math.PI/2},
+{type:"straight", gx:-1, gz:2, rot:Math.PI/2},
+{type:"straight", gx:1, gz:-2, rot:Math.PI/2},
+{type:"straight", gx:1, gz:-1, rot:Math.PI/2},
+{type:"straight", gx:1, gz:0, rot:Math.PI/2},
+{type:"straight", gx:1, gz:1, rot:Math.PI/2},
+{type:"straight", gx:1, gz:2, rot:Math.PI/2},
+{type:"straight", gx:3, gz:-2, rot:Math.PI/2},
+{type:"straight", gx:3, gz:-1, rot:Math.PI/2},
+{type:"straight", gx:3, gz:0, rot:Math.PI/2},
+{type:"straight", gx:3, gz:1, rot:Math.PI/2},
+{type:"straight", gx:3, gz:2, rot:Math.PI/2},
+{type:"straight", gx:5, gz:-2, rot:Math.PI/2},
+{type:"straight", gx:5, gz:-1, rot:Math.PI/2},
+{type:"straight", gx:5, gz:0, rot:Math.PI/2},
+{type:"straight", gx:5, gz:1, rot:Math.PI/2},
+{type:"straight", gx:5, gz:2, rot:Math.PI/2},
+
+// Corner pieces at outer corners
+{type:"corner", gx:-6, gz:-2, rot:0},
+{type:"corner", gx:-6, gz:2, rot:Math.PI/2},
+{type:"corner", gx:6, gz:-2, rot:-Math.PI/2},
+{type:"corner", gx:6, gz:2, rot:Math.PI},
+
+// Transitions at edges
+{type:"transition64", gx:-6, gz:-1, rot:0},
+{type:"transition64", gx:-6, gz:0, rot:0},
+{type:"transition64", gx:-6, gz:1, rot:0},
+{type:"transition64", gx:6, gz:-1, rot:Math.PI},
+{type:"transition64", gx:6, gz:0, rot:Math.PI},
+{type:"transition64", gx:6, gz:1, rot:Math.PI},
+{type:"transition64", gx:-5, gz:-3, rot:Math.PI/2},
+{type:"transition64", gx:-3, gz:-3, rot:Math.PI/2},
+{type:"transition64", gx:-1, gz:-3, rot:Math.PI/2},
+{type:"transition64", gx:1, gz:-3, rot:Math.PI/2},
+{type:"transition64", gx:3, gz:-3, rot:Math.PI/2},
+{type:"transition64", gx:5, gz:-3, rot:Math.PI/2},
+{type:"transition64", gx:-5, gz:3, rot:-Math.PI/2},
+{type:"transition64", gx:-3, gz:3, rot:-Math.PI/2},
+{type:"transition64", gx:-1, gz:3, rot:-Math.PI/2},
+{type:"transition64", gx:1, gz:3, rot:-Math.PI/2},
+{type:"transition64", gx:3, gz:3, rot:-Math.PI/2},
+{type:"transition64", gx:5, gz:3, rot:-Math.PI/2},
+];
+
+// Road tracking
+const roadModels = [];
+const roadGridMap = new Map(); // "gx,gz" -> road object
+
+function roadGridKey(gx, gz) {
+return `${gx},${gz}`;
+}
+
+// Normalize model origin
 function normalizeModel(root) {
-
 const box = new THREE.Box3().setFromObject(root);
-
-const center = box.getCenter(
-new THREE.Vector3()
-);
-
+const center = box.getCenter(new THREE.Vector3());
 root.position.x -= center.x;
 root.position.z -= center.z;
-
 const after = new THREE.Box3().setFromObject(root);
-
 root.position.y -= after.min.y;
-
 root.traverse(o => {
 if (o.isMesh) {
 o.castShadow = true;
 o.receiveShadow = true;
 }
 });
-
 return root;
 }
 
-
-// FALLBACK ROAD
-
-function fallbackRoad() {
-
+// Fallback road
+function fallbackRoad(type) {
 const group = new THREE.Group();
+const roadMat = new THREE.MeshStandardMaterial({ color: 0x343638, roughness: 0.96 });
+const curbMat = new THREE.MeshStandardMaterial({ color: 0x5a5a5a, roughness: 0.8 });
+const lineMat = new THREE.MeshBasicMaterial({ color: 0xffcc88, transparent: true, opacity: 0.9 });
 
-const road = new THREE.Mesh(
-new THREE.BoxGeometry(6, 0.16, 6),
-new THREE.MeshStandardMaterial({
-color: 0x343638,
-roughness: 0.96
-})
-);
-
+const road = new THREE.Mesh(new THREE.BoxGeometry(ROAD_WIDTH, 0.16, ROAD_WIDTH), roadMat);
 road.position.y = 0.08;
 road.receiveShadow = true;
-
 group.add(road);
 
+if (type === "straight") {
+const curbL = new THREE.Mesh(new THREE.BoxGeometry(ROAD_WIDTH, 0.22, 0.8), curbMat); curbL.position.set(0, 0.05, 2.6);
+const curbR = curbL.clone(); curbR.position.set(0, 0.05, -2.6);
+group.add(curbL, curbR);
+const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat); stripe.position.y = 0.085; group.add(stripe);
+} else if (type === "corner") {
+const curb1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.22, ROAD_WIDTH), curbMat); curb1.position.set(2.6, 0.05, 0);
+const curb2 = new THREE.Mesh(new THREE.BoxGeometry(ROAD_WIDTH, 0.22, 0.8), curbMat); curb2.position.set(0, 0.05, -2.6);
+group.add(curb1, curb2);
+} else if (type === "crossroads") {
+for (const [cx, cz] of [[2.6,0],[-2.6,0],[0,2.6],[0,-2.6]]) {
+const curb = new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.8:ROAD_WIDTH, 0.22, cz!==0?0.8:ROAD_WIDTH), curbMat);
+curb.position.set(cx, 0.05, cz); group.add(curb);
+}
+const s1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat); s1.position.y = 0.085;
+const s2 = s1.clone(); s2.rotation.y = Math.PI/2; group.add(s1, s2);
+} else if (type === "transition64") {
+const curbL = new THREE.Mesh(new THREE.BoxGeometry(ROAD_WIDTH, 0.22, 0.8), curbMat); curbL.position.set(0, 0.05, 2.6);
+const curbR = curbL.clone(); curbR.position.set(0, 0.05, -2.6);
+group.add(curbL, curbR);
+const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat); stripe.position.y = 0.085; group.add(stripe);
+}
+
+group.userData.roadType = type;
 return group;
 }
 
+// Add road at grid position
+async function addRoad(type, gx, gz, rotation = 0) {
+const key = roadGridKey(gx, gz);
+if (roadGridMap.has(key)) {
+console.log('Road already exists at', key);
+return roadGridMap.get(key);
+}
 
-// LOAD ROAD PIECES
-
-const roadModels = [];
-
-for (const r of savedRoads) {
-
-const [id,type,x,y,z,rot] = r;
-
+const { x, z } = gridToWorld(gx, gz);
 let model;
 
 try {
-
-const gltf = await loader.loadAsync(
-'./city-assets/roads/' + roadFiles[type]
-);
-
+const gltf = await loader.loadAsync('./city-assets/roads/' + roadFiles[type]);
 model = normalizeModel(gltf.scene);
-
 } catch (e) {
-
 console.warn('Road asset missing:', roadFiles[type]);
-
-model = fallbackRoad();
-
+model = fallbackRoad(type);
 }
 
-model.position.set(x,y,z);
-model.rotation.y = rot;
-
+model.position.set(x, 0.16, z);
+model.rotation.y = rotation;
+model.userData.roadType = type;
+model.userData.gridX = gx;
+model.userData.gridZ = gz;
 scene.add(model);
 roadModels.push(model);
-
+roadGridMap.set(key, model);
+updateRoadCount();
+return model;
 }
 
+// Remove road at grid position
+function removeRoad(gx, gz) {
+const key = roadGridKey(gx, gz);
+const model = roadGridMap.get(key);
+if (model) {
+scene.remove(model);
+roadModels.splice(roadModels.indexOf(model), 1);
+roadGridMap.delete(key);
+updateRoadCount();
+}
+}
 
-// BUILDING FILES
+// Rebuild full grid network
+async function rebuildRoadNetwork() {
+// Clear existing
+for (const model of roadModels) scene.remove(model);
+roadModels.length = 0;
+roadGridMap.clear();
 
+for (const road of roadLayout) {
+await addRoad(road.type, road.gx, road.gz, road.rot || 0);
+}
+status.textContent = `Rebuilt road network: ${roadModels.length} pieces`;
+}
+
+// Load roads from savedRoads (original positions)
+async function loadSavedRoads() {
+for (const r of savedRoads) {
+const [id, type, x, y, z, rot] = r;
+let model;
+try {
+const gltf = await loader.loadAsync('./city-assets/roads/' + roadFiles[type]);
+model = normalizeModel(gltf.scene);
+} catch (e) {
+console.warn('Road asset missing:', roadFiles[type]);
+model = fallbackRoad(type);
+}
+model.position.set(x, y, z);
+model.rotation.y = rot;
+model.userData.roadType = type;
+model.userData.isSavedRoad = true;
+scene.add(model);
+roadModels.push(model);
+}
+updateRoadCount();
+}
+
+function updateRoadCount() {
+document.getElementById('roadCount').textContent = `Road pieces: ${roadModels.length} (grid: ${roadGridMap.size})`;
+}
+
+// ========================================
+// BUILDINGS
+// ========================================
 const buildingFiles = [
-
 'MS_HV_01_PorchBungalow.glb',
 'MS_HV_02_WideBalconyHouse.glb',
 'MS_HV_03_UrbanTownhouse.glb',
 'MS_HV_04_CornerEntryHouse.glb',
 'MS_HV_05_GatedCarportHouse.glb',
 'MS_HV_06_OlderDuplexRental.glb',
-
 'MS_PF_01_TwoStoreyHouse.glb',
 'MS_PF_02_NarrowTownhouse.glb',
 'MS_PF_03_ThreeStoreyApartment.glb',
 'MS_PF_04_ApartmentBlock.glb',
 'MS_PF_05_CornerShop.glb',
 'MS_PF_06_ClosedStorefront.glb',
-
 'MS_RR_A01_TinySingleRoom.glb',
 'MS_RR_A02_BudgetHouse.glb',
 'MS_RR_B02_StandardFamilyBungalow.glb',
 'MS_RR_D01_StudioUnit.glb',
 'MS_RR_D04_BoardingHouse.glb',
-
 'tinas bakery.glb'
-
 ];
 
+const shopIndex = 10; // CornerShop
+const shopPosition = [-42, 16];
 
-// COMPACT BUILDING POSITIONS
-// The spacing is tighter than the previous layout.
-// Buildings are scaled to a maximum footprint of 5.6 units.
-// Slots are 7 units apart to leave room between buildings.
-
+// Compact residential spots (between roads)
 const compactSpots = [
-
-[-14,10],
-[-7,10],
-[0,10],
-[7,10],
-
-[-14,16.5],
-[-7,16.5],
-[0,16.5],
-[7,16.5],
-
-[-14,-6],
-[-7,-6],
-[0,-6],
-[7,-6],
-
-[-14,-12.5],
-[-7,-12.5],
-[0,-12.5],
-[7,-12.5],
-
+[-14,10], [-7,10], [0,10], [7,10],
+[-14,16.5], [-7,16.5], [0,16.5], [7,16.5],
+[-14,-6], [-7,-6], [0,-6], [7,-6],
+[-14,-12.5], [-7,-12.5], [0,-12.5], [7,-12.5],
 [14,-6]
-
 ];
 
+// Block centers for algorithmic placement
+const blockCenters = [
+// South blocks (between roads at gz=-1 and gz=-2)
+{gx: -4, gz: -2}, {gx: -2, gz: -2}, {gx: 0, gz: -2}, {gx: 2, gz: -2}, {gx: 4, gz: -2},
+// North blocks (between roads at gz=1 and gz=2)
+{gx: -4, gz: 2}, {gx: -2, gz: 2}, {gx: 0, gz: 2}, {gx: 2, gz: 2}, {gx: 4, gz: 2},
+];
 
-// THE CORNER SHOP IS RESERVED FOR THE SPAWN STORE.
-// The other buildings use the compact residential positions.
+const houseTypes = {
+bungalow: [
+"MS_HV_01_PorchBungalow.glb",
+"MS_HV_02_WideBalconyHouse.glb",
+"MS_HV_05_GatedCarportHouse.glb",
+"MS_HV_06_OlderDuplexRental.glb",
+"MS_RR_B02_StandardFamilyBungalow.glb"
+],
+townhouse: [
+"MS_HV_03_UrbanTownhouse.glb",
+"MS_HV_04_CornerEntryHouse.glb",
+"MS_PF_02_NarrowTownhouse.glb"
+],
+apartment: [
+"MS_PF_03_ThreeStoreyApartment.glb",
+"MS_PF_04_ApartmentBlock.glb",
+"MS_RR_A01_TinySingleRoom.glb",
+"MS_RR_A02_BudgetHouse.glb",
+"MS_RR_D01_StudioUnit.glb",
+"MS_RR_D04_BoardingHouse.glb"
+],
+commercial: [
+"MS_PF_05_CornerShop.glb",
+"MS_PF_06_ClosedStorefront.glb",
+"tinas bakery.glb"
+]
+};
 
-const shopIndex = 10;
+function pickRandom(arr) {
+return arr[Math.floor(Math.random() * arr.length)];
+}
 
-const shopPosition = [-42,16];
-
-
-// FALLBACK BUILDING
-
+// Fallback building
 function fallbackBuilding(name) {
-
 const group = new THREE.Group();
-
-const apartment =
-/Apartment|Boarding|Studio|Budget/i.test(name);
-
-const shop =
-/Shop|Storefront|bakery/i.test(name);
-
+const apartment = /Apartment|Boarding|Studio|Budget/i.test(name);
+const shop = /Shop|Storefront|bakery/i.test(name);
 const w = shop ? 6.2 : 5.3;
 const d = shop ? 5.4 : 5.6;
 const h = apartment ? 7.2 : 5.0;
 
 const body = new THREE.Mesh(
-new THREE.BoxGeometry(w,h,d),
-new THREE.MeshStandardMaterial({
-color: shop ? 0xb7a078 : 0xc5a98c,
-roughness: 0.9
-})
+new THREE.BoxGeometry(w, h, d),
+new THREE.MeshStandardMaterial({ color: shop ? 0xb7a078 : 0xc5a98c, roughness: 0.9 })
 );
-
 body.position.y = h / 2;
 body.castShadow = true;
 body.receiveShadow = true;
-
 group.add(body);
 
 const roof = new THREE.Mesh(
-new THREE.BoxGeometry(w+0.25,0.3,d+0.25),
-new THREE.MeshStandardMaterial({
-color: 0x51443a
-})
+new THREE.BoxGeometry(w + 0.25, 0.3, d + 0.25),
+new THREE.MeshStandardMaterial({ color: 0x51443a })
 );
-
 roof.position.y = h + 0.15;
 group.add(roof);
-
 return group;
 }
 
-
-// LOAD BUILDINGS
-
 const buildingEntries = [];
+let selectedIndex = 0;
 
+async function loadBuildings() {
 for (let i = 0; i < buildingFiles.length; i++) {
-
 const file = buildingFiles[i];
-
 let root;
 let real = true;
 
 try {
-
-const gltf = await loader.loadAsync(
-'./' + encodeURIComponent(file)
-);
-
+const gltf = await loader.loadAsync('./' + encodeURIComponent(file));
 root = normalizeModel(gltf.scene);
-
 } catch (e) {
-
 console.warn('Building asset missing:', file);
-
 real = false;
 root = fallbackBuilding(file);
-
 }
 
-
-// FIT LARGE BUILDINGS INTO THE COMPACT LAYOUT
-
+// Scale to fit compact layout
 const box = new THREE.Box3().setFromObject(root);
-
-const size = box.getSize(
-new THREE.Vector3()
-);
-
-const footprint = Math.max(size.x,size.z);
-
-const scale = Math.min(
-1,
-5.6 / Math.max(footprint,0.001)
-);
-
+const size = box.getSize(new THREE.Vector3());
+const footprint = Math.max(size.x, size.z);
+const scale = Math.min(1, 5.6 / Math.max(footprint, 0.001));
 root.scale.setScalar(scale);
 root.updateMatrixWorld(true);
-
 const after = new THREE.Box3().setFromObject(root);
-
 root.position.y -= after.min.y;
 
-
-// POSITION THE STORE SEPARATELY
-
+// Position
 let spot;
-
 if (i === shopIndex) {
-
 spot = shopPosition;
-
 } else {
-
 const compactIndex = i < shopIndex ? i : i - 1;
-
-spot = compactSpots[compactIndex] || [14,-13];
-
+spot = compactSpots[compactIndex] || [14, -13];
 }
-
-root.position.set(spot[0],0,spot[1]);
+root.position.set(spot[0], 0, spot[1]);
 
 root.userData.editorName = file;
 root.userData.file = file;
 root.userData.realAsset = real;
-
+root.userData.buildingIndex = i;
 root.traverse(o => {
-
 if (o.isMesh) {
 o.castShadow = true;
 o.receiveShadow = true;
 }
-
 });
 
 scene.add(root);
 
 buildingEntries.push({
-
 file,
 root,
 start: root.position.clone(),
-startRotation: 0
-
+startRotation: 0,
+index: i
 });
-
 }
 
-
-// CAR PARK OUTSIDE THE SPAWN STORE
-
-const carPark = new THREE.Group();
-
-const asphaltMaterial = new THREE.MeshStandardMaterial({
-color: 0x393d3e,
-roughness: 0.98
-});
-
-const parkingLineMaterial = new THREE.MeshStandardMaterial({
-color: 0xe8e5d7,
-roughness: 0.9
-});
-
-
-// Main asphalt parking area
-
-const parkingSurface = new THREE.Mesh(
-new THREE.BoxGeometry(16,0.12,7),
-asphaltMaterial
-);
-
-parkingSurface.position.set(-42,0.015,8.5);
-parkingSurface.receiveShadow = true;
-
-carPark.add(parkingSurface);
-
-
-// Parking bay divider lines
-
-for (let i = 0; i <= 6; i++) {
-
-const line = new THREE.Mesh(
-new THREE.BoxGeometry(0.075,0.025,4.8),
-parkingLineMaterial
-);
-
-line.position.set(
--49.2 + i * 2.4,
-0.09,
-8.5
-);
-
-carPark.add(line);
-
+updateBuildingSelect();
+updateBuildingPosDisplay();
+updateObjectCounts();
 }
 
-
-// Back edge of parking bays
-
-const backLine = new THREE.Mesh(
-new THREE.BoxGeometry(14.4,0.025,0.075),
-parkingLineMaterial
-);
-
-backLine.position.set(-42,0.09,10.9);
-
-carPark.add(backLine);
-
-
-// Small access strip between the car park and road
-
-const driveway = new THREE.Mesh(
-new THREE.BoxGeometry(6,0.1,2.2),
-asphaltMaterial
-);
-
-driveway.position.set(-42,0.025,3.9);
-driveway.receiveShadow = true;
-
-carPark.add(driveway);
-
-
-// Add a small pedestrian path beside the parking area
-
-const footpath = new THREE.Mesh(
-new THREE.BoxGeometry(2,0.12,7),
-new THREE.MeshStandardMaterial({
-color: 0xaaa99c,
-roughness: 1
-})
-);
-
-footpath.position.set(-32.8,0.025,8.5);
-footpath.receiveShadow = true;
-
-carPark.add(footpath);
-
-scene.add(carPark);
-
-
-// BUILDING SELECTOR
-
+function updateBuildingSelect() {
 const select = document.getElementById('buildingSelect');
-
 select.innerHTML = '';
-
-buildingEntries.forEach((entry,i) => {
-
+buildingEntries.forEach((entry, i) => {
 const opt = document.createElement('option');
-
 opt.value = String(i);
-
-opt.textContent =
-entry.file === buildingFiles[shopIndex]
+opt.textContent = entry.file === buildingFiles[shopIndex]
 ? entry.file + ' — SPAWN STORE'
 : entry.file;
-
 select.append(opt);
-
 });
+select.value = String(selectedIndex);
+}
 
+function updateBuildingPosDisplay() {
+const e = buildingEntries[selectedIndex];
+const display = document.getElementById('buildingPos');
+if (e) {
+display.textContent = `Position: ${e.root.position.x.toFixed(2)}, ${e.root.position.z.toFixed(2)} | Rotation: ${(e.root.rotation.y * 180 / Math.PI).toFixed(1)}°`;
+} else {
+display.textContent = 'Position: —, — | Rotation: —';
+}
+}
 
-let selectedIndex = 0;
-
-select.addEventListener('change', () => {
-selectedIndex = Number(select.value);
-});
-
+function updateObjectCounts() {
+const lamps = scene.children.filter(o => o.userData.isStreetlamp).length;
+const trees = scene.children.filter(o => o.userData.isTree).length;
+document.getElementById('objectCounts').textContent = `Lamps: ${lamps} | Trees: ${trees}`;
+}
 
 function selected() {
 return buildingEntries[selectedIndex];
 }
 
-
-// MOVE BUILDING
-
-function moveSelected(dx,dz) {
-
+function moveSelected(dx, dz) {
 const e = selected();
-
 if (!e) return;
-
 e.root.position.x += dx;
 e.root.position.z += dz;
-
+updateBuildingPosDisplay();
 }
 
+function snapSelectedToLot() {
+const e = selected();
+if (!e) return;
+e.root.position.x = snapToLot(e.root.position.x);
+e.root.position.z = snapToLot(e.root.position.z);
+updateBuildingPosDisplay();
+}
+
+function snapSelectedToGrid() {
+const e = selected();
+if (!e) return;
+e.root.position.x = snapToGrid(e.root.position.x);
+e.root.position.z = snapToGrid(e.root.position.z);
+updateBuildingPosDisplay();
+}
+
+function placeAllInBlocks() {
+// Clear current residential buildings (keep shop)
+for (const entry of buildingEntries) {
+if (entry.index !== shopIndex) {
+const block = blockCenters[entry.index % blockCenters.length];
+const baseX = block.gx * GRID_SIZE;
+const baseZ = block.gz * GRID_SIZE;
+const houseOffset = GRID_SIZE / 2;
+const slot = entry.index % 4;
+let x, z;
+if (slot === 0) { x = baseX - houseOffset; z = baseZ - houseOffset; }
+else if (slot === 1) { x = baseX + houseOffset; z = baseZ - houseOffset; }
+else if (slot === 2) { x = baseX - houseOffset; z = baseZ + houseOffset; }
+else { x = baseX + houseOffset; z = baseZ + houseOffset; }
+entry.root.position.set(x, 0, z);
+entry.root.rotation.y = 0;
+}
+}
+updateBuildingPosDisplay();
+status.textContent = 'Placed all buildings in grid blocks';
+}
+
+function randomizeTypes() {
+for (const entry of buildingEntries) {
+if (entry.index === shopIndex) continue;
+const types = Object.keys(houseTypes);
+const cat = types[Math.floor(Math.random() * types.length)];
+const newFile = pickRandom(houseTypes[cat]);
+// Would need to reload model - for now just note
+console.log(`Would change ${entry.file} to ${newFile} (${cat})`);
+}
+status.textContent = 'Randomized building types (reload to apply)';
+}
+
+// UI Event Listeners
+document.getElementById('buildingSelect').addEventListener('change', () => {
+selectedIndex = Number(document.getElementById('buildingSelect').value);
+updateBuildingPosDisplay();
+});
 
 document.querySelectorAll('[data-move]').forEach(btn => {
-
 btn.addEventListener('click', () => {
-
-const [x,z] = btn.dataset.move
-.split(',')
-.map(Number);
-
-moveSelected(x,z);
-
+const [x, z] = btn.dataset.move.split(',').map(Number);
+moveSelected(x, z);
 });
-
 });
-
-
-// ROTATION
 
 document.getElementById('rotateLeft').onclick = () => {
-
 const e = selected();
-
-if (e) e.root.rotation.y -= Math.PI / 2;
-
+if (e) { e.root.rotation.y -= Math.PI / 2; updateBuildingPosDisplay(); }
 };
 
 document.getElementById('rotateRight').onclick = () => {
-
 const e = selected();
-
-if (e) e.root.rotation.y += Math.PI / 2;
-
+if (e) { e.root.rotation.y += Math.PI / 2; updateBuildingPosDisplay(); }
 };
 
-
-// RESET SELECTED
+document.getElementById('snapToLot').onclick = () => { snapSelectedToLot(); };
+document.getElementById('snapToGrid').onclick = () => { snapSelectedToGrid(); };
 
 document.getElementById('resetSelected').onclick = () => {
-
 const e = selected();
-
 if (e) {
-
 e.root.position.copy(e.start);
 e.root.rotation.y = e.startRotation;
-
+updateBuildingPosDisplay();
 }
-
 };
-
-
-// RESET ALL
 
 document.getElementById('resetAll').onclick = () => {
-
 buildingEntries.forEach(e => {
-
 e.root.position.copy(e.start);
 e.root.rotation.y = e.startRotation;
+});
+updateBuildingPosDisplay();
+};
 
+document.getElementById('placeAllInBlocks').onclick = placeAllInBlocks;
+document.getElementById('randomizeTypes').onclick = randomizeTypes;
+
+// ========================================
+// CAR PARK (at spawn store)
+// ========================================
+function createCarPark() {
+const carPark = new THREE.Group();
+const asphaltMaterial = new THREE.MeshStandardMaterial({ color: 0x393d3e, roughness: 0.98 });
+const parkingLineMaterial = new THREE.MeshStandardMaterial({ color: 0xe8e5d7, roughness: 0.9 });
+
+const parkingSurface = new THREE.Mesh(
+new THREE.BoxGeometry(16, 0.12, 7),
+asphaltMaterial
+);
+parkingSurface.position.set(-42, 0.015, 8.5);
+parkingSurface.receiveShadow = true;
+carPark.add(parkingSurface);
+
+for (let i = 0; i <= 6; i++) {
+const line = new THREE.Mesh(
+new THREE.BoxGeometry(0.075, 0.025, 4.8),
+parkingLineMaterial
+);
+line.position.set(-49.2 + i * 2.4, 0.09, 8.5);
+carPark.add(line);
+}
+
+const backLine = new THREE.Mesh(
+new THREE.BoxGeometry(14.4, 0.025, 0.075),
+parkingLineMaterial
+);
+backLine.position.set(-42, 0.09, 10.9);
+carPark.add(backLine);
+
+const driveway = new THREE.Mesh(
+new THREE.BoxGeometry(6, 0.1, 2.2),
+asphaltMaterial
+);
+driveway.position.set(-42, 0.025, 3.9);
+driveway.receiveShadow = true;
+carPark.add(driveway);
+
+const footpath = new THREE.Mesh(
+new THREE.BoxGeometry(2, 0.12, 7),
+new THREE.MeshStandardMaterial({ color: 0xaaa99c, roughness: 1 })
+);
+footpath.position.set(-32.8, 0.025, 8.5);
+footpath.receiveShadow = true;
+carPark.add(footpath);
+
+carPark.userData.isCarPark = true;
+scene.add(carPark);
+}
+createCarPark();
+
+// ========================================
+// STREETLAMPS
+// ========================================
+function createStreetLamp(x, z) {
+const group = new THREE.Group();
+
+const light = new THREE.PointLight(0xff8833, 0.8, 30, 1.8);
+light.position.set(0, 5.2, 0);
+light.castShadow = true;
+light.shadow.mapSize.set(512, 512);
+group.add(light);
+
+const pole = new THREE.Mesh(
+new THREE.CylinderGeometry(0.08, 0.12, 5, 8),
+new THREE.MeshStandardMaterial({ color: 0x3a2a2a, roughness: 0.7 })
+);
+pole.position.set(0, 2.5, 0);
+pole.castShadow = true;
+group.add(pole);
+
+const bulb = new THREE.Mesh(
+new THREE.SphereGeometry(0.25, 8, 8),
+new THREE.MeshBasicMaterial({ color: 0xffaa44 })
+);
+bulb.position.set(0, 5.4, 0);
+group.add(bulb);
+
+const halo = new THREE.Mesh(
+new THREE.SphereGeometry(1.2, 16, 16),
+new THREE.MeshBasicMaterial({ color: 0xff8833, transparent: true, opacity: 0.15, depthWrite: false })
+);
+halo.position.set(0, 5.4, 0);
+group.add(halo);
+
+group.position.set(x, 0, z);
+group.userData.isStreetlamp = true;
+scene.add(group);
+return group;
+}
+
+function placeLampsAtIntersections() {
+// Intersections are at crossroads positions
+const intersections = [
+// Horizontal roads (gz = -1, 0, 1) with vertical roads (gx = -5, -3, -1, 1, 3, 5)
+[-30, -6], [-18, -6], [-6, -6], [6, -6], [18, -6], [30, -6],
+[-30, 0], [-18, 0], [-6, 0], [6, 0], [18, 0], [30, 0],
+[-30, 6], [-18, 6], [-6, 6], [6, 6], [18, 6], [30, 6],
+// Corner intersections
+[-36, -12], [-36, 12], [36, -12], [36, 12]
+];
+
+intersections.forEach(([x, z]) => createStreetLamp(x, z));
+updateObjectCounts();
+status.textContent = `Placed ${intersections.length} streetlamps at intersections`;
+}
+
+function removeAllLamps() {
+const lamps = scene.children.filter(o => o.userData.isStreetlamp);
+lamps.forEach(l => scene.remove(l));
+updateObjectCounts();
+status.textContent = 'Removed all streetlamps';
+}
+
+// ========================================
+// TREES
+// ========================================
+function addTree(x, z, s = 1) {
+const group = new THREE.Group();
+
+const trunk = new THREE.Mesh(
+new THREE.CylinderGeometry(0.18 * s, 0.24 * s, 2.2 * s, 7),
+new THREE.MeshStandardMaterial({ color: 0x5a4a3a })
+);
+trunk.position.set(0, 1.1 * s, 0);
+trunk.castShadow = true;
+group.add(trunk);
+
+const crown = new THREE.Mesh(
+new THREE.IcosahedronGeometry(1.15 * s, 1),
+new THREE.MeshStandardMaterial({ color: 0x3a4a2a })
+);
+crown.position.set(0, 2.65 * s, 0);
+crown.castShadow = true;
+group.add(crown);
+
+group.position.set(x, 0, z);
+group.userData.isTree = true;
+scene.add(group);
+return group;
+}
+
+function placeTreesAtBlocks() {
+const positions = [
+// Block corners (where roads meet)
+[-33, -6], [-33, 0], [-33, 6],
+[-21, -6], [-21, 0], [-21, 6],
+[-9, -6], [-9, 0], [-9, 6],
+[3, -6], [3, 0], [3, 6],
+[15, -6], [15, 0], [15, 6],
+[27, -6], [27, 0], [27, 6],
+[33, -6], [33, 0], [33, 6],
+// Block edges
+[-30, -9], [-30, 9],
+[-18, -9], [-18, 9],
+[-6, -9], [-6, 9],
+[6, -9], [6, 9],
+[18, -9], [18, 9],
+[30, -9], [30, 9]
+];
+
+positions.forEach(([x, z]) => addTree(x, z, 0.9));
+updateObjectCounts();
+status.textContent = `Placed ${positions.length} trees at block corners`;
+}
+
+function removeAllTrees() {
+const trees = scene.children.filter(o => o.userData.isTree);
+trees.forEach(t => scene.remove(t));
+updateObjectCounts();
+status.textContent = 'Removed all trees';
+}
+
+// ========================================
+// PREVIEW CHARACTER (for scale testing)
+// ========================================
+let previewCharacter = null;
+const previewModels = {};
+
+async function loadPreviewModels() {
+try {
+const [boyModel, girlModel] = await Promise.all([
+loader.loadAsync('https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/boy.glb.glb'),
+loader.loadAsync('https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/girl.glb.glb')
+]);
+previewModels.boy = boyModel;
+previewModels.girl = girlModel;
+} catch (e) {
+console.error('Failed to load preview models:', e);
+}
+}
+
+function createPreviewCharacter(gender = 'boy', outfit = 'casual') {
+if (previewCharacter) {
+scene.remove(previewCharacter.group);
+}
+
+const source = previewModels[gender];
+if (!source) return;
+
+const model = cloneSkeleton(source.scene);
+const box = new THREE.Box3().setFromObject(model);
+const size = box.getSize(new THREE.Vector3());
+if (size.y > 0) {
+const scale = 2.8 / size.y;
+model.scale.setScalar(scale);
+}
+const fittedBox = new THREE.Box3().setFromObject(model);
+const center = fittedBox.getCenter(new THREE.Vector3());
+model.position.x -= center.x;
+model.position.z -= center.z;
+model.position.y -= fittedBox.min.y;
+
+const group = new THREE.Group();
+group.add(model);
+group.position.set(0, 0, 10); // Spawn near center
+
+model.traverse(o => {
+if (o.isMesh) {
+o.castShadow = true;
+o.receiveShadow = true;
+}
 });
 
+previewCharacter = { group, model, gender, outfit };
+scene.add(group);
+status.textContent = `Spawned preview ${gender} (${outfit}) at 0, 10`;
+}
+
+function removePreviewCharacter() {
+if (previewCharacter) {
+scene.remove(previewCharacter.group);
+previewCharacter = null;
+status.textContent = 'Removed preview character';
+}
+}
+
+// ========================================
+// SAVE / LOAD LAYOUT
+// ========================================
+const SAVE_KEY = 'ofd_city_editor_layout_v4';
+
+function collectLayoutData() {
+const data = {
+roads: [],
+buildings: [],
+lamps: [],
+trees: [],
+carPark: null,
+timestamp: Date.now()
 };
 
+roadModels.forEach(m => {
+data.roads.push({
+type: m.userData.roadType,
+x: m.position.x,
+z: m.position.z,
+rotation: m.rotation.y,
+gridX: m.userData.gridX,
+gridZ: m.userData.gridZ
+});
+});
 
-// SAVE LAYOUT
-
-const SAVE_KEY = 'ofd_city_editor_layout_v3';
-
-document.getElementById('save').onclick = () => {
-
-const data = buildingEntries.map(e => ({
-
+buildingEntries.forEach(e => {
+data.buildings.push({
 file: e.file,
-
 x: e.root.position.x,
-
 z: e.root.position.z,
+rotation: e.root.rotation.y,
+index: e.index
+});
+});
 
-rotation: e.root.rotation.y
+scene.children.forEach(o => {
+if (o.userData.isStreetlamp) {
+data.lamps.push({ x: o.position.x, z: o.position.z });
+} else if (o.userData.isTree) {
+data.trees.push({ x: o.position.x, z: o.position.z, scale: o.scale.x });
+} else if (o.userData.isCarPark) {
+data.carPark = { x: o.position.x, z: o.position.z };
+}
+});
 
-}));
+return data;
+}
 
-localStorage.setItem(
-SAVE_KEY,
-JSON.stringify(data)
-);
+function applyLayoutData(data) {
+// Roads
+for (const model of roadModels) scene.remove(model);
+roadModels.length = 0;
+roadGridMap.clear();
 
-status.textContent =
-'Saved your updated building arrangement in this browser.';
+if (data.roads) {
+data.roads.forEach(async r => {
+await addRoad(r.type, r.gridX || 0, r.gridZ || 0, r.rotation || 0);
+});
+}
 
+// Buildings
+if (data.buildings) {
+data.buildings.forEach(b => {
+const entry = buildingEntries.find(e => e.index === b.index);
+if (entry) {
+entry.root.position.set(b.x, 0, b.z);
+entry.root.rotation.y = b.rotation || 0;
+}
+});
+}
+
+// Lamps
+scene.children.filter(o => o.userData.isStreetlamp).forEach(o => scene.remove(o));
+if (data.lamps) {
+data.lamps.forEach(l => createStreetLamp(l.x, l.z));
+}
+
+// Trees
+scene.children.filter(o => o.userData.isTree).forEach(o => scene.remove(o));
+if (data.trees) {
+data.trees.forEach(t => addTree(t.x, t.z, t.scale || 1));
+}
+
+// Car park
+const existingCarPark = scene.children.find(o => o.userData.isCarPark);
+if (existingCarPark) scene.remove(existingCarPark);
+if (data.carPark) createCarPark();
+
+updateBuildingPosDisplay();
+updateObjectCounts();
+updateRoadCount();
+}
+
+document.getElementById('saveLayout').onclick = () => {
+const data = collectLayoutData();
+localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+status.textContent = `Saved layout: ${data.roads.length} roads, ${data.buildings.length} buildings, ${data.lamps.length} lamps, ${data.trees.length} trees`;
 };
 
-
-// CLEAR SAVED LAYOUT
+document.getElementById('exportJSON').onclick = () => {
+const data = collectLayoutData();
+const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'city_layout_' + Date.now() + '.json';
+a.click();
+URL.revokeObjectURL(url);
+status.textContent = 'Exported layout as JSON file';
+};
 
 document.getElementById('clearSave').onclick = () => {
-
 localStorage.removeItem(SAVE_KEY);
-
-status.textContent =
-'Saved arrangement cleared. Reload to restore the new starting layout.';
-
+status.textContent = 'Saved layout cleared. Reload to restore defaults.';
 };
 
+document.getElementById('importJSON').onclick = () => {
+document.getElementById('importFile').click();
+};
 
-// LOAD SAVED LAYOUT
-
+document.getElementById('importFile').addEventListener('change', (e) => {
+const file = e.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onload = (ev) => {
 try {
-
-const saved = JSON.parse(
-localStorage.getItem(SAVE_KEY) || 'null'
-);
-
-if (Array.isArray(saved)) {
-
-for (const item of saved) {
-
-const e = buildingEntries.find(
-v => v.file === item.file
-);
-
-if (e) {
-
-e.root.position.set(item.x,0,item.z);
-
-e.root.rotation.y = item.rotation || 0;
-
+const data = JSON.parse(ev.target.result);
+applyLayoutData(data);
+status.textContent = 'Imported layout from JSON file';
+} catch (err) {
+status.textContent = 'Failed to parse JSON: ' + err.message;
 }
-
-}
-
-}
-
-} catch(e) {}
-
-
-// PANEL TOGGLE
-
-document.getElementById('toggle').onclick = () => {
-
-const panel = document.getElementById('panel');
-
-panel.classList.toggle('hidden');
-
-document.getElementById('toggle').textContent =
-panel.classList.contains('hidden')
-? 'Show panel'
-: 'Hide panel';
-
 };
-
-
-// STATUS
-
-const missing = buildingEntries.filter(
-e => !e.root.userData.realAsset
-).length;
-
-status.textContent =
-`Loaded ${roadModels.length} road pieces and ${buildingEntries.length} buildings.
-Spawn store: CornerShop.
-Car park: added.
-Missing building assets: ${missing}.
-Compact layout loaded.`;
-
-
-// RESIZE
-
-window.addEventListener('resize', () => {
-
-camera.aspect = innerWidth / innerHeight;
-
-camera.updateProjectionMatrix();
-
-renderer.setSize(innerWidth,innerHeight);
-
+reader.readAsText(file);
+e.target.value = '';
 });
 
-
-// RENDER LOOP
-
-function animate() {
-
-requestAnimationFrame(animate);
-
-controls.update();
-
-renderer.render(scene,camera);
-
+// Load saved layout on startup
+try {
+const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+if (saved) {
+applyLayoutData(saved);
+status.textContent = 'Loaded saved layout from localStorage';
+}
+} catch (e) {
+console.warn('Failed to load saved layout:', e);
 }
 
+// ========================================
+// ROAD TOOL UI HANDLERS
+// ========================================
+document.getElementById('rebuildRoads').onclick = rebuildRoadNetwork;
+
+document.getElementById('placeRoadAtGrid').onclick = () => {
+const gx = Number(document.getElementById('roadGridX').value);
+const gz = Number(document.getElementById('roadGridZ').value);
+const type = document.getElementById('roadTypeSelect').value;
+addRoad(type, gx, gz, 0);
+status.textContent = `Placed ${type} at grid (${gx}, ${gz})`;
+};
+
+document.getElementById('removeRoadAtGrid').onclick = () => {
+const gx = Number(document.getElementById('roadGridX').value);
+const gz = Number(document.getElementById('roadGridZ').value);
+removeRoad(gx, gz);
+status.textContent = `Removed road at grid (${gx}, ${gz})`;
+};
+
+document.getElementById('addRoadAtCursor').onclick = () => {
+// Get cursor world position (approximate from camera target)
+const type = document.getElementById('roadTypeSelect').value;
+const target = controls.target.clone();
+const gx = Math.round(target.x / GRID_SIZE);
+const gz = Math.round(target.z / GRID_SIZE);
+document.getElementById('roadGridX').value = gx;
+document.getElementById('roadGridZ').value = gz;
+addRoad(type, gx, gz, 0);
+status.textContent = `Placed ${type} at cursor grid (${gx}, ${gz})`;
+};
+
+// City object buttons
+document.getElementById('addStreetlamp').onclick = () => {
+const target = controls.target.clone();
+createStreetLamp(target.x, target.z);
+updateObjectCounts();
+status.textContent = `Added streetlamp at ${target.x.toFixed(1)}, ${target.z.toFixed(1)}`;
+};
+
+document.getElementById('addTree').onclick = () => {
+const target = controls.target.clone();
+addTree(target.x, target.z);
+updateObjectCounts();
+status.textContent = `Added tree at ${target.x.toFixed(1)}, ${target.z.toFixed(1)}`;
+};
+
+document.getElementById('placeLampsAtIntersections').onclick = placeLampsAtIntersections;
+document.getElementById('removeAllLamps').onclick = removeAllLamps;
+document.getElementById('placeTreesAtBlocks').onclick = placeTreesAtBlocks;
+document.getElementById('removeAllTrees').onclick = removeAllTrees;
+
+// Preview character buttons
+document.getElementById('spawnPreviewCharacter').onclick = () => {
+const gender = document.getElementById('previewGender').value;
+const outfit = document.getElementById('previewOutfit').value;
+createPreviewCharacter(gender, outfit);
+};
+
+document.getElementById('removePreviewCharacter').onclick = removePreviewCharacter;
+
+// Test walk path (visualize walking between buildings)
+let testPathLine = null;
+document.getElementById('testWalkPath').onclick = () => {
+if (testPathLine) scene.remove(testPathLine);
+
+const points = [];
+buildingEntries.forEach(e => {
+points.push(new THREE.Vector3(e.root.position.x, 0.5, e.root.position.z));
+});
+
+const geometry = new THREE.BufferGeometry().setFromPoints(points);
+const material = new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 3 });
+testPathLine = new THREE.Line(geometry, material);
+scene.add(testPathLine);
+status.textContent = `Test path created through ${points.length} buildings`;
+};
+
+document.getElementById('clearTestPath').onclick = () => {
+if (testPathLine) {
+scene.remove(testPathLine);
+testPathLine = null;
+status.textContent = 'Cleared test path';
+}
+};
+
+// ========================================
+// PANEL TOGGLE
+// ========================================
+document.getElementById('toggle').onclick = () => {
+const panel = document.getElementById('panel');
+panel.classList.toggle('hidden');
+document.getElementById('toggle').textContent =
+panel.classList.contains('hidden') ? 'Show panel' : 'Hide panel';
+};
+
+// ========================================
+// INITIALIZATION
+// ========================================
+async function init() {
+status.textContent = 'Loading road assets...';
+await loadSavedRoads(); // Load original saved roads first
+
+status.textContent = 'Loading building assets...';
+await loadBuildings();
+
+status.textContent = 'Loading preview models...';
+await loadPreviewModels();
+
+status.textContent = `Ready. ${roadModels.length} roads, ${buildingEntries.length} buildings loaded.`;
+}
+
+init();
+
+// ========================================
+// RESIZE & RENDER LOOP
+// ========================================
+window.addEventListener('resize', () => {
+camera.aspect = innerWidth / innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth, innerHeight);
+});
+
+function animate() {
+requestAnimationFrame(animate);
+controls.update();
+renderer.render(scene, camera);
+}
 animate();
 
 </script>
-
 </body>
 </html>
