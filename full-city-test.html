@@ -1,8 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Our First Date — City Editor</title>
+
 <script type="importmap">
 {
 "imports": {
@@ -10,1527 +12,943 @@
 }
 }
 </script>
-<title>Our First Date Kinda Game ❤️</title>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{overflow:hidden;font-family:Georgia,serif;background:#1a1410}
-canvas{display:block;touch-action:none}
-#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#2d1b1a,#5a3a2a 48%,#2d1b1a);overflow:hidden}
-#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#8b5a4c 0,#5d4a3a 48%,#2d1b1a 100%)}
-#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#6b5a4a55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#5a3a2a40 77px 81px);opacity:.75}
-#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#5a4a3b 0 118px,#7a6d4a 120px 124px);border-top:9px solid #3d2a1a;box-shadow:0 -12px 35px #1a0d1488}
-#roomTitle{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:clamp(20px,3vw,32px);letter-spacing:3px;text-shadow:0 3px 5px #1a0d24;text-align:center;z-index:1;white-space:nowrap}
-#start .layout{position:relative;z-index:2;width:100%;height:100%;display:grid;grid-template-columns:minmax(190px,25%) 1fr minmax(190px,25%);gap:12px;padding:72px 18px 18px}
-.ward-panel{background:linear-gradient(145deg,#4a3a2aed,#2d1b1df2);border:2px solid #b89c85;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b0b1b88;overflow:auto;min-height:0}
-.ward-panel h2{font-size:17px;color:#f0d8c7;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b89c8566;padding-bottom:9px}
-.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a79b8144;border-radius:8px;background:#675a4a;color:#fff8f1;font:13px Arial;cursor:pointer}
-.category.active{background:#b8a782;color:#2f1f12;border-color:#f0e0d0}
-.category span:first-child{font-weight:bold}
-.arrows{display:flex;gap:5px}
-.arrows button,.small-btn{border:0;border-radius:6px;background:#e4d4c0;color:#3d2a1a;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
-#previewWrap{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
-#previewCanvas{width:100%;height:100%;max-height:calc(100vh - 115px);border-radius:16px;touch-action:none}
-.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a2a1dcc;border:1px solid #d1b9a9;border-radius:20px;padding:8px 18px;color:#f7efe6;font:12px Arial;white-space:nowrap}
-#selectedName{font-size:13px;color:#f3e6d8;margin:-4px 0 12px}
-#swatches{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
-.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7efe8;box-shadow:0 2px 4px #0008;cursor:pointer}
-.swatch.selected{outline:3px solid #e4bd79;outline-offset:3px}
-#savedOutfits{display:grid;gap:8px}
-.outfit{padding:10px;border:1px solid #a79b81;border-radius:8px;background:#675a4a;color:#fff8f1;text-align:left;font:13px Arial;cursor:pointer}
-.outfit strong{display:block;color:#f0e2d8;margin-bottom:3px}
-#saveOutfit{width:100%;padding:10px;border:1px solid #e7d7c0;border-radius:8px;background:#8b7a62;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
-#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2e3d5;border-radius:30px;background:linear-gradient(#e6bd81,#ad8a78);color:#2d1d1c;font:bold 16px Georgia;box-shadow:0 4px 14px #1b0b1b99;cursor:pointer;white-space:nowrap}
-#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#2d1b1abb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
-#status{position:absolute;top:14px;right:14px;z-index:3;background:#2d1b1add;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
-#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#4a3a2ae8;color:white;border:1px solid #e7d7c0;border-radius:12px;padding:12px 16px;font-weight:bold}
-#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#2d1b1a55;border:2px solid #ffffff99;z-index:5;touch-action:none}
-#stick{position:absolute;width:58px;height:58px;left:39px;top:39px;border-radius:50%;background:#ffffffbb;border:3px solid white;pointer-events:none}
-#runButton{display:none;position:absolute;right:28px;bottom:130px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#2d1b1abb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
-#jumpButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffb347aa;background:#2d1b1abb;color:#ffb347;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
-@media(max-width:700px){
-#start .layout{grid-template-columns:minmax(112px,30%) 1fr minmax(112px,30%);gap:6px;padding:64px 6px 82px}
-.ward-panel{padding:8px;border-radius:9px}
-.ward-panel h2{font-size:12px;margin-bottom:8px}
-.category{font-size:10px;padding:7px 4px}
-.arrows button{padding:4px 7px;font-size:13px}
-.swatch{width:23px;height:23px}
-.outfit{font-size:10px;padding:7px}
-#roomTitle{top:12px;font-size:17px}
-#enterButton{bottom:13px;padding:11px 30px;font-size:14px}
-.preview-plaque{font-size:10px}
-#runButton{bottom:120px}
-#jumpButton{bottom:25px}
+* { box-sizing: border-box; }
+
+html, body {
+margin: 0;
+width: 100%;
+height: 100%;
+overflow: hidden;
+background: #18221c;
+font-family: Arial, sans-serif;
 }
-@media(pointer:coarse){#joystick,#runButton,#jumpButton{display:block}#instructions{font-size:11px}#wardrobe{top:65px}}
+
+canvas {
+display: block;
+touch-action: none;
+}
+
+#panel {
+position: fixed;
+z-index: 5;
+top: 12px;
+left: 12px;
+width: 280px;
+max-height: calc(100vh - 24px);
+overflow: auto;
+padding: 14px;
+background: #18231eef;
+color: #f4f0e4;
+border: 1px solid #8eaa8c;
+border-radius: 12px;
+box-shadow: 0 8px 30px #0007;
+}
+
+h1 {
+font-size: 17px;
+margin: 0 0 6px;
+color: #f4d9a5;
+}
+
+p {
+font-size: 12px;
+line-height: 1.45;
+color: #d7dfd2;
+}
+
+label {
+display: block;
+font-size: 12px;
+margin: 10px 0 5px;
+}
+
+select, button {
+font: 13px Arial;
+border-radius: 7px;
+border: 1px solid #9aac91;
+padding: 8px;
+background: #e8e3d4;
+color: #1c2a20;
+}
+
+select { width: 100%; }
+
+button {
+cursor: pointer;
+margin: 3px 2px;
+}
+
+button:hover { background: #f6dba7; }
+
+.row {
+display: flex;
+flex-wrap: wrap;
+gap: 4px;
+}
+
+.row button {
+flex: 1;
+min-width: 58px;
+}
+
+#status {
+font-size: 11px;
+color: #b9d8b2;
+white-space: pre-wrap;
+margin-top: 9px;
+}
+
+#help {
+position: fixed;
+right: 12px;
+bottom: 12px;
+z-index: 4;
+padding: 9px 12px;
+border-radius: 9px;
+background: #18231edb;
+color: #f4f0e4;
+font-size: 12px;
+line-height: 1.55;
+pointer-events: none;
+}
+
+#toggle {
+position: fixed;
+z-index: 6;
+top: 12px;
+right: 12px;
+}
+
+.hidden { display: none !important; }
 </style>
 </head>
+
 <body>
 
-<div id="start">
-<div id="wardrobeRoom"></div>
-<div id="roomTitle">YOUR LITTLE WARDROBE</div>
-<div class="layout">
-<section class="ward-panel">
-<h2>CHARACTER</h2>
-<div id="categories"></div>
-</section>
-<div id="previewWrap">
-<canvas id="previewCanvas"></canvas>
-<div class="preview-plaque">Drag to turn your character</div>
-</div>
-<section class="ward-panel">
-<h2 id="customTitle">SKIN TONE</h2>
-<div id="selectedName">Choose your look</div>
-<div id="swatches"></div>
-<h2>YOUR OUTFITS</h2>
-<div id="savedOutfits"></div>
-<button id="saveOutfit">＋ SAVE CURRENT OUTFIT</button>
-</section>
-</div>
-<button id="enterButton">CONTINUE TO OUR CITY ❤️</button>
+<div id="panel">
+
+<h1>OUR CITY — EDITOR</h1>
+
+<p>
+Preview and arrange the Midnight Streets city layout.
+Your original road positions are kept as the starting layout.
+</p>
+
+<label>Choose a building to move</label>
+<select id="buildingSelect">
+<option value="">Loading buildings...</option>
+</select>
+
+<label>Move selected building</label>
+
+<div class="row">
+<button data-move="0,-1">↑ North</button>
+<button data-move="0,1">↓ South</button>
 </div>
 
-<div id="instructions">WASD – Move | SHIFT – Run | SPACE – Jump<br>Mouse / Finger – Orbit camera</div>
-<div id="status">Loading 3D characters...</div>
-<button id="wardrobe">👕 WARDROBE</button>
-<div id="joystick"><div id="stick"></div></div>
-<button id="runButton">RUN</button>
-<button id="jumpButton">JUMP</button>
+<div class="row">
+<button data-move="-1,0">← West</button>
+<button data-move="1,0">East →</button>
+</div>
+
+<div class="row">
+<button data-move="0,-0.25">Fine ↑</button>
+<button data-move="0,0.25">Fine ↓</button>
+</div>
+
+<div class="row">
+<button id="rotateLeft">Rotate ↶</button>
+<button id="rotateRight">Rotate ↷</button>
+</div>
+
+<div class="row">
+<button id="resetSelected">Reset selected</button>
+<button id="resetAll">Reset all</button>
+</div>
+
+<div class="row">
+<button id="save">Save layout</button>
+<button id="clearSave">Clear saved</button>
+</div>
+
+<div id="status">Loading city assets...</div>
+
+</div>
+
+<button id="toggle">Hide panel</button>
+
+<div id="help">
+LEFT DRAG — orbit camera<br>
+RIGHT DRAG — pan view<br>
+SCROLL — zoom in / out<br>
+Use the panel to move buildings
+</div>
 
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
-import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js';
-import {clone as cloneSkeleton} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/utils/SkeletonUtils.js';
 
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-import {getAuth,signInAnonymously} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
-import {getDatabase,ref,set,onValue,onDisconnect} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
+import * as THREE from 'three';
 
-const statusText=document.getElementById('status');
+import {
+GLTFLoader
+} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js';
 
-const loader=new GLTFLoader();
+import {
+OrbitControls
+} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js';
 
-const modelURLs={
-boy:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/boy.glb.glb',
-girl:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/girl.glb.glb'
-};
 
-let models={};
+const status = document.getElementById('status');
 
-try{
-statusText.textContent='Loading your 3D characters...';
-const [boyModel,girlModel]=await Promise.all([
-loader.loadAsync(modelURLs.boy),
-loader.loadAsync(modelURLs.girl)
-]);
-models.boy=boyModel;
-models.girl=girlModel;
-}catch(error){
-console.error('Character loading error:',error);
-statusText.textContent='Could not load characters. Check the model files.';
-throw error;
-}
+const loader = new GLTFLoader();
 
-const firebaseConfig={
-apiKey:"AIzaSyCIkwXfeAfEZrG1kE0myW8BIRXNq5gOnpE",
-authDomain:"our-first-date-kinda-game.firebaseapp.com",
-databaseURL:"https://our-first-date-kinda-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-projectId:"our-first-date-kinda-game",
-storageBucket:"our-first-date-kinda-game.firebasestorage.app",
-messagingSenderId:"176526649038",
-appId:"1:176526649038:web:3c6ab02491491e4e8e129f",
-measurementId:"G-49HR8VS7TV"
-};
+const scene = new THREE.Scene();
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getDatabase(app);
+scene.background = new THREE.Color(0xb9c9d0);
 
-let myUID=null;
-let myPlayerRef=null;
-let networkReady=false;
-const remotePlayers=new Map();
+scene.fog = new THREE.Fog(0xb9c9d0, 150, 300);
 
-const defaultAppearance={
-gender:'boy',
-skinColor:'#d99b72',
-hairStyle:'short',
-hairColor:'#25170f',
-eyeColor:'#30251f',
-accessory:'none',
-topStyle:'tshirt',
-topColor:'#398b72',
-bottomStyle:'pants',
-bottomColor:'#394b68',
-shoeColor:'#63452e'
-};
 
-let appearance={...defaultAppearance};
+const camera = new THREE.PerspectiveCamera(
+48,
+innerWidth / innerHeight,
+0.1,
+600
+);
 
-const choices={
-gender:[['Boy','boy'],['Girl','girl']],
-skinColor:[['Light','#f5d0b0'],['Warm light','#e8b58e'],['Medium','#d99b72'],['Tan','#b97950'],['Brown','#895536'],['Deep brown','#583521']],
-hairStyle:[
-['Short','short'],
-['Buzz Cut','buzz'],
-['Crew Cut','crew'],
-['Low Fade','lowfade'],
-['High Fade','highfade'],
-['Textured Crop','textured'],
-['Slick Back','slickback'],
-['Middle Part','middlepart'],
-['Curly','curly'],
-['Wavy','wavy'],
-['Long Straight','long'],
-['Shaggy','shaggy'],
-['Wolf Cut','wolfcut'],
-['Long Wolf Cut','longwolf'],
-['Mullet','mullet'],
-['Bob','bob'],
-['Ponytail','ponytail'],
-['High Ponytail','highpony'],
-['Low Ponytail','lowpony'],
-['Twin Ponytails','twinponies'],
-['Bun','bun'],
-['Messy Bun','messybun'],
-['Braids','braids'],
-['Cornrows','cornrows'],
-['Box Braids','boxbraids'],
-['Twists','twists'],
-['Side Part','sidepart'],
-['French Crop','frenchcrop'],
-['Afro','afro'],
-['Double Buns','doublebun']
-],
-hairColor:[['Black','#25170f'],['Dark brown','#493020'],['Brown','#79502d'],['Blonde','#c18a4a'],['Light blonde','#d5b879'],['Ginger','#a94d35'],['White','#eeeeee'],['Purple','#8b5cc5'],['Pink','#d85c91'],['Blue','#427fbd']],
-eyeColor:[['Brown','#30251f'],['Dark','#202020'],['Blue','#478cbb'],['Green','#57965c'],['Hazel','#8a6740'],['Grey','#777777']],
-accessory:[['None','none'],['Glasses','glasses'],['Headband','headband']],
-topStyle:[['T-shirt','tshirt'],['Hoodie','hoodie'],['Tank top','tank'],['Sweater','sweater']],
-topColor:[['Green','#398b72'],['Black','#252b3d'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e'],['Purple','#8656a7'],['Pink','#e58b9c'],['Orange','#b87543'],['Grey','#777777']],
-bottomStyle:[['Trousers','pants'],['Shorts','shorts'],['Skirt','skirt']],
-bottomColor:[['Navy','#394b68'],['Black','#252525'],['White','#eeeeee'],['Green','#547c4b'],['Red','#a34b4b'],['Blue','#5479aa'],['Brown','#9b7958'],['Grey','#777777'],['Purple','#8656a7']],
-shoeColor:[['Brown','#63452e'],['Black','#252525'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e']]
-};
+camera.position.set(62, 72, 78);
 
-const categoryNames=[
-['gender','Body style'],
-['skinColor','Skin tone'],
-['eyeColor','Eye colour'],
-['hairStyle','Hairstyle'],
-['hairColor','Hair colour'],
-['accessory','Accessories'],
-['topStyle','Top style'],
-['topColor','Top colour'],
-['bottomStyle','Bottom style'],
-['bottomColor','Bottom colour'],
-['shoeColor','Shoes']
-];
 
-let activeCategory='gender';
-let wardrobeOpen=true;
-let previewCharacter=null;
-let previewRotation=0;
-let previewPointer=null;
-let previewLastX=0;
-
-function createCharacter(custom=defaultAppearance){
-const appearance={...defaultAppearance,...custom};
-
-const group=new THREE.Group();
-const gender=appearance.gender==='girl'?'girl':'boy';
-const source=models[gender];
-
-const model=cloneSkeleton(source.scene);
-
-const originalBox=new THREE.Box3().setFromObject(model);
-const originalSize=originalBox.getSize(new THREE.Vector3());
-
-if(originalSize.y>0){
-const scale=2.8/originalSize.y;
-model.scale.setScalar(scale);
-}
-
-const fittedBox=new THREE.Box3().setFromObject(model);
-const fittedCenter=fittedBox.getCenter(new THREE.Vector3());
-
-model.position.x-=fittedCenter.x;
-model.position.z-=fittedCenter.z;
-model.position.y-=fittedBox.min.y;
-
-const modelHolder=new THREE.Group();
-modelHolder.rotation.y=0;
-modelHolder.add(model);
-group.add(modelHolder);
-
-model.traverse(object=>{
-if(object.isMesh){
-object.castShadow=true;
-object.receiveShadow=true;
-
-function colourMaterial(material){
-const mat=material.clone();
-const name=(mat.name||'').toLowerCase();
-
-let colour=null;
-
-if(name==='skin'||name==='body_secondary'){
-colour=appearance.skinColor;
-}
-else if(name==='hair'){
-colour=appearance.hairColor;
-}
-else if(name==='eyes'){
-colour=appearance.eyeColor;
-}
-else if(name.startsWith('top_')){
-colour=appearance.topColor;
-}
-else if(name.startsWith('bottom_')){
-colour=appearance.bottomColor;
-}
-else if(name.startsWith('shoes_')){
-colour=appearance.shoeColor;
-}
-
-if(colour&&mat.color){
-mat.color.set(colour);
-}
-
-return mat;
-}
-
-object.material=Array.isArray(object.material)
-?object.material.map(colourMaterial)
-:colourMaterial(object.material);
-}
+const renderer = new THREE.WebGLRenderer({
+antialias: true
 });
 
-const hairStyle = appearance.hairStyle;
+renderer.setSize(innerWidth, innerHeight);
 
-if (hairStyle !== 'short') {
-model.traverse(object => {
-if (object.isMesh && object.material) {
-const materials = Array.isArray(object.material)
-? object.material
-: [object.material];
-
-if (materials.some(mat => mat.name === 'hair')) {
-object.visible = false;
-}
-}
-});
-
-const hairMaterial = new THREE.MeshStandardMaterial({
-color: appearance.hairColor,
-roughness: 0.85
-});
-
-const hair = new THREE.Group();
-
-function sphere(x, y, z, sx, sy, sz) {
-const mesh = new THREE.Mesh(
-new THREE.SphereGeometry(1, 16, 12),
-hairMaterial
+renderer.setPixelRatio(
+Math.min(devicePixelRatio, 1.7)
 );
-mesh.position.set(x, y, z);
-mesh.scale.set(sx, sy, sz);
-hair.add(mesh);
-return mesh;
-}
 
-function strand(x, y, z, radius, length, sx=1, sz=1, rz=0) {
-const mesh = new THREE.Mesh(
-new THREE.CapsuleGeometry(radius, length, 6, 12),
-hairMaterial
-);
-mesh.position.set(x, y, z);
-mesh.scale.set(sx, 1, sz);
-mesh.rotation.z = rz;
-hair.add(mesh);
-return mesh;
-}
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-function cap() {
-sphere(0, 0.27, 0, 0.27, 0.22, 0.25);
-}
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-function sides(length=0.85) {
-for (const side of [-1, 1]) {
-strand(side * 0.20, -0.05, -0.02, 0.105, length);
-}
-}
+renderer.toneMappingExposure = 1.15;
 
-function back(length=0.85, radius=0.21) {
-strand(0, -0.22, -0.17, radius, length, 1, 1, 0);
-}
+renderer.shadowMap.enabled = true;
 
-function fringe() {
-for (let i = -2; i <= 2; i++) {
-strand(i * 0.075, 0.13, 0.19, 0.055, 0.16, 1, 1, i * 0.12);
-}
-}
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-function curls() {
-for (let row = 0; row < 3; row++) {
-for (let i = -2; i <= 2; i++) {
-sphere(
-i * 0.095,
-0.30 + (row === 1 ? 0.07 : 0),
-row === 0 ? 0.12 : row === 1 ? -0.02 : -0.14,
-0.105, 0.11, 0.105
-);
-}
-}
-sphere(-0.24, 0.10, 0, 0.10, 0.20, 0.11);
-sphere(0.24, 0.10, 0, 0.10, 0.20, 0.11);
-}
-
-function ponytail(x=0, y=-0.02, length=0.85, radius=0.12) {
-strand(x, y - length * 0.35, -0.25, radius, length, 1, 1, -0.12);
-sphere(x, y + 0.10, -0.23, radius * 1.5, radius * 1.3, radius * 1.5);
-}
-
-function braid(x, length=0.85) {
-for (let i = 0; i < 7; i++) {
-sphere(
-x + Math.sin(i * 1.2) * 0.025,
-0.02 - i * (length / 7),
--0.08,
-0.075, 0.09, 0.075
-);
-}
-}
-
-switch (hairStyle) {
-case 'long':
-cap();
-sides(0.95);
-back(1.0, 0.22);
-break;
-
-case 'curly':
-cap();
-curls();
-break;
-
-case 'wavy':
-cap();
-sides(0.95);
-back(0.85, 0.20);
-for (const side of [-1, 1]) {
-sphere(side * 0.20, 0.25, 0.02, 0.13, 0.18, 0.13);
-}
-break;
-
-case 'wolfcut':
-cap();
-fringe();
-sides(0.65);
-back(0.95, 0.20);
-break;
-
-case 'longwolf':
-cap();
-fringe();
-sides(1.05);
-back(1.15, 0.22);
-break;
-
-case 'mullet':
-cap();
-fringe();
-back(1.1, 0.22);
-break;
-
-case 'shaggy':
-cap();
-sides(0.75);
-back(0.9, 0.22);
-fringe();
-break;
-
-case 'textured':
-cap();
-fringe();
-for (let i = -2; i <= 2; i++) {
-strand(i * 0.08, 0.35, 0.04, 0.07, 0.15, 1, 1, i * 0.15);
-}
-break;
-
-case 'middlepart':
-cap();
-for (const side of [-1, 1]) {
-strand(side * 0.18, 0.10, 0.14, 0.09, 0.30, 1, 1, side * 0.3);
-}
-sides(0.45);
-break;
-
-case 'slickback':
-cap();
-back(0.55, 0.18);
-break;
-
-case 'buzz':
-sphere(0, 0.27, 0, 0.275, 0.17, 0.25);
-break;
-
-case 'crew':
-sphere(0, 0.29, 0, 0.27, 0.19, 0.25);
-break;
-
-case 'highfade':
-case 'lowfade':
-sphere(0, 0.32, -0.01, 0.26, 0.13, 0.24);
-break;
-
-case 'bob':
-cap();
-sides(0.32);
-back(0.35, 0.22);
-break;
-
-case 'ponytail':
-cap();
-ponytail(0, -0.05, 0.95);
-break;
-
-case 'highpony':
-cap();
-ponytail(0, 0.15, 1.0);
-break;
-
-case 'lowpony':
-cap();
-ponytail(0, -0.12, 0.85);
-break;
-
-case 'twinponies':
-cap();
-ponytail(-0.23, 0.05, 0.85, 0.10);
-ponytail(0.23, 0.05, 0.85, 0.10);
-break;
-
-case 'bun':
-cap();
-sphere(0, -0.02, -0.27, 0.19, 0.18, 0.18);
-break;
-
-case 'messybun':
-cap();
-sphere(0, 0.03, -0.28, 0.22, 0.20, 0.20);
-strand(-0.22, 0.02, 0.05, 0.07, 0.30);
-strand(0.22, 0.02, 0.05, 0.07, 0.30);
-break;
-
-case 'braids':
-cap();
-sides(0.45);
-braid(-0.20, 0.85);
-braid(0.20, 0.85);
-break;
-
-case 'cornrows':
-cap();
-for (let i = -2; i <= 2; i++) {
-strand(i * 0.085, 0.30, 0, 0.035, 0.30, 1, 1, 0);
-}
-break;
-
-case 'boxbraids':
-cap();
-for (let i = -2; i <= 2; i++) {
-braid(i * 0.09, 0.95);
-}
-break;
-
-case 'twists':
-cap();
-for (const side of [-1, 1]) {
-for (let i = 0; i < 3; i++) {
-strand(side * (0.12 + i * 0.06), -0.05, -0.10, 0.055, 0.65, 1, 1, side * 0.15);
-}
-}
-break;
-
-default:
-cap();
-sides(0.85);
-break;
-}
-
-const hairBone = model.getObjectByName('head');
-
-if (hairBone) {
-hairBone.add(hair);
-} else {
-model.add(hair);
-}
-
-hair.traverse(object => {
-if (object.isMesh) {
-object.castShadow = true;
-object.receiveShadow = true;
-}
-});
-}
-
-const mixer=new THREE.AnimationMixer(model);
-const actions={};
-
-const clips=source.animations||[];
-
-function findClip(word){
-return clips.find(clip=>clip.name.toLowerCase().includes(word));
-}
-
-const animationNames={
-idle:findClip('idle'),
-walk:findClip('walk'),
-run:findClip('run'),
-wave:findClip('wave'),
-jump:findClip('jump')
-};
-
-for(const [name,clip] of Object.entries(animationNames)){
-if(clip)actions[name]=mixer.clipAction(clip);
-}
-
-let currentAction=null;
-let currentAnimation='';
-
-function play(name){
-if(!actions[name]){
-if(name==='run'&&actions.walk)name='walk';
-else if(name!=='idle'&&actions.idle)name='idle';
-else return;
-}
-
-if(currentAnimation===name)return;
-
-const next=actions[name];
-if(currentAction){
-currentAction.fadeOut(.18);
-}
-
-next.reset();
-next.fadeIn(.18);
-next.play();
-
-currentAction=next;
-currentAnimation=name;
-}
-
-play('idle');
-
-group.userData.appearanceSignature=JSON.stringify(appearance);
-
-return{
-group,
-mixer,
-actions,
-play,
-update(delta){mixer.update(delta)},
-model
-};
-}
-
-// ========================================
-// MAIN CITY SCENE - YOUR EXACT ROAD LAYOUT
-// ========================================
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x1a1410);
-scene.fog=new THREE.Fog(0x1a1410, 80, 220);
-
-const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,500);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.NoToneMapping;
-renderer.toneMappingExposure=1;
 document.body.appendChild(renderer.domElement);
 
-// BRIGHTER SUNSET LIGHTING — FIX BLACK SCENERY
 
-// Strong overall illumination
-const ambient = new THREE.AmbientLight(0xffffff, 1.8);
-scene.add(ambient);
-
-// Sky and ground illumination
-const hemisphere = new THREE.HemisphereLight(
-0xffe0bd,
-0x75604d,
-2.0
+const controls = new OrbitControls(
+camera,
+renderer.domElement
 );
-scene.add(hemisphere);
 
-// Main sunset sunlight
-const sun = new THREE.DirectionalLight(0xffd0a0, 4.0);
-sun.position.set(-40, 60, -20);
+controls.enableDamping = true;
+
+controls.dampingFactor = 0.075;
+
+controls.enableRotate = true;
+
+controls.enablePan = true;
+
+controls.enableZoom = true;
+
+controls.mouseButtons = {
+LEFT: THREE.MOUSE.ROTATE,
+MIDDLE: THREE.MOUSE.DOLLY,
+RIGHT: THREE.MOUSE.PAN
+};
+
+controls.minDistance = 34;
+
+controls.maxDistance = 145;
+
+controls.minPolarAngle = 0.18;
+
+controls.maxPolarAngle = 1.48;
+
+controls.target.set(0, 0, 3);
+
+controls.screenSpacePanning = true;
+
+renderer.domElement.addEventListener(
+'contextmenu',
+e => e.preventDefault()
+);
+
+
+// LIGHTING
+
+scene.add(
+new THREE.HemisphereLight(
+0xffffff,
+0x65745c,
+2.0
+)
+);
+
+const sun = new THREE.DirectionalLight(
+0xfff0d8,
+3.1
+);
+
+sun.position.set(-45, 75, -30);
+
 sun.castShadow = true;
+
 sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left = -80;
-sun.shadow.camera.right = 80;
-sun.shadow.camera.top = 80;
-sun.shadow.camera.bottom = -80;
-sun.shadow.bias = -0.0005;
+
+sun.shadow.camera.left = -85;
+sun.shadow.camera.right = 85;
+sun.shadow.camera.top = 85;
+sun.shadow.camera.bottom = -85;
+
 scene.add(sun);
 
-// Warm secondary illumination
-const fillLight = new THREE.DirectionalLight(0xffd6ad, 1.5);
-fillLight.position.set(30, 30, 30);
-scene.add(fillLight);
 
-// Soft light from behind
-const rimLight = new THREE.DirectionalLight(0xffffff, 1.0);
-rimLight.position.set(0, 25, 40);
-scene.add(rimLight);
-  // EMERGENCY LIGHTING FIX
-const emergencyLight = new THREE.AmbientLight(0xffffff, 5);
-scene.add(emergencyLight);
-
-const emergencySun = new THREE.DirectionalLight(0xffffff, 3);
-emergencySun.position.set(0, 100, 0);
-scene.add(emergencySun);
-
-function material(color){
-return new THREE.MeshStandardMaterial({color, roughness:.85});
-}
-
-const cityCollisionBoxes=[];
-
-// Ground with sunset tint
-const cityGround=new THREE.Mesh(
-new THREE.PlaneGeometry(240, 220),
-material(0x2a201a)
+const fill = new THREE.DirectionalLight(
+0xffffff,
+1.15
 );
-cityGround.rotation.x=-Math.PI/2;
-cityGround.position.set(0, -0.02, 3);
-cityGround.receiveShadow=true;
-scene.add(cityGround);
 
-// Subtle glow on horizon
-const horizonGlow=new THREE.Mesh(
-new THREE.PlaneGeometry(300, 100),
-new THREE.MeshBasicMaterial({
-color:0xff8c42,
-transparent:true,
-opacity:0.2,
-side:THREE.DoubleSide,
-depthWrite:false
+fill.position.set(35, 35, 45);
+
+scene.add(fill);
+
+
+// GRASS GROUND
+
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(240, 220),
+new THREE.MeshStandardMaterial({
+color: 0x71915d,
+roughness: 1
 })
 );
-horizonGlow.rotation.x=-Math.PI/2;
-horizonGlow.position.set(0, 0.5, -100);
-scene.add(horizonGlow);
 
-// ========================================
-// YOUR EXACT 36-PIECE ROAD LAYOUT
-// ========================================
-const roadFiles={
-straight:"MS_RD_01_StraightRoad.glb",
-corner:"MS_RD_02_RoadCorner90.glb",
-crossroads:"MS_RD_04_Crossroads.glb",
-transition64:"MS_RD_06_Transition_6to4.glb"
+ground.rotation.x = -Math.PI / 2;
+
+ground.position.set(0, -0.12, 3);
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+
+const grid = new THREE.GridHelper(
+180,
+90,
+0x82947a,
+0x9aaa91
+);
+
+grid.position.set(0, -0.105, 3);
+
+grid.material.opacity = 0.2;
+
+grid.material.transparent = true;
+
+scene.add(grid);
+
+
+// ROAD ASSETS
+
+const roadFiles = {
+straight: 'MS_RD_01_StraightRoad.glb',
+corner: 'MS_RD_02_RoadCorner90.glb',
+crossroads: 'MS_RD_04_Crossroads.glb',
+transition64: 'MS_RD_06_Transition_6to4.glb'
 };
 
-const savedRoads=[
-{id:1,type:"crossroads",x:-27.429,y:0.16,z:5,rot:0},
-{id:2,type:"crossroads",x:17.6,y:0.16,z:5,rot:0},
-{id:3,type:"straight",x:-18,y:0.16,z:2,rot:0},
-{id:4,type:"straight",x:-12,y:0.16,z:2,rot:0},
-{id:5,type:"straight",x:-6,y:0.16,z:2,rot:0},
-{id:6,type:"straight",x:0,y:0.16,z:2,rot:0},
-{id:7,type:"straight",x:6,y:0.16,z:2,rot:0},
-{id:8,type:"straight",x:12,y:0.16,z:2,rot:0},
-{id:9,type:"transition64",x:-19.622,y:0.16,z:4.504,rot:3.142},
-{id:10,type:"straight",x:-20.626,y:0.16,z:14,rot:1.571},
-{id:11,type:"straight",x:-20.646,y:0.16,z:20,rot:1.571},
-{id:12,type:"transition64",x:-25.784,y:0.16,z:-5,rot:0},
-{id:13,type:"straight",x:-20.903,y:0.16,z:-6.391,rot:1.571},
-{id:14,type:"straight",x:-20.882,y:0.16,z:-12.266,rot:1.571},
-{id:15,type:"transition64",x:26.123,y:0.16,z:4.22,rot:3.142},
-{id:16,type:"straight",x:25.101,y:0.16,z:14.193,rot:1.571},
-{id:17,type:"straight",x:25.094,y:0.16,z:20,rot:1.571},
-{id:18,type:"transition64",x:19.453,y:0.16,z:-5,rot:0},
-{id:19,type:"straight",x:24.375,y:0.16,z:-8.602,rot:1.571},
-{id:20,type:"straight",x:24.392,y:0.16,z:-14.162,rot:1.571},
-{id:21,type:"corner",x:-17.172,y:0.16,z:18.984,rot:-0.032},
-{id:22,type:"corner",x:17.379,y:0.16,z:18.001,rot:-1.557},
-{id:23,type:"straight",x:-18,y:0.16,z:26,rot:0},
-{id:24,type:"straight",x:-12,y:0.16,z:26,rot:0},
-{id:25,type:"straight",x:-6,y:0.16,z:26,rot:0},
-{id:26,type:"straight",x:0,y:0.16,z:26,rot:0},
-{id:27,type:"straight",x:6,y:0.16,z:26,rot:0},
-{id:28,type:"straight",x:12,y:0.16,z:26,rot:0},
-{id:29,type:"corner",x:-16.874,y:0.16,z:-18.121,rot:1.547},
-{id:30,type:"corner",x:16.833,y:0.173,z:-18.225,rot:-0.01},
-{id:31,type:"straight",x:-18,y:0.16,z:-22,rot:0},
-{id:32,type:"straight",x:-12,y:0.16,z:-22,rot:0},
-{id:33,type:"straight",x:-6,y:0.16,z:-22,rot:0},
-{id:34,type:"straight",x:0,y:0.16,z:-22,rot:0},
-{id:35,type:"straight",x:6,y:0.16,z:-22,rot:0},
-{id:36,type:"straight",x:12,y:0.16,z:-22,rot:0}
+
+// ORIGINAL SAVED ROAD POSITIONS — 36 PIECES
+
+const savedRoads = [
+
+[1,'crossroads',-27.429,.16,5,0],
+[2,'crossroads',17.6,.16,5,0],
+
+[3,'straight',-18,.16,2,0],
+[4,'straight',-12,.16,2,0],
+[5,'straight',-6,.16,2,0],
+[6,'straight',0,.16,2,0],
+[7,'straight',6,.16,2,0],
+[8,'straight',12,.16,2,0],
+
+[9,'transition64',-19.622,.16,4.504,3.142],
+[10,'straight',-20.626,.16,14,1.571],
+[11,'straight',-20.646,.16,20,1.571],
+
+[12,'transition64',-25.784,.16,-5,0],
+[13,'straight',-20.903,.16,-6.391,1.571],
+[14,'straight',-20.882,.16,-12.266,1.571],
+
+[15,'transition64',26.123,.16,4.22,3.142],
+[16,'straight',25.101,.16,14.193,1.571],
+[17,'straight',25.094,.16,20,1.571],
+
+[18,'transition64',19.453,.16,-5,0],
+[19,'straight',24.375,.16,-8.602,1.571],
+[20,'straight',24.392,.16,-14.162,1.571],
+
+[21,'corner',-17.172,.16,18.984,-.032],
+[22,'corner',17.379,.16,18.001,-1.557],
+
+[23,'straight',-18,.16,26,0],
+[24,'straight',-12,.16,26,0],
+[25,'straight',-6,.16,26,0],
+[26,'straight',0,.16,26,0],
+[27,'straight',6,.16,26,0],
+[28,'straight',12,.16,26,0],
+
+[29,'corner',-16.874,.16,-18.121,1.547],
+[30,'corner',16.833,.173,-18.225,-.01],
+
+[31,'straight',-18,.16,-22,0],
+[32,'straight',-12,.16,-22,0],
+[33,'straight',-6,.16,-22,0],
+[34,'straight',0,.16,-22,0],
+[35,'straight',6,.16,-22,0],
+[36,'straight',12,.16,-22,0]
+
 ];
 
-function createProceduralRoadMesh(type){
-const group=new THREE.Group();
-const roadMat=new THREE.MeshStandardMaterial({color:0x2a201a,roughness:0.95,metalness:0.05});
-const curbMat=new THREE.MeshStandardMaterial({color:0x4a3a2a,roughness:0.8});
-const lineMat=new THREE.MeshBasicMaterial({color:0xffb366,transparent:true,opacity:0.9});
-const crosswalkMat=new THREE.MeshBasicMaterial({color:0xffcc88,transparent:true,opacity:0.85});
 
-const road=new THREE.Mesh(new THREE.BoxGeometry(6,0.15,6),roadMat);
-road.receiveShadow=true;
+// NORMALISE MODEL ORIGIN
+
+function normalizeModel(root) {
+
+const box = new THREE.Box3().setFromObject(root);
+
+const center = box.getCenter(
+new THREE.Vector3()
+);
+
+root.position.x -= center.x;
+
+root.position.z -= center.z;
+
+const after = new THREE.Box3().setFromObject(root);
+
+root.position.y -= after.min.y;
+
+root.traverse(o => {
+
+if (o.isMesh) {
+
+o.castShadow = true;
+
+o.receiveShadow = true;
+
+}
+
+});
+
+return root;
+
+}
+
+
+// FALLBACK ROAD IF ASSET IS MISSING
+
+function fallbackRoad(type) {
+
+const group = new THREE.Group();
+
+const road = new THREE.Mesh(
+new THREE.BoxGeometry(6, 0.16, 6),
+new THREE.MeshStandardMaterial({
+color: 0x343638,
+roughness: 0.96
+})
+);
+
+road.position.y = 0.08;
+
+road.receiveShadow = true;
+
 group.add(road);
 
-if(type==="straight"){
-const curbL=new THREE.Mesh(new THREE.BoxGeometry(6,0.22,0.8),curbMat);curbL.position.set(0,0.05,2.6);
-const curbR=curbL.clone();curbR.position.set(0,0.05,-2.6);
-group.add(curbL,curbR);
-const stripe=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),lineMat);stripe.position.y=0.085;group.add(stripe);
-}else if(type==="corner"){
-const curb1=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.22,6),curbMat);curb1.position.set(2.6,0.05,0);
-const curb2=new THREE.Mesh(new THREE.BoxGeometry(6,0.22,0.8),curbMat);curb2.position.set(0,0.05,-2.6);
-group.add(curb1,curb2);
-const cw1=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),crosswalkMat);cw1.position.set(0,0.085,2.6);group.add(cw1);
-const cw2=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.17,4),crosswalkMat);cw2.position.set(-2.6,0.085,0);group.add(cw2);
-}else if(type==="crossroads"){
-for(const [cx,cz] of [[2.6,0],[-2.6,0],[0,2.6],[0,-2.6]]){
-const curb=new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.8:6,0.22,cz!==0?0.8:6),curbMat);
-curb.position.set(cx,0.05,cz);group.add(curb);
-}
-const s1=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),lineMat);s1.position.y=0.085;
-const s2=s1.clone();s2.rotation.y=Math.PI/2;group.add(s1,s2);
-for(const [cx,cz] of [[0,2.8],[0,-2.8],[2.8,0],[-2.8,0]]){
-const cw=new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.12:4,0.17,cz!==0?0.12:4),crosswalkMat);
-cw.position.set(cx,0.085,cz);group.add(cw);
-}
-}else if(type==="transition64"){
-const curbL=new THREE.Mesh(new THREE.BoxGeometry(6,0.22,0.8),curbMat);curbL.position.set(0,0.05,2.6);
-const curbR=curbL.clone();curbR.position.set(0,0.05,-2.6);
-group.add(curbL,curbR);
-const stripe=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),lineMat);stripe.position.y=0.085;group.add(stripe);
-}
-
-group.userData.localRoadSize=new THREE.Vector3(6,0.15,6);
-group.userData.localRoadTop=0.075;
-group.userData.roadType=type;
 return group;
+
 }
 
-async function addRoad(type,x,z,rotation=0,y=0.16){
+
+// LOAD ROAD PIECES
+
+const roadModels = [];
+
+for (const r of savedRoads) {
+
+const [id,type,x,y,z,rot] = r;
+
 let model;
-try{
-model=await loader.loadAsync("./city-assets/roads/"+roadFiles[type]);
-const bounds=new THREE.Box3().setFromObject(model);
-const center=bounds.getCenter(new THREE.Vector3());
-model.position.x-=center.x;model.position.z-=center.z;
-const adjusted=new THREE.Box3().setFromObject(model);
-model.position.y-=adjusted.min.y;
-model.updateMatrixWorld(true);
-const localBounds=new THREE.Box3().setFromObject(model);
-model.userData.localRoadSize=localBounds.getSize(new THREE.Vector3());
-model.userData.localRoadTop=localBounds.max.y;
-}catch(e){
-model=createProceduralRoadMesh(type);
+
+try {
+
+const gltf = await loader.loadAsync(
+'./city-assets/roads/' + roadFiles[type]
+);
+
+model = normalizeModel(gltf.scene);
+
+} catch (e) {
+
+console.warn('Road asset missing:', roadFiles[type]);
+
+model = fallbackRoad(type);
+
 }
+
 model.position.set(x,y,z);
-model.rotation.y=rotation;
-model.userData.roadType=type;
+
+model.rotation.y = rot;
+
 scene.add(model);
-return model;
+
+roadModels.push(model);
+
 }
 
-for(const r of savedRoads){
-await addRoad(r.type,r.x,r.z,r.rot,r.y);
-}
 
-// ========================================
-// BUILDINGS - PROCEDURAL WITH YOUR ASSET NAMES
-// ========================================
-function createProceduralBuildingMesh(filename,label){
-const group=new THREE.Group();
-let color=0x5a4a3a,isStore=false,isApartment=false,isBakery=false;
-if(filename.includes("bakery")){color=0x8b4a1a;isStore=true;isBakery=true;}
-else if(filename.includes("Shop")||filename.includes("Storefront")){color=0x2a5a6a;isStore=true;}
-else if(filename.includes("Apartment")||filename.includes("Block")||filename.includes("Boarding")||filename.includes("Studio")||filename.includes("Budget")){color=0x5a4a3a;isApartment=true;}
-else if(filename.includes("Bungalow")||filename.includes("House")||filename.includes("Duplex")||filename.includes("Rental")){color=0x7a2a1a;}
-else if(filename.includes("Townhouse")||filename.includes("Entry")||filename.includes("Gated")){color=0x6a2a1a;}
+// BUILDINGS
 
-const height=isBakery?7:(isStore?5.5:(isApartment?10:7));
-const width=isBakery?9:(isStore?8:(isApartment?9:7));
-const depth=7.5;
+const buildingFiles = [
 
-const body=new THREE.Mesh(new THREE.BoxGeometry(width,height,depth),material(color));
-body.position.y=height/2;body.castShadow=true;body.receiveShadow=true;group.add(body);
+'MS_HV_01_PorchBungalow.glb',
+'MS_HV_02_WideBalconyHouse.glb',
+'MS_HV_03_UrbanTownhouse.glb',
+'MS_HV_04_CornerEntryHouse.glb',
+'MS_HV_05_GatedCarportHouse.glb',
+'MS_HV_06_OlderDuplexRental.glb',
 
-const roof=new THREE.Mesh(new THREE.BoxGeometry(width+0.6,0.5,depth+0.6),material(0x1a1410));
-roof.position.y=height+0.25;group.add(roof);
+'MS_PF_01_TwoStoreyHouse.glb',
+'MS_PF_02_NarrowTownhouse.glb',
+'MS_PF_03_ThreeStoreyApartment.glb',
+'MS_PF_04_ApartmentBlock.glb',
+'MS_PF_05_CornerShop.glb',
+'MS_PF_06_ClosedStorefront.glb',
 
-const door=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.5,0.15),material(0x2a1a0a));
-door.position.set(0,1.25,depth/2+0.08);group.add(door);
-group.userData.doorPos=new THREE.Vector3(0,1.25,depth/2+0.5);
+'MS_RR_A01_TinySingleRoom.glb',
+'MS_RR_A02_BudgetHouse.glb',
+'MS_RR_B02_StandardFamilyBungalow.glb',
+'MS_RR_D01_StudioUnit.glb',
+'MS_RR_D04_BoardingHouse.glb',
 
-const winGlow=new THREE.MeshBasicMaterial({color:0xffaa44,transparent:true,opacity:0.7});
-for(let wx=-width/3;wx<=width/3;wx+=width/3){
-for(let wy=height/3;wy<height;wy+=height/2.5){
-const win=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.1,0.1),winGlow);
-win.position.set(wx,wy,depth/2+0.06);group.add(win);
-}
-}
+'tinas bakery.glb'
 
-if(isBakery){
-const sign=new THREE.Mesh(new THREE.BoxGeometry(4,1,0.2),new THREE.MeshBasicMaterial({color:0xff8800}));
-sign.position.set(0,height+1.5,depth/2+0.3);group.add(sign);
-}
+];
 
-group.userData.buildingLabel=label;
-group.userData.isBakery=isBakery;
-group.userData.isStore=isStore;
+
+// INITIAL GRASS POSITIONS
+
+const initialSpots = [
+
+[-13,12],
+[-5,12],
+[3,12],
+[11,12],
+
+[-13,19],
+[-5,19],
+[3,19],
+[11,19],
+
+[-13,-7],
+[-5,-7],
+[3,-7],
+[11,-7],
+
+[-13,-15],
+[-5,-15],
+[3,-15],
+[11,-15],
+
+[-30,12],
+[-30,-8]
+
+];
+
+
+// SIMPLE PLACEHOLDER IF A BUILDING CANNOT LOAD
+
+function fallbackBuilding(name) {
+
+const group = new THREE.Group();
+
+const apartment =
+/Apartment|Boarding|Studio|Budget/i.test(name);
+
+const shop =
+/Shop|Storefront|bakery/i.test(name);
+
+const w = shop ? 6.2 : 5.3;
+
+const d = shop ? 5.4 : 5.6;
+
+const h = apartment ? 7.2 : 5.0;
+
+const body = new THREE.Mesh(
+new THREE.BoxGeometry(w,h,d),
+new THREE.MeshStandardMaterial({
+color: shop ? 0xb7a078 : 0xc5a98c,
+roughness: 0.9
+})
+);
+
+body.position.y = h / 2;
+
+body.castShadow = true;
+
+body.receiveShadow = true;
+
+group.add(body);
+
+const roof = new THREE.Mesh(
+new THREE.BoxGeometry(w+0.25,0.3,d+0.25),
+new THREE.MeshStandardMaterial({
+color: 0x51443a
+})
+);
+
+roof.position.y = h + 0.15;
+
+group.add(roof);
+
 return group;
+
 }
 
-async function addBuilding(filename,x,z,rotation=0,label="Building"){
+
+// LOAD ALL BUILDINGS
+
+const buildingEntries = [];
+
+for (let i = 0; i < buildingFiles.length; i++) {
+
+const file = buildingFiles[i];
+
 let root;
-try{
-const url="./"+encodeURIComponent(filename);
-root=await loader.loadAsync(url);
-const bounds=new THREE.Box3().setFromObject(root);
-const center=bounds.getCenter(new THREE.Vector3());
-root.position.x-=center.x;root.position.z-=center.z;
-const size=bounds.getSize(new THREE.Vector3());
-const footprint=Math.max(size.x,size.z);
-const scale=Math.min(1.3,8.0/Math.max(footprint,0.001));
-root.scale.setScalar(scale);
-const afterScale=new THREE.Box3().setFromObject(root);
-root.position.y-=afterScale.min.y;
-}catch(error){
-root=createProceduralBuildingMesh(filename,label);
+
+let real = true;
+
+try {
+
+const gltf = await loader.loadAsync(
+'./' + encodeURIComponent(file)
+);
+
+root = normalizeModel(gltf.scene);
+
+} catch (e) {
+
+console.warn('Building asset missing:', file);
+
+real = false;
+
+root = fallbackBuilding(file);
+
 }
-root.position.set(x,0,z);
-root.rotation.y=rotation;
-root.userData.cityBuilding=label;
+
+const box = new THREE.Box3().setFromObject(root);
+
+const size = box.getSize(
+new THREE.Vector3()
+);
+
+const footprint = Math.max(size.x,size.z);
+
+const scale = Math.min(
+1,
+5.6 / Math.max(footprint,0.001)
+);
+
+root.scale.setScalar(scale);
+
+root.updateMatrixWorld(true);
+
+const after = new THREE.Box3().setFromObject(root);
+
+root.position.y -= after.min.y;
+
+const spot = initialSpots[i] || [0,-7];
+
+root.position.set(spot[0],0,spot[1]);
+
+root.userData.editorName = file;
+
+root.userData.file = file;
+
+root.userData.realAsset = real;
+
+root.traverse(o => {
+
+if (o.isMesh) {
+
+o.castShadow = true;
+
+o.receiveShadow = true;
+
+}
+
+});
+
 scene.add(root);
 
-const box=new THREE.Box3().setFromObject(root);
-cityCollisionBoxes.push({
-x:x,
-z:z,
-halfWidth:(box.max.x-box.min.x)/2+0.3,
-halfDepth:(box.max.z-box.min.z)/2+0.3
+buildingEntries.push({
+
+file,
+
+root,
+
+start: root.position.clone(),
+
+startRotation: 0
+
 });
-return root;
+
 }
 
-// ========================================
-// HOUSES POSITIONED INSIDE ROAD LOOPS
-// ========================================
-const northLoopHomes=[
-["MS_HV_01_PorchBungalow.glb",-14,22.5,0],
-["MS_HV_02_WideBalconyHouse.glb",-6,22.5,0],
-["MS_HV_03_UrbanTownhouse.glb",2,22.5,0],
-["MS_HV_04_CornerEntryHouse.glb",10,22.5,0],
-["MS_PF_03_ThreeStoreyApartment.glb",-14,29,Math.PI],
-["MS_PF_04_ApartmentBlock.glb",-4,29,Math.PI],
-["MS_RR_A01_TinySingleRoom.glb",6,29,Math.PI],
-["MS_RR_A02_BudgetHouse.glb",14,29,Math.PI]
-];
 
-const southLoopHomes=[
-["MS_HV_05_GatedCarportHouse.glb",-14,-20,Math.PI],
-["MS_HV_06_OlderDuplexRental.glb",-4,-20,Math.PI],
-["MS_PF_01_TwoStoreyHouse.glb",6,-20,Math.PI],
-["MS_PF_02_NarrowTownhouse.glb",14,-20,Math.PI],
-["MS_RR_B02_StandardFamilyBungalow.glb",-14,-28,0],
-["MS_RR_D01_StudioUnit.glb",-4,-28,0],
-["MS_RR_D04_BoardingHouse.glb",8,-28,0]
-];
+// BUILDING SELECTOR
 
-const westSideHomes=[
-["MS_HV_01_PorchBungalow.glb",-22,8,Math.PI/2],
-["MS_HV_02_WideBalconyHouse.glb",-22,0,Math.PI/2]
-];
+const select = document.getElementById('buildingSelect');
 
-const eastSideHomes=[
-["MS_HV_03_UrbanTownhouse.glb",22,8,-Math.PI/2],
-["MS_HV_04_CornerEntryHouse.glb",22,-2,-Math.PI/2]
-];
+select.innerHTML = '';
 
-const allHomes=[...northLoopHomes,...southLoopHomes,...westSideHomes,...eastSideHomes];
-for(const[file,x,z,rot]of allHomes){
-await addBuilding(file,x,z,rot,"Home");
-}
+buildingEntries.forEach((entry,i) => {
 
-await addBuilding("MS_PF_05_CornerShop.glb",-37,9,Math.PI/2,"Corner Shop");
-await addBuilding("MS_PF_06_ClosedStorefront.glb",-5,-8,0,"Storefront");
-await addBuilding("tinas bakery.glb",8,-8,0,"Tina's Bakery");
+const opt = document.createElement('option');
 
-// ========================================
-// STREETLAMPS WITH WARM GLOW
-// ========================================
-function createStreetLamp(x,z){
-const light=new THREE.PointLight(0xff8833,0.8,30,1.8);
-light.position.set(x,5.2,z);
-light.castShadow=true;
-light.shadow.mapSize.set(512,512);
-scene.add(light);
+opt.value = String(i);
 
-const pole=new THREE.Mesh(
-new THREE.CylinderGeometry(0.08,0.12,5,8),
-new THREE.MeshStandardMaterial({color:0x3a2a2a,roughness:0.7})
-);
-pole.position.set(x,2.5,z);pole.castShadow=true;scene.add(pole);
+opt.textContent = entry.file;
 
-const bulb=new THREE.Mesh(
-new THREE.SphereGeometry(0.25,8,8),
-new THREE.MeshBasicMaterial({color:0xffaa44})
-);
-bulb.position.set(x,5.4,z);scene.add(bulb);
+select.append(opt);
 
-const halo=new THREE.Mesh(
-new THREE.SphereGeometry(1.2,16,16),
-new THREE.MeshBasicMaterial({color:0xff8833,transparent:true,opacity:0.15,depthWrite:false})
-);
-halo.position.set(x,5.4,z);scene.add(halo);
-}
-
-const lightPositions=[
-[-27,5],[18,5],[-12,2],[6,2],
-[-20,12],[-20,20],[25,12],[25,20],
-[-20,-6],[-20,-12],[24,-6],[24,-14],
-[-17,19],[17,18],[-12,26],[6,26],
-[-17,-18],[17,-18],[-12,-22],[6,-22],
-[-37,9],[8,-8]
-];
-lightPositions.forEach(p=>createStreetLamp(p[0],p[1]));
-
-// ========================================
-// TREES
-// ========================================
-function addTree(x,z,s=1){
-const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.18*s,0.24*s,2.2*s,7),material(0x3a2a1a));
-trunk.position.set(x,1.1*s,z);trunk.castShadow=true;scene.add(trunk);
-const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s,1),material(0x2a3a1a));
-crown.position.set(x,2.65*s,z);crown.castShadow=true;scene.add(crown);
-
-cityCollisionBoxes.push({x,z,halfWidth:0.65*s,halfDepth:0.65*s});
-}
-[[-34,18],[-34,-15],[38,18],[38,-15],[-27,34],[24,34],[-27,-32],[24,-32],[-22,15],[-22,5],[23,15],[23,5]].forEach(p=>addTree(p[0],p[1],0.9));
-
-// ========================================
-// LOCAL PLAYER
-// ========================================
-let character=createCharacter(appearance);
-let player=character.group;
-scene.add(player);
-player.position.set(0,0,10);
-
-// Third person camera state
-let camYaw=Math.PI;
-let camPitch=0.3;
-let camDistance=8;
-let camTargetY=1.4;
-
-// Jump physics
-let velocityY=0;
-let isGrounded=true;
-const GRAVITY=-25;
-const JUMP_VELOCITY=11;
-const COYOTE_TIME=0.1;
-let coyoteTimer=0;
-
-// ========================================
-// WARDROBE PREVIEW SCENE
-// ========================================
-const previewScene=new THREE.Scene();
-previewScene.background=new THREE.Color(0x3d2a1a);
-previewScene.fog=new THREE.Fog(0x3d2a1a,10,24);
-previewScene.add(new THREE.HemisphereLight(0xffddaa,0x3d2a1a,2.2));
-
-const previewLight=new THREE.DirectionalLight(0xffeecc,2.5);
-previewLight.position.set(-3,7,5);
-previewLight.castShadow=true;
-previewScene.add(previewLight);
-
-const previewCamera=new THREE.PerspectiveCamera(32,1,.1,50);
-previewCamera.position.set(0,2.15,7.4);
-previewCamera.lookAt(0,1.45,0);
-
-const previewRenderer=new THREE.WebGLRenderer({
-canvas:document.getElementById('previewCanvas'),
-antialias:true,
-alpha:false
 });
-previewRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
-previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
 
-const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x5d4a3a));
-previewFloor.position.y=-.08;
-previewScene.add(previewFloor);
 
-const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x3d2a1a));
-previewRug.position.y=0;
-previewScene.add(previewRug);
+let selectedIndex = 0;
 
-function updatePreview(){
-if(previewCharacter){
-previewScene.remove(previewCharacter.group);
-previewCharacter.mixer.stopAllAction();
-}
-previewCharacter=createCharacter(appearance);
-previewScene.add(previewCharacter.group);
-previewCharacter.group.position.y=0;
-previewCharacter.group.rotation.y=previewRotation;
-}
-updatePreview();
+select.addEventListener('change', () => {
 
-function resizePreview(){
-const r=document.getElementById('previewWrap').getBoundingClientRect();
-const w=Math.max(1,r.width);
-const h=Math.max(1,r.height);
-previewRenderer.setSize(w,h,false);
-previewCamera.aspect=w/h;
-previewCamera.updateProjectionMatrix();
-}
-new ResizeObserver(resizePreview).observe(document.getElementById('previewWrap'));
-resizePreview();
+selectedIndex = Number(select.value);
 
-const previewCanvas=document.getElementById('previewCanvas');
-previewCanvas.addEventListener('pointerdown',e=>{
-previewPointer=e.pointerId;
-previewLastX=e.clientX;
-previewCanvas.setPointerCapture(e.pointerId);
 });
-previewCanvas.addEventListener('pointermove',e=>{
-if(e.pointerId!==previewPointer)return;
-previewRotation+=(e.clientX-previewLastX)*.012;
-previewLastX=e.clientX;
-if(previewCharacter)previewCharacter.group.rotation.y=previewRotation;
+
+
+function selected() {
+
+return buildingEntries[selectedIndex];
+
+}
+
+
+// MOVE BUILDING
+
+function moveSelected(dx,dz) {
+
+const e = selected();
+
+if (!e) return;
+
+e.root.position.x += dx;
+
+e.root.position.z += dz;
+
+}
+
+
+document.querySelectorAll('[data-move]').forEach(btn => {
+
+btn.addEventListener('click', () => {
+
+const [x,z] = btn.dataset.move
+.split(',')
+.map(Number);
+
+moveSelected(x,z);
+
 });
-previewCanvas.addEventListener('pointerup',e=>{if(e.pointerId===previewPointer)previewPointer=null;});
-previewCanvas.addEventListener('pointercancel',()=>previewPointer=null);
 
-// ========================================
-// WARDROBE UI
-// ========================================
-function renderWardrobe(){
-const cats=document.getElementById('categories');
-cats.innerHTML='';
-for(const[key,label]of categoryNames){
-const row=document.createElement('div');
-row.className='category'+(key===activeCategory?' active':'');
-const name=document.createElement('span');
-name.textContent=label;
-const arrows=document.createElement('div');
-arrows.className='arrows';
-const left=document.createElement('button');
-left.textContent='‹';
-left.setAttribute('aria-label','Previous '+label);
-const right=document.createElement('button');
-right.textContent='›';
-right.setAttribute('aria-label','Next '+label);
-left.onclick=e=>{e.stopPropagation();cycle(key,-1);};
-right.onclick=e=>{e.stopPropagation();cycle(key,1);};
-arrows.append(left,right);
-row.append(name,arrows);
-row.onclick=()=>{activeCategory=key;renderWardrobe();};
-cats.append(row);
-}
-const list=choices[activeCategory];
-const selected=list.find(v=>v[1]===appearance[activeCategory]);
-document.getElementById('customTitle').textContent=categoryNames.find(v=>v[0]===activeCategory)[1].toUpperCase();
-document.getElementById('selectedName').textContent=selected?selected[0]:'Selected option';
-const sw=document.getElementById('swatches');
-sw.innerHTML='';
-for(const[label,value]of list){
-const b=document.createElement('button');
-b.className='swatch'+(appearance[activeCategory]===value?' selected':'');
-b.title=label;
-if(value.startsWith('#')){
-b.style.background=value;
-}else{
-b.style.background=activeCategory==='gender'
-?(value==='boy'?'#5b8db7':'#c77c9b')
-:activeCategory==='hairStyle'
-?({short:'#63452e',long:'#8b5a38',curly:'#38251c',braids:'#52351f',ponytail:'#76502e',bun:'#9b7048',none:'#d9c6aa'}[value])
-:({none:'#b8b0a4',glasses:'#777',headband:'#d7a5c4'}[value]);
-}
-b.onclick=()=>choose(value);
-sw.append(b);
-}
-}
-
-function replaceLocalCharacter(){
-const oldPosition=player.position.clone();
-const oldRotation=player.rotation.clone();
-scene.remove(player);
-character.mixer.stopAllAction();
-character=createCharacter(appearance);
-player=character.group;
-player.position.copy(oldPosition);
-player.rotation.copy(oldRotation);
-scene.add(player);
-}
-
-function choose(value){
-appearance[activeCategory]=value;
-replaceLocalCharacter();
-updatePreview();
-renderWardrobe();
-sendMyPosition();
-}
-
-function cycle(key,direction){
-const arr=choices[key];
-const i=arr.findIndex(v=>v[1]===appearance[key]);
-activeCategory=key;
-choose(arr[(i+direction+arr.length)%arr.length][1]);
-}
-
-renderWardrobe();
-
-function renderSaved(){
-const box=document.getElementById('savedOutfits');
-box.innerHTML='';
-const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
-const defaults=[
-{name:'Everyday outfit',data:{...defaultAppearance}},
-{name:'Cosy evening',data:{...defaultAppearance,topColor:'#8656a7',bottomColor:'#252525',hairStyle:'long'}},
-{name:'Summer day',data:{...defaultAppearance,topColor:'#e58b9c',bottomStyle:'shorts',shoeColor:'#eeeeee'}}
-];
-[...defaults,...saved].slice(0,6).forEach(o=>{
-const b=document.createElement('button');
-b.className='outfit';
-b.innerHTML='<strong>'+o.name+'</strong><span>Tap to wear this look</span>';
-b.onclick=()=>{appearance={...defaultAppearance,...o.data};replaceLocalCharacter();updatePreview();renderWardrobe();sendMyPosition();};
-box.append(b);
 });
-}
 
-document.getElementById('saveOutfit').onclick=()=>{
-const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
-if(saved.length>=3)saved.shift();
-saved.push({name:'Saved outfit '+(saved.length+1),data:{...appearance}});
-localStorage.setItem('ofd_saved_outfits',JSON.stringify(saved));
-renderSaved();
+
+// ROTATION
+
+document.getElementById('rotateLeft').onclick = () => {
+
+const e = selected();
+
+if (e) e.root.rotation.y -= Math.PI / 2;
+
 };
 
-function openCreator(){
-wardrobeOpen=true;
-document.getElementById('start').style.display='flex';
-document.getElementById('wardrobe').style.display='none';
-document.getElementById('instructions').style.display='none';
-document.getElementById('joystick').style.display='none';
-document.getElementById('runButton').style.display='none';
-document.getElementById('jumpButton').style.display='none';
-if(document.pointerLockElement)document.exitPointerLock();
-resizePreview();
+document.getElementById('rotateRight').onclick = () => {
+
+const e = selected();
+
+if (e) e.root.rotation.y += Math.PI / 2;
+
+};
+
+
+// RESET
+
+document.getElementById('resetSelected').onclick = () => {
+
+const e = selected();
+
+if (e) {
+
+e.root.position.copy(e.start);
+
+e.root.rotation.y = e.startRotation;
+
 }
 
-function closeCreator(){
-wardrobeOpen=false;
-document.getElementById('start').style.display='none';
-document.getElementById('wardrobe').style.display='block';
-document.getElementById('instructions').style.display='block';
-if(matchMedia('(pointer:coarse)').matches){
-document.getElementById('joystick').style.display='block';
-document.getElementById('runButton').style.display='block';
-document.getElementById('jumpButton').style.display='block';
-}
-if(matchMedia('(pointer:fine)').matches){
-renderer.domElement.requestPointerLock();
-}
-sendMyPosition();
-}
+};
 
-document.getElementById('enterButton').addEventListener('click',closeCreator);
-document.getElementById('wardrobe').addEventListener('click',openCreator);
 
-// ========================================
-// INPUT & MOVEMENT
-// ========================================
-const keys={};
-let yaw=0;
-let running=false;
-let localMoving=false;
-let localSprinting=false;
-let jumpPressed=false;
+document.getElementById('resetAll').onclick = () => {
 
-window.addEventListener('keydown',e=>{
-const k=e.key.toLowerCase();
-keys[k]=true;
-if(k===' '||k==='space')jumpPressed=true;
-});
-window.addEventListener('keyup',e=>{
-keys[e.key.toLowerCase()]=false;
-if(e.key===' '||e.key==='Space')jumpPressed=false;
-});
-window.addEventListener('blur',()=>{for(const key in keys)keys[key]=false;running=false;jumpPressed=false;});
+buildingEntries.forEach(e => {
 
-const runButton=document.getElementById('runButton');
-runButton.addEventListener('pointerdown',e=>{e.preventDefault();running=true;});
-for(const n of['pointerup','pointerleave','pointercancel']){
-runButton.addEventListener(n,()=>running=false);
-}
+e.root.position.copy(e.start);
 
-const jumpButton=document.getElementById('jumpButton');
-jumpButton.addEventListener('pointerdown',e=>{e.preventDefault();jumpPressed=true;});
-for(const n of['pointerup','pointerleave','pointercancel']){
-jumpButton.addEventListener(n,()=>jumpPressed=false);
-}
+e.root.rotation.y = e.startRotation;
 
-const joystick=document.getElementById('joystick');
-const stick=document.getElementById('stick');
-let joystickPointer=null;
-let joyX=0;
-let joyY=0;
-
-function resetJoystick(){joyX=0;joyY=0;joystickPointer=null;stick.style.transform='translate(0px,0px)';}
-
-function updateJoystick(e){
-const r=joystick.getBoundingClientRect();
-const cx=r.left+r.width/2;
-const cy=r.top+r.height/2;
-let dx=e.clientX-cx;
-let dy=e.clientY-cy;
-const max=48;
-const d=Math.hypot(dx,dy);
-if(d>max){dx=dx/d*max;dy=dy/d*max;}
-joyX=dx/max;joyY=dy/max;
-stick.style.transform=`translate(${dx}px,${dy}px)`;
-}
-
-joystick.addEventListener('pointerdown',e=>{e.preventDefault();if(joystickPointer!==null)return;joystickPointer=e.pointerId;joystick.setPointerCapture(e.pointerId);updateJoystick(e);});
-joystick.addEventListener('pointermove',e=>{if(e.pointerId!==joystickPointer)return;e.preventDefault();updateJoystick(e);});
-joystick.addEventListener('pointerup',e=>{if(e.pointerId===joystickPointer)resetJoystick();});
-joystick.addEventListener('pointercancel',resetJoystick);
-joystick.addEventListener('lostpointercapture',resetJoystick);
-
-document.addEventListener('mousemove',e=>{
-if(wardrobeOpen||document.pointerLockElement!==renderer.domElement)return;
-camYaw-=e.movementX*.003;
-camPitch+=e.movementY*.002;
-camPitch=THREE.MathUtils.clamp(camPitch,-0.8,0.8);
 });
 
-let cameraPointer=null;
-let touchX=0;
-let touchY=0;
+};
 
-renderer.domElement.addEventListener('pointerdown',e=>{
-if(wardrobeOpen||e.pointerType!=='touch'||e.clientX<innerWidth*.3||e.clientY<innerHeight*.3)return;
-cameraPointer=e.pointerId;
-renderer.domElement.setPointerCapture(e.pointerId);
-touchX=e.clientX;touchY=e.clientY;
-});
 
-renderer.domElement.addEventListener('pointermove',e=>{
-if(e.pointerId!==cameraPointer)return;
-const dx=e.clientX-touchX;
-const dy=e.clientY-touchY;
-camYaw-=dx*.006;
-camPitch+=dy*.004;
-camPitch=THREE.MathUtils.clamp(camPitch,-0.8,0.8);
-touchX=e.clientX;touchY=e.clientY;
-});
+// SAVE
 
-function releaseCamera(e){if(e.pointerId===cameraPointer)cameraPointer=null;}
-renderer.domElement.addEventListener('pointerup',releaseCamera);
-renderer.domElement.addEventListener('pointercancel',releaseCamera);
-renderer.domElement.addEventListener('lostpointercapture',releaseCamera);
+document.getElementById('save').onclick = () => {
 
-renderer.domElement.addEventListener('wheel',e=>{
-e.preventDefault();
-camDistance=THREE.MathUtils.clamp(camDistance+e.deltaY*0.01,4,18);
-},{passive:false});
+const data = buildingEntries.map(e => ({
 
-// ========================================
-// MULTIPLAYER
-// ========================================
-async function connectMultiplayer(){
-try{
-const result=await signInAnonymously(auth);
-myUID=result.user.uid;
-myPlayerRef=ref(db,'players/'+myUID);
-await onDisconnect(myPlayerRef).remove();
-await set(myPlayerRef,{
-x:player.position.x,z:player.position.z,rotation:player.rotation.y,
-moving:false,running:false,jumping:false,y:player.position.y,
-appearance:appearance,updatedAt:Date.now()
-});
-networkReady=true;
-onValue(ref(db,'players'),snapshot=>{
-snapshot.forEach(child=>{
-const id=child.key;const data=child.val();
-if(id===myUID||!data)return;
-let other=remotePlayers.get(id);
-if(!other){
-other=createCharacter(data.appearance||defaultAppearance);
-other.group.position.set(Number(data.x)||0,Number(data.y)||0,Number(data.z)||0);
-other.group.rotation.y=Number(data.rotation)||0;
-other.group.userData.targetPosition=new THREE.Vector3(Number(data.x)||0,Number(data.y)||0,Number(data.z)||0);
-other.group.userData.targetRotation=Number(data.rotation)||0;
-other.group.userData.targetMoving=data.moving===true;
-other.group.userData.targetRunning=data.running===true;
-other.group.userData.targetJumping=data.jumping===true;
-scene.add(other.group);
-remotePlayers.set(id,other);
-}else{
-const incoming=JSON.stringify({...defaultAppearance,...(data.appearance||{})});
-const current=other.group.userData.appearanceSignature;
-if(incoming!==current){
-const old=other.group;const state=old.userData;
-const replacement=createCharacter(data.appearance||defaultAppearance);
-replacement.group.position.copy(old.position);
-replacement.group.rotation.copy(old.rotation);
-replacement.group.userData.targetPosition=state.targetPosition;
-replacement.group.userData.targetRotation=state.targetRotation;
-replacement.group.userData.targetMoving=state.targetMoving;
-replacement.group.userData.targetRunning=state.targetRunning;
-replacement.group.userData.targetJumping=state.targetJumping;
-scene.remove(old);scene.add(replacement.group);
-other=replacement;remotePlayers.set(id,other);
-}
-}
-const state=other.group.userData;
-state.targetPosition.set(Number(data.x)||0,Number(data.y)||0,Number(data.z)||0);
-if(Number.isFinite(Number(data.rotation)))state.targetRotation=Number(data.rotation);
-state.targetMoving=data.moving===true;state.targetRunning=data.running===true;state.targetJumping=data.jumping===true;
-});
-for(const[id,other]of remotePlayers){if(!snapshot.hasChild(id)){scene.remove(other.group);other.mixer.stopAllAction();remotePlayers.delete(id);}}
-statusText.textContent=remotePlayers.size>0?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players':'🟢 Connected · Waiting for Tina';
-},error=>{console.error(error);statusText.textContent='🔴 Multiplayer read error';});
-}catch(error){console.error(error);statusText.textContent='🔴 Connection failed';}}
-connectMultiplayer();
+file: e.file,
 
-let lastSent=0;
-function sendMyPosition(){
-if(!networkReady||!myPlayerRef)return;
-set(myPlayerRef,{
-x:player.position.x,y:player.position.y,z:player.position.z,
-rotation:player.rotation.y,
-moving:localMoving,running:localSprinting,jumping:!isGrounded,
-appearance:appearance,updatedAt:Date.now()
-}).catch(error=>{console.error('Position update failed:',error);});
-}
+x: e.root.position.x,
 
-// ========================================
-// GAME LOOP
-// ========================================
-const clock=new THREE.Clock();
-const targetCamera=new THREE.Vector3();
+z: e.root.position.z,
 
-function animate(){
-requestAnimationFrame(animate);
-const delta=Math.min(clock.getDelta(),.05);
-const time=clock.elapsedTime;
+rotation: e.root.rotation.y
 
-let forward=0,sideways=0;
-if(!wardrobeOpen){
-if(keys.w||keys.arrowup)forward+=1;
-if(keys.s||keys.arrowdown)forward-=1;
-if(keys.d||keys.arrowright)sideways+=1;
-if(keys.a||keys.arrowleft)sideways-=1;
-forward+=-joyY;sideways+=joyX;
-}
+}));
 
-const length=Math.hypot(forward,sideways);
-const moving=length>.08;
-const sprint=keys.shift||running;
-localMoving=moving;localSprinting=moving&&sprint;
-
-// Calculate move direction in world space (relative to camera yaw)
-let dx=0, dz=0;
-if(length>.001){
-forward/=length;sideways/=length;
-dx=-Math.sin(camYaw)*forward+Math.cos(camYaw)*sideways;
-dz=-Math.cos(camYaw)*forward-Math.sin(camYaw)*sideways;
-}
-
-if(moving){
-const speed=sprint?10:5.5;
-const newX=player.position.x+dx*speed*delta;
-const newZ=player.position.z+dz*speed*delta;
-
-let canMove=true;
-for(const box of cityCollisionBoxes){
-if(newX>box.x-box.halfWidth&&newX<box.x+box.halfWidth&&
-newZ>box.z-box.halfDepth&&newZ<box.z+box.halfDepth){
-canMove=false;break;
-}
-}
-if(canMove){
-player.position.x=newX;
-player.position.z=newZ;
-}
-}
-
-// Jump logic
-if(jumpPressed&&(isGrounded||coyoteTimer>0)){
-velocityY=JUMP_VELOCITY;
-isGrounded=false;
-coyoteTimer=0;
-jumpPressed=false;
-}
-
-velocityY+=GRAVITY*delta;
-player.position.y+=velocityY*delta;
-
-if(player.position.y<=0){
-player.position.y=0;
-velocityY=0;
-isGrounded=true;
-coyoteTimer=COYOTE_TIME;
-}else{
-coyoteTimer-=delta;
-}
-
-// Face movement direction when moving
-if(moving){
-yaw=Math.atan2(dx,dz);
-}
-player.rotation.y=yaw;
-
-const animName=moving?(sprint?'run':'walk'):(isGrounded?'idle':'jump');
-character.play(animName);
-character.update(delta);
-
-for(const other of remotePlayers.values()){
-const data=other.group.userData;
-other.group.position.lerp(data.targetPosition,Math.min(1,delta*12));
-const diff=Math.atan2(Math.sin(data.targetRotation-other.group.rotation.y),Math.cos(data.targetRotation-other.group.rotation.y));
-other.group.rotation.y+=diff*Math.min(1,delta*12);
-const remoteAnim=data.targetJumping?'jump':(data.targetMoving?(data.targetRunning?'run':'walk'):'idle');
-other.play(remoteAnim);
-other.update(delta);
-}
-
-// Third person camera
-const horizontal=camDistance*Math.cos(camPitch);
-targetCamera.set(
-player.position.x+Math.sin(camYaw)*horizontal,
-player.position.y+camTargetY+camDistance*Math.sin(camPitch),
-player.position.z+Math.cos(camYaw)*horizontal
+localStorage.setItem(
+'ofd_city_editor_layout_v2',
+JSON.stringify(data)
 );
-camera.position.lerp(targetCamera,0.12);
-camera.lookAt(player.position.x,player.position.y+camTargetY,player.position.z);
 
-if(time-lastSent>.08){sendMyPosition();lastSent=time;}
+status.textContent =
+'Saved this building arrangement in this browser.';
+
+};
+
+
+// CLEAR SAVED LAYOUT
+
+document.getElementById('clearSave').onclick = () => {
+
+localStorage.removeItem(
+'ofd_city_editor_layout_v2'
+);
+
+status.textContent =
+'Saved arrangement cleared. Reload the page to restore the starting layout.';
+
+};
+
+
+// LOAD SAVED LAYOUT
+
+try {
+
+const saved = JSON.parse(
+localStorage.getItem('ofd_city_editor_layout_v2') || 'null'
+);
+
+if (Array.isArray(saved)) {
+
+for (const item of saved) {
+
+const e = buildingEntries.find(
+v => v.file === item.file
+);
+
+if (e) {
+
+e.root.position.set(item.x,0,item.z);
+
+e.root.rotation.y = item.rotation || 0;
+
+}
+
+}
+
+}
+
+} catch(e) {}
+
+
+// PANEL TOGGLE
+
+document.getElementById('toggle').onclick = () => {
+
+const panel = document.getElementById('panel');
+
+panel.classList.toggle('hidden');
+
+document.getElementById('toggle').textContent =
+panel.classList.contains('hidden')
+? 'Show panel'
+: 'Hide panel';
+
+};
+
+
+status.textContent =
+`Loaded ${roadModels.length} road pieces and ${buildingEntries.length} building models. Missing assets are shown as placeholders.`;
+
+
+// RESIZE
+
+window.addEventListener('resize', () => {
+
+camera.aspect = innerWidth / innerHeight;
+
+camera.updateProjectionMatrix();
+
+renderer.setSize(innerWidth,innerHeight);
+
+});
+
+
+// RENDER LOOP
+
+function animate() {
+
+requestAnimationFrame(animate);
+
+controls.update();
+
 renderer.render(scene,camera);
 
-if(wardrobeOpen&&previewCharacter){
-previewCharacter.group.rotation.y=previewRotation;
-previewCharacter.update(delta);
-previewRenderer.render(previewScene,previewCamera);
 }
-}
+
 animate();
 
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);resizePreview();});
-statusText.textContent='🟢 3D characters loaded';
 </script>
+
 </body>
 </html>
