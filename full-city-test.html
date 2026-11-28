@@ -13,39 +13,40 @@
 <title>Our First Date Kinda Game ❤️</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{overflow:hidden;font-family:Georgia,serif;background:#9bd8ee}
+body{overflow:hidden;font-family:Georgia,serif;background:#3d2b4a}
 canvas{display:block;touch-action:none}
-#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#241b15d9,#241b1570 48%,#241b15d9);overflow:hidden}
-#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#b98b5e 0,#8b6244 48%,#493526 100%)}
-#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#3e281b55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#2b1b1440 77px 81px);opacity:.75}
-#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#70472d 0 118px,#8b5c39 120px 124px);border-top:9px solid #3b281d;box-shadow:0 -12px 35px #24160d88}
-#roomTitle{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:clamp(20px,3vw,32px);letter-spacing:3px;text-shadow:0 3px 5px #24160d;text-align:center;z-index:1;white-space:nowrap}
+#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#2d1b3d,#4a2c5a 48%,#2d1b3d);overflow:hidden}
+#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#8b5a8c 0,#5d3a6b 48%,#2d1b3d 100%)}
+#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#6b4a7a55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#4a2c5a40 77px 81px);opacity:.75}
+#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#5a3a6b 0 118px,#7a4d8a 120px 124px);border-top:9px solid #3d254a;box-shadow:0 -12px 35px #1a0d2488}
+#roomTitle{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:clamp(20px,3vw,32px);letter-spacing:3px;text-shadow:0 3px 5px #1a0d24;text-align:center;z-index:1;white-space:nowrap}
 #start .layout{position:relative;z-index:2;width:100%;height:100%;display:grid;grid-template-columns:minmax(190px,25%) 1fr minmax(190px,25%);gap:12px;padding:72px 18px 18px}
-.ward-panel{background:linear-gradient(145deg,#493326ed,#281d17f2);border:2px solid #b88c5c;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b100b88;overflow:auto;min-height:0}
-.ward-panel h2{font-size:17px;color:#e7c79b;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b88c5c66;padding-bottom:9px}
-.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a77c5144;border-radius:8px;background:#674a35;color:#fff1dc;font:13px Arial;cursor:pointer}
-.category.active{background:#b88752;color:#21160f;border-color:#f0d0a1}
+.ward-panel{background:linear-gradient(145deg,#4a2c5aed,#2d1b3df2);border:2px solid #b88cc5;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b0b2b88;overflow:auto;min-height:0}
+.ward-panel h2{font-size:17px;color:#e7c7f0;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b88cc566;padding-bottom:9px}
+.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a77cb144;border-radius:8px;background:#674a85;color:#fff1f8;font:13px Arial;cursor:pointer}
+.category.active{background:#b887c2;color:#21162f;border-color:#f0d0f1}
 .category span:first-child{font-weight:bold}
 .arrows{display:flex;gap:5px}
-.arrows button,.small-btn{border:0;border-radius:6px;background:#e4c49a;color:#342115;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
+.arrows button,.small-btn{border:0;border-radius:6px;background:#e4c4ea;color:#34153e;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
 #previewWrap{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
 #previewCanvas{width:100%;height:100%;max-height:calc(100vh - 115px);border-radius:16px;touch-action:none}
-.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a281dcc;border:1px solid #d1a979;border-radius:20px;padding:8px 18px;color:#f7e6c8;font:12px Arial;white-space:nowrap}
-#selectedName{font-size:13px;color:#f3d6ae;margin:-4px 0 12px}
+.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a284dcc;border:1px solid #d1a9d9;border-radius:20px;padding:8px 18px;color:#f7e6f8;font:12px Arial;white-space:nowrap}
+#selectedName{font-size:13px;color:#f3d6e8;margin:-4px 0 12px}
 #swatches{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
-.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7e8d3;box-shadow:0 2px 4px #0008;cursor:pointer}
+.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7e8f3;box-shadow:0 2px 4px #0008;cursor:pointer}
 .swatch.selected{outline:3px solid #e4bd79;outline-offset:3px}
 #savedOutfits{display:grid;gap:8px}
-.outfit{padding:10px;border:1px solid #a77c51;border-radius:8px;background:#674a35;color:#fff1dc;text-align:left;font:13px Arial;cursor:pointer}
-.outfit strong{display:block;color:#f0d2a8;margin-bottom:3px}
-#saveOutfit{width:100%;padding:10px;border:1px solid #e7c79b;border-radius:8px;background:#8b6244;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
-#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2d3a5;border-radius:30px;background:linear-gradient(#e6bd81,#ad7846);color:#2d1d12;font:bold 16px Georgia;box-shadow:0 4px 14px #1b100b99;cursor:pointer;white-space:nowrap}
-#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#203e36bb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
-#status{position:absolute;top:14px;right:14px;z-index:3;background:#203e36dd;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
-#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#493326e8;color:white;border:1px solid #e7c79b;border-radius:12px;padding:12px 16px;font-weight:bold}
-#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#203e3655;border:2px solid #ffffff99;z-index:5;touch-action:none}
+.outfit{padding:10px;border:1px solid #a77cb1;border-radius:8px;background:#674a85;color:#fff1f8;text-align:left;font:13px Arial;cursor:pointer}
+.outfit strong{display:block;color:#f0d2e8;margin-bottom:3px}
+#saveOutfit{width:100%;padding:10px;border:1px solid #e7c7f0;border-radius:8px;background:#8b62a4;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
+#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2d3f5;border-radius:30px;background:linear-gradient(#e6bd81,#ad78a6);color:#2d1d2c;font:bold 16px Georgia;box-shadow:0 4px 14px #1b0b1b99;cursor:pointer;white-space:nowrap}
+#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#3d2b4abb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
+#status{position:absolute;top:14px;right:14px;z-index:3;background:#3d2b4add;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
+#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#4a2c5ae8;color:white;border:1px solid #e7c7f0;border-radius:12px;padding:12px 16px;font-weight:bold}
+#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#3d2b4a55;border:2px solid #ffffff99;z-index:5;touch-action:none}
 #stick{position:absolute;width:58px;height:58px;left:39px;top:39px;border-radius:50%;background:#ffffffbb;border:3px solid white;pointer-events:none}
-#runButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#203e36bb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
+#runButton{display:none;position:absolute;right:28px;bottom:130px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#3d2b4abb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
+#jumpButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffb347aa;background:#3d2b4abb;color:#ffb347;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
 @media(max-width:700px){
 #start .layout{grid-template-columns:minmax(112px,30%) 1fr minmax(112px,30%);gap:6px;padding:64px 6px 82px}
 .ward-panel{padding:8px;border-radius:9px}
@@ -57,8 +58,10 @@ canvas{display:block;touch-action:none}
 #roomTitle{top:12px;font-size:17px}
 #enterButton{bottom:13px;padding:11px 30px;font-size:14px}
 .preview-plaque{font-size:10px}
+#runButton{bottom:120px}
+#jumpButton{bottom:25px}
 }
-@media(pointer:coarse){#joystick,#runButton{display:block}#instructions{font-size:11px}#wardrobe{top:65px}}
+@media(pointer:coarse){#joystick,#runButton,#jumpButton{display:block}#instructions{font-size:11px}#wardrobe{top:65px}}
 </style>
 </head>
 <body>
@@ -87,11 +90,12 @@ canvas{display:block;touch-action:none}
 <button id="enterButton">CONTINUE TO OUR CITY ❤️</button>
 </div>
 
-<div id="instructions">WASD – Move | SHIFT – Run<br>Mouse / Finger – Look around</div>
+<div id="instructions">WASD – Move | SHIFT – Run | SPACE – Jump<br>Mouse / Finger – Orbit camera</div>
 <div id="status">Loading 3D characters...</div>
 <button id="wardrobe">👕 WARDROBE</button>
 <div id="joystick"><div id="stick"></div></div>
 <button id="runButton">RUN</button>
+<button id="jumpButton">JUMP</button>
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
@@ -104,7 +108,6 @@ import {getDatabase,ref,set,onValue,onDisconnect} from 'https://www.gstatic.com/
 
 const statusText=document.getElementById('status');
 
-// LOAD THE TWO REAL 3D CHARACTERS
 const loader=new GLTFLoader();
 
 const modelURLs={
@@ -128,7 +131,6 @@ statusText.textContent='Could not load characters. Check the model files.';
 throw error;
 }
 
-// FIREBASE
 const firebaseConfig={
 apiKey:"AIzaSyCIkwXfeAfEZrG1kE0myW8BIRXNq5gOnpE",
 authDomain:"our-first-date-kinda-game.firebaseapp.com",
@@ -231,7 +233,6 @@ let previewRotation=0;
 let previewPointer=null;
 let previewLastX=0;
 
-// CREATE A CHARACTER FROM A GLB MODEL
 function createCharacter(custom=defaultAppearance){
 const appearance={...defaultAppearance,...custom};
 
@@ -637,58 +638,85 @@ model
 // MAIN CITY SCENE - YOUR EXACT ROAD LAYOUT
 // ========================================
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9bd8ee);
-scene.fog=new THREE.Fog(0x9bd8ee, 80, 220);
+scene.background=new THREE.Color(0x3d2b4a);
+scene.fog=new THREE.Fog(0x3d2b4a, 60, 180);
 
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,500);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
 document.body.appendChild(renderer.domElement);
 
-// LIGHTING - BRIGHT DAYTIME
-scene.add(new THREE.HemisphereLight(0xe5f5ff, 0x8fb86c, 1.8));
-const sun=new THREE.DirectionalLight(0xfff2d5, 2.5);
-sun.position.set(-30, 50, 25);
+// SUNSET LIGHTING
+const ambient=new THREE.HemisphereLight(0xffb380, 0x4a305a, 0.6);
+scene.add(ambient);
+
+const sun=new THREE.DirectionalLight(0xff8c42, 2.8);
+sun.position.set(-40, 35, -20);
 sun.castShadow=true;
 sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.left = -80;
-sun.shadow.camera.right = 80;
-sun.shadow.camera.top = 80;
-sun.shadow.camera.bottom = -80;
+sun.shadow.camera.left=-80;
+sun.shadow.camera.right=80;
+sun.shadow.camera.top=80;
+sun.shadow.camera.bottom=-80;
+sun.shadow.bias=-0.0005;
 scene.add(sun);
+
+const fillLight=new THREE.DirectionalLight(0xff6b4a, 0.5);
+fillLight.position.set(30, 20, 30);
+scene.add(fillLight);
+
+const rimLight=new THREE.DirectionalLight(0xff9966, 0.4);
+rimLight.position.set(0, 15, 40);
+scene.add(rimLight);
 
 function material(color){
 return new THREE.MeshStandardMaterial({color, roughness:.85});
 }
 
-// Collision boundaries
-const cityCollisionBoxes = [];
+const cityCollisionBoxes=[];
 
-// Ground
-const cityGround = new THREE.Mesh(
+// Ground with sunset tint
+const cityGround=new THREE.Mesh(
 new THREE.PlaneGeometry(240, 220),
-material(0x83ad78)
+material(0x2d1f3a)
 );
-cityGround.rotation.x = -Math.PI / 2;
+cityGround.rotation.x=-Math.PI/2;
 cityGround.position.set(0, -0.02, 3);
-cityGround.receiveShadow = true;
+cityGround.receiveShadow=true;
 scene.add(cityGround);
+
+// Subtle glow on horizon
+const horizonGlow=new THREE.Mesh(
+new THREE.PlaneGeometry(300, 100),
+new THREE.MeshBasicMaterial({
+color:0xff6b3a,
+transparent:true,
+opacity:0.15,
+side:THREE.DoubleSide,
+depthWrite:false
+})
+);
+horizonGlow.rotation.x=-Math.PI/2;
+horizonGlow.position.set(0, 0.5, -100);
+scene.add(horizonGlow);
 
 // ========================================
 // YOUR EXACT 36-PIECE ROAD LAYOUT
 // ========================================
-const roadFiles = {
-straight: "MS_RD_01_StraightRoad.glb",
-corner: "MS_RD_02_RoadCorner90.glb",
-crossroads: "MS_RD_04_Crossroads.glb",
-transition64: "MS_RD_06_Transition_6to4.glb"
+const roadFiles={
+straight:"MS_RD_01_StraightRoad.glb",
+corner:"MS_RD_02_RoadCorner90.glb",
+crossroads:"MS_RD_04_Crossroads.glb",
+transition64:"MS_RD_06_Transition_6to4.glb"
 };
 
-const savedRoads = [
+const savedRoads=[
 {id:1,type:"crossroads",x:-27.429,y:0.16,z:5,rot:0},
 {id:2,type:"crossroads",x:17.6,y:0.16,z:5,rot:0},
 {id:3,type:"straight",x:-18,y:0.16,z:2,rot:0},
@@ -727,165 +755,152 @@ const savedRoads = [
 {id:36,type:"straight",x:12,y:0.16,z:-22,rot:0}
 ];
 
-// Procedural road creation with markings
-function createProceduralRoadMesh(type) {
-const group = new THREE.Group();
-const roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3f44, roughness: 0.9 });
-const curbMat = new THREE.MeshStandardMaterial({ color: 0x9ca0a3, roughness: 0.8 });
-const lineMat = new THREE.MeshBasicMaterial({ color: 0xf4f0dc, transparent: true, opacity: 0.95 });
-const crosswalkMat = new THREE.MeshBasicMaterial({ color: 0xf5f3e9 });
+function createProceduralRoadMesh(type){
+const group=new THREE.Group();
+const roadMat=new THREE.MeshStandardMaterial({color:0x2a1f2e,roughness:0.95,metalness:0.05});
+const curbMat=new THREE.MeshStandardMaterial({color:0x4a3a5a,roughness:0.8});
+const lineMat=new THREE.MeshBasicMaterial({color:0xffb366,transparent:true,opacity:0.9});
+const crosswalkMat=new THREE.MeshBasicMaterial({color:0xffcc88,transparent:true,opacity:0.85});
 
-const road = new THREE.Mesh(new THREE.BoxGeometry(6, 0.15, 6), roadMat);
-road.receiveShadow = true;
+const road=new THREE.Mesh(new THREE.BoxGeometry(6,0.15,6),roadMat);
+road.receiveShadow=true;
 group.add(road);
 
-if (type === "straight") {
-const curbL = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat);
-curbL.position.set(0, 0.05, 2.6);
-const curbR = curbL.clone(); curbR.position.set(0, 0.05, -2.6);
-group.add(curbL, curbR);
-
-const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat);
-stripe.position.y = 0.085; group.add(stripe);
-
-} else if (type === "corner") {
-const curb1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.22, 6), curbMat); curb1.position.set(2.6, 0.05, 0);
-const curb2 = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat); curb2.position.set(0, 0.05, -2.6);
-group.add(curb1, curb2);
-
-const cw1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), crosswalkMat); cw1.position.set(0, 0.085, 2.6); group.add(cw1);
-const cw2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.17, 4), crosswalkMat); cw2.position.set(-2.6, 0.085, 0); group.add(cw2);
-
-} else if (type === "crossroads") {
-for (const [cx, cz] of [[2.6,0],[-2.6,0],[0,2.6],[0,-2.6]]) {
-const curb = new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.8:6, 0.22, cz!==0?0.8:6), curbMat);
-curb.position.set(cx, 0.05, cz); group.add(curb);
+if(type==="straight"){
+const curbL=new THREE.Mesh(new THREE.BoxGeometry(6,0.22,0.8),curbMat);curbL.position.set(0,0.05,2.6);
+const curbR=curbL.clone();curbR.position.set(0,0.05,-2.6);
+group.add(curbL,curbR);
+const stripe=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),lineMat);stripe.position.y=0.085;group.add(stripe);
+}else if(type==="corner"){
+const curb1=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.22,6),curbMat);curb1.position.set(2.6,0.05,0);
+const curb2=new THREE.Mesh(new THREE.BoxGeometry(6,0.22,0.8),curbMat);curb2.position.set(0,0.05,-2.6);
+group.add(curb1,curb2);
+const cw1=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),crosswalkMat);cw1.position.set(0,0.085,2.6);group.add(cw1);
+const cw2=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.17,4),crosswalkMat);cw2.position.set(-2.6,0.085,0);group.add(cw2);
+}else if(type==="crossroads"){
+for(const [cx,cz] of [[2.6,0],[-2.6,0],[0,2.6],[0,-2.6]]){
+const curb=new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.8:6,0.22,cz!==0?0.8:6),curbMat);
+curb.position.set(cx,0.05,cz);group.add(curb);
 }
-const s1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat); s1.position.y = 0.085;
-const s2 = s1.clone(); s2.rotation.y = Math.PI/2; group.add(s1, s2);
-
-for (const [cx, cz] of [[0,2.8],[0,-2.8],[2.8,0],[-2.8,0]]) {
-const cw = new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.12:4, 0.17, cz!==0?0.12:4), crosswalkMat);
-cw.position.set(cx, 0.085, cz); group.add(cw);
+const s1=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),lineMat);s1.position.y=0.085;
+const s2=s1.clone();s2.rotation.y=Math.PI/2;group.add(s1,s2);
+for(const [cx,cz] of [[0,2.8],[0,-2.8],[2.8,0],[-2.8,0]]){
+const cw=new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.12:4,0.17,cz!==0?0.12:4),crosswalkMat);
+cw.position.set(cx,0.085,cz);group.add(cw);
 }
-
-} else if (type === "transition64") {
-const curbL = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat);
-curbL.position.set(0, 0.05, 2.6);
-const curbR = curbL.clone(); curbR.position.set(0, 0.05, -2.6);
-group.add(curbL, curbR);
-const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat);
-stripe.position.y = 0.085; group.add(stripe);
+}else if(type==="transition64"){
+const curbL=new THREE.Mesh(new THREE.BoxGeometry(6,0.22,0.8),curbMat);curbL.position.set(0,0.05,2.6);
+const curbR=curbL.clone();curbR.position.set(0,0.05,-2.6);
+group.add(curbL,curbR);
+const stripe=new THREE.Mesh(new THREE.BoxGeometry(4,0.17,0.12),lineMat);stripe.position.y=0.085;group.add(stripe);
 }
 
-group.userData.localRoadSize = new THREE.Vector3(6, 0.15, 6);
-group.userData.localRoadTop = 0.075;
-group.userData.roadType = type;
+group.userData.localRoadSize=new THREE.Vector3(6,0.15,6);
+group.userData.localRoadTop=0.075;
+group.userData.roadType=type;
 return group;
 }
 
-async function addRoad(type, x, z, rotation = 0, y = 0.16) {
+async function addRoad(type,x,z,rotation=0,y=0.16){
 let model;
-try {
-model = await loader.loadAsync("./city-assets/roads/" + roadFiles[type]);
-const bounds = new THREE.Box3().setFromObject(model);
-const center = bounds.getCenter(new THREE.Vector3());
-model.position.x -= center.x; model.position.z -= center.z;
-const adjusted = new THREE.Box3().setFromObject(model);
-model.position.y -= adjusted.min.y;
+try{
+model=await loader.loadAsync("./city-assets/roads/"+roadFiles[type]);
+const bounds=new THREE.Box3().setFromObject(model);
+const center=bounds.getCenter(new THREE.Vector3());
+model.position.x-=center.x;model.position.z-=center.z;
+const adjusted=new THREE.Box3().setFromObject(model);
+model.position.y-=adjusted.min.y;
 model.updateMatrixWorld(true);
-const localBounds = new THREE.Box3().setFromObject(model);
-model.userData.localRoadSize = localBounds.getSize(new THREE.Vector3());
-model.userData.localRoadTop = localBounds.max.y;
-} catch (e) {
-model = createProceduralRoadMesh(type);
+const localBounds=new THREE.Box3().setFromObject(model);
+model.userData.localRoadSize=localBounds.getSize(new THREE.Vector3());
+model.userData.localRoadTop=localBounds.max.y;
+}catch(e){
+model=createProceduralRoadMesh(type);
 }
-model.position.set(x, y, z);
-model.rotation.y = rotation;
-model.userData.roadType = type;
+model.position.set(x,y,z);
+model.rotation.y=rotation;
+model.userData.roadType=type;
 scene.add(model);
 return model;
 }
 
-// Build all roads
-for (const r of savedRoads) {
-await addRoad(r.type, r.x, r.z, r.rot, r.y);
+for(const r of savedRoads){
+await addRoad(r.type,r.x,r.z,r.rot,r.y);
 }
 
 // ========================================
 // BUILDINGS - PROCEDURAL WITH YOUR ASSET NAMES
 // ========================================
-function createProceduralBuildingMesh(filename, label) {
-const group = new THREE.Group();
-let color = 0x5a6a7a, isStore = false, isApartment = false, isBakery = false;
-if (filename.includes("bakery")) { color = 0xcc7700; isStore = true; isBakery = true; }
-else if (filename.includes("Shop") || filename.includes("Storefront")) { color = 0x007788; isStore = true; }
-else if (filename.includes("Apartment") || filename.includes("Block") || filename.includes("Boarding") || filename.includes("Studio") || filename.includes("Budget")) { color = 0x7a44aa; isApartment = true; }
-else if (filename.includes("Bungalow") || filename.includes("House") || filename.includes("Duplex") || filename.includes("Rental")) { color = 0xaa4411; }
-else if (filename.includes("Townhouse") || filename.includes("Entry") || filename.includes("Gated")) { color = 0x993300; }
+function createProceduralBuildingMesh(filename,label){
+const group=new THREE.Group();
+let color=0x4a3a5a,isStore=false,isApartment=false,isBakery=false;
+if(filename.includes("bakery")){color=0x8b4a1a;isStore=true;isBakery=true;}
+else if(filename.includes("Shop")||filename.includes("Storefront")){color=0x2a5a6a;isStore=true;}
+else if(filename.includes("Apartment")||filename.includes("Block")||filename.includes("Boarding")||filename.includes("Studio")||filename.includes("Budget")){color=0x5a2a7a;isApartment=true;}
+else if(filename.includes("Bungalow")||filename.includes("House")||filename.includes("Duplex")||filename.includes("Rental")){color=0x7a2a1a;}
+else if(filename.includes("Townhouse")||filename.includes("Entry")||filename.includes("Gated")){color=0x6a2a1a;}
 
-const height = isBakery ? 7 : (isStore ? 5.5 : (isApartment ? 10 : 7));
-const width = isBakery ? 9 : (isStore ? 8 : (isApartment ? 9 : 7));
-const depth = 7.5;
+const height=isBakery?7:(isStore?5.5:(isApartment?10:7));
+const width=isBakery?9:(isStore?8:(isApartment?9:7));
+const depth=7.5;
 
-const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material(color));
-body.position.y = height/2; body.castShadow = true; body.receiveShadow = true; group.add(body);
+const body=new THREE.Mesh(new THREE.BoxGeometry(width,height,depth),material(color));
+body.position.y=height/2;body.castShadow=true;body.receiveShadow=true;group.add(body);
 
-const roof = new THREE.Mesh(new THREE.BoxGeometry(width+0.6, 0.5, depth+0.6), material(0x111822));
-roof.position.y = height + 0.25; group.add(roof);
+const roof=new THREE.Mesh(new THREE.BoxGeometry(width+0.6,0.5,depth+0.6),material(0x1a102a));
+roof.position.y=height+0.25;group.add(roof);
 
-const door = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.15), material(0x2a1a0a));
-door.position.set(0, 1.25, depth/2 + 0.08); group.add(door);
-group.userData.doorPos = new THREE.Vector3(0, 1.25, depth/2 + 0.5);
+const door=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.5,0.15),material(0x2a1a0a));
+door.position.set(0,1.25,depth/2+0.08);group.add(door);
+group.userData.doorPos=new THREE.Vector3(0,1.25,depth/2+0.5);
 
-const winGlow = new THREE.MeshBasicMaterial({ color: 0xffd466, transparent: true, opacity: 0.8 });
-for (let wx = -width/3; wx <= width/3; wx += width/3) {
-for (let wy = height/3; wy < height; wy += height/2.5) {
-const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 0.1), winGlow);
-win.position.set(wx, wy, depth/2 + 0.06); group.add(win);
+const winGlow=new THREE.MeshBasicMaterial({color:0xffaa44,transparent:true,opacity:0.7});
+for(let wx=-width/3;wx<=width/3;wx+=width/3){
+for(let wy=height/3;wy<height;wy+=height/2.5){
+const win=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.1,0.1),winGlow);
+win.position.set(wx,wy,depth/2+0.06);group.add(win);
 }
 }
 
-if (isBakery) {
-const sign = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 0.2), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
-sign.position.set(0, height + 1.5, depth/2 + 0.3); group.add(sign);
+if(isBakery){
+const sign=new THREE.Mesh(new THREE.BoxGeometry(4,1,0.2),new THREE.MeshBasicMaterial({color:0xff8800}));
+sign.position.set(0,height+1.5,depth/2+0.3);group.add(sign);
 }
 
-group.userData.buildingLabel = label;
-group.userData.isBakery = isBakery;
-group.userData.isStore = isStore;
+group.userData.buildingLabel=label;
+group.userData.isBakery=isBakery;
+group.userData.isStore=isStore;
 return group;
 }
 
-async function addBuilding(filename, x, z, rotation = 0, label = "Building") {
+async function addBuilding(filename,x,z,rotation=0,label="Building"){
 let root;
-try {
-const url = "./" + encodeURIComponent(filename);
-root = await loader.loadAsync(url);
-const bounds = new THREE.Box3().setFromObject(root);
-const center = bounds.getCenter(new THREE.Vector3());
-root.position.x -= center.x; root.position.z -= center.z;
-const size = bounds.getSize(new THREE.Vector3());
-const footprint = Math.max(size.x, size.z);
-const scale = Math.min(1.3, 8.0 / Math.max(footprint, 0.001));
+try{
+const url="./"+encodeURIComponent(filename);
+root=await loader.loadAsync(url);
+const bounds=new THREE.Box3().setFromObject(root);
+const center=bounds.getCenter(new THREE.Vector3());
+root.position.x-=center.x;root.position.z-=center.z;
+const size=bounds.getSize(new THREE.Vector3());
+const footprint=Math.max(size.x,size.z);
+const scale=Math.min(1.3,8.0/Math.max(footprint,0.001));
 root.scale.setScalar(scale);
-const afterScale = new THREE.Box3().setFromObject(root);
-root.position.y -= afterScale.min.y;
-} catch (error) {
-root = createProceduralBuildingMesh(filename, label);
+const afterScale=new THREE.Box3().setFromObject(root);
+root.position.y-=afterScale.min.y;
+}catch(error){
+root=createProceduralBuildingMesh(filename,label);
 }
-root.position.set(x, 0, z);
-root.rotation.y = rotation;
-root.userData.cityBuilding = label;
+root.position.set(x,0,z);
+root.rotation.y=rotation;
+root.userData.cityBuilding=label;
 scene.add(root);
 
-// Collision box
-const box = new THREE.Box3().setFromObject(root);
+const box=new THREE.Box3().setFromObject(root);
 cityCollisionBoxes.push({
-x: x,
-z: z,
-halfWidth: (box.max.x - box.min.x) / 2 + 0.3,
-halfDepth: (box.max.z - box.min.z) / 2 + 0.3
+x:x,
+z:z,
+halfWidth:(box.max.x-box.min.x)/2+0.3,
+halfDepth:(box.max.z-box.min.z)/2+0.3
 });
 return root;
 }
@@ -893,92 +908,97 @@ return root;
 // ========================================
 // HOUSES POSITIONED INSIDE ROAD LOOPS
 // ========================================
-
-// North Loop interior (bounded by corners at ~-17,19 and ~17,18, straights at z=26)
-const northLoopHomes = [
-["MS_HV_01_PorchBungalow.glb", -14, 22.5, 0],
-["MS_HV_02_WideBalconyHouse.glb", -6, 22.5, 0],
-["MS_HV_03_UrbanTownhouse.glb", 2, 22.5, 0],
-["MS_HV_04_CornerEntryHouse.glb", 10, 22.5, 0],
-["MS_PF_03_ThreeStoreyApartment.glb", -14, 29, Math.PI],
-["MS_PF_04_ApartmentBlock.glb", -4, 29, Math.PI],
-["MS_RR_A01_TinySingleRoom.glb", 6, 29, Math.PI],
-["MS_RR_A02_BudgetHouse.glb", 14, 29, Math.PI]
+const northLoopHomes=[
+["MS_HV_01_PorchBungalow.glb",-14,22.5,0],
+["MS_HV_02_WideBalconyHouse.glb",-6,22.5,0],
+["MS_HV_03_UrbanTownhouse.glb",2,22.5,0],
+["MS_HV_04_CornerEntryHouse.glb",10,22.5,0],
+["MS_PF_03_ThreeStoreyApartment.glb",-14,29,Math.PI],
+["MS_PF_04_ApartmentBlock.glb",-4,29,Math.PI],
+["MS_RR_A01_TinySingleRoom.glb",6,29,Math.PI],
+["MS_RR_A02_BudgetHouse.glb",14,29,Math.PI]
 ];
 
-// South Loop interior (bounded by corners at ~-17,-18 and ~17,-18, straights at z=-22)
-const southLoopHomes = [
-["MS_HV_05_GatedCarportHouse.glb", -14, -20, Math.PI],
-["MS_HV_06_OlderDuplexRental.glb", -4, -20, Math.PI],
-["MS_PF_01_TwoStoreyHouse.glb", 6, -20, Math.PI],
-["MS_PF_02_NarrowTownhouse.glb", 14, -20, Math.PI],
-["MS_RR_B02_StandardFamilyBungalow.glb", -14, -28, 0],
-["MS_RR_D01_StudioUnit.glb", -4, -28, 0],
-["MS_RR_D04_BoardingHouse.glb", 8, -28, 0]
+const southLoopHomes=[
+["MS_HV_05_GatedCarportHouse.glb",-14,-20,Math.PI],
+["MS_HV_06_OlderDuplexRental.glb",-4,-20,Math.PI],
+["MS_PF_01_TwoStoreyHouse.glb",6,-20,Math.PI],
+["MS_PF_02_NarrowTownhouse.glb",14,-20,Math.PI],
+["MS_RR_B02_StandardFamilyBungalow.glb",-14,-28,0],
+["MS_RR_D01_StudioUnit.glb",-4,-28,0],
+["MS_RR_D04_BoardingHouse.glb",8,-28,0]
 ];
 
-// West side (between x=-25 and x=-17 transition roads)
-const westSideHomes = [
-["MS_HV_01_PorchBungalow.glb", -22, 8, Math.PI/2],
-["MS_HV_02_WideBalconyHouse.glb", -22, 0, Math.PI/2]
+const westSideHomes=[
+["MS_HV_01_PorchBungalow.glb",-22,8,Math.PI/2],
+["MS_HV_02_WideBalconyHouse.glb",-22,0,Math.PI/2]
 ];
 
-// East side (between x=19 and x=26 transition roads)
-const eastSideHomes = [
-["MS_HV_03_UrbanTownhouse.glb", 22, 8, -Math.PI/2],
-["MS_HV_04_CornerEntryHouse.glb", 22, -2, -Math.PI/2]
+const eastSideHomes=[
+["MS_HV_03_UrbanTownhouse.glb",22,8,-Math.PI/2],
+["MS_HV_04_CornerEntryHouse.glb",22,-2,-Math.PI/2]
 ];
 
-const allHomes = [...northLoopHomes, ...southLoopHomes, ...westSideHomes, ...eastSideHomes];
-for (const [file, x, z, rot] of allHomes) {
-await addBuilding(file, x, z, rot, "Home");
+const allHomes=[...northLoopHomes,...southLoopHomes,...westSideHomes,...eastSideHomes];
+for(const[file,x,z,rot]of allHomes){
+await addBuilding(file,x,z,rot,"Home");
 }
 
-// Key buildings
-await addBuilding("MS_PF_05_CornerShop.glb", -37, 9, Math.PI/2, "Corner Shop");
-await addBuilding("MS_PF_06_ClosedStorefront.glb", -5, -8, 0, "Storefront");
-await addBuilding("tinas bakery.glb", 8, -8, 0, "Tina's Bakery");
+await addBuilding("MS_PF_05_CornerShop.glb",-37,9,Math.PI/2,"Corner Shop");
+await addBuilding("MS_PF_06_ClosedStorefront.glb",-5,-8,0,"Storefront");
+await addBuilding("tinas bakery.glb",8,-8,0,"Tina's Bakery");
 
 // ========================================
-// STREETLIGHTS
+// STREETLAMPS WITH WARM GLOW
 // ========================================
-function createStreetLamp(x, z) {
-const light = new THREE.PointLight(0xffd175, 0, 25, 1.5);
-light.position.set(x, 5.2, z);
-light.castShadow = true;
-light.shadow.mapSize.set(512, 512);
+function createStreetLamp(x,z){
+const light=new THREE.PointLight(0xff8833,0.8,30,1.8);
+light.position.set(x,5.2,z);
+light.castShadow=true;
+light.shadow.mapSize.set(512,512);
 scene.add(light);
 
-const bulb = new THREE.Mesh(
-new THREE.SphereGeometry(0.25, 8, 8),
-new THREE.MeshBasicMaterial({ color: 0xffd175 })
+const pole=new THREE.Mesh(
+new THREE.CylinderGeometry(0.08,0.12,5,8),
+new THREE.MeshStandardMaterial({color:0x3a2a4a,roughness:0.7})
 );
-bulb.position.set(x, 5.4, z);
-scene.add(bulb);
+pole.position.set(x,2.5,z);pole.castShadow=true;scene.add(pole);
+
+const bulb=new THREE.Mesh(
+new THREE.SphereGeometry(0.25,8,8),
+new THREE.MeshBasicMaterial({color:0xffaa44})
+);
+bulb.position.set(x,5.4,z);scene.add(bulb);
+
+const halo=new THREE.Mesh(
+new THREE.SphereGeometry(1.2,16,16),
+new THREE.MeshBasicMaterial({color:0xff8833,transparent:true,opacity:0.15,depthWrite:false})
+);
+halo.position.set(x,5.4,z);scene.add(halo);
 }
 
-const lightPositions = [
-[-27, 5], [18, 5], [-12, 2], [6, 2],
-[-20, 12], [-20, 20], [25, 12], [25, 20],
-[-20, -6], [-20, -12], [24, -6], [24, -14],
-[-17, 19], [17, 18], [-12, 26], [6, 26],
-[-17, -18], [17, -18], [-12, -22], [6, -22],
-[-37, 9], [8, -8]
+const lightPositions=[
+[-27,5],[18,5],[-12,2],[6,2],
+[-20,12],[-20,20],[25,12],[25,20],
+[-20,-6],[-20,-12],[24,-6],[24,-14],
+[-17,19],[17,18],[-12,26],[6,26],
+[-17,-18],[17,-18],[-12,-22],[6,-22],
+[-37,9],[8,-8]
 ];
-lightPositions.forEach(p => createStreetLamp(p[0], p[1]));
+lightPositions.forEach(p=>createStreetLamp(p[0],p[1]));
 
 // ========================================
 // TREES
 // ========================================
-function addTree(x, z, s=1) {
-const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18*s, 0.24*s, 2.2*s, 7), material(0x3d2a1a));
-trunk.position.set(x, 1.1*s, z); trunk.castShadow = true; scene.add(trunk);
-const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s, 1), material(0x2d5a2f));
-crown.position.set(x, 2.65*s, z); crown.castShadow = true; scene.add(crown);
+function addTree(x,z,s=1){
+const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.18*s,0.24*s,2.2*s,7),material(0x2a1a2a));
+trunk.position.set(x,1.1*s,z);trunk.castShadow=true;scene.add(trunk);
+const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s,1),material(0x1a3a1f));
+crown.position.set(x,2.65*s,z);crown.castShadow=true;scene.add(crown);
 
-cityCollisionBoxes.push({x, z, halfWidth: 0.65*s, halfDepth: 0.65*s});
+cityCollisionBoxes.push({x,z,halfWidth:0.65*s,halfDepth:0.65*s});
 }
-[[-34,18],[-34,-15],[38,18],[38,-15],[-27,34],[24,34],[-27,-32],[24,-32],[-22,15],[-22,5],[23,15],[23,5]].forEach(p => addTree(p[0], p[1], 0.9));
+[[-34,18],[-34,-15],[38,18],[38,-15],[-27,34],[24,34],[-27,-32],[24,-32],[-22,15],[-22,5],[23,15],[23,5]].forEach(p=>addTree(p[0],p[1],0.9));
 
 // ========================================
 // LOCAL PLAYER
@@ -986,17 +1006,31 @@ cityCollisionBoxes.push({x, z, halfWidth: 0.65*s, halfDepth: 0.65*s});
 let character=createCharacter(appearance);
 let player=character.group;
 scene.add(player);
-player.position.set(0, 0, 10);
+player.position.set(0,0,10);
+
+// Third person camera state
+let camYaw=Math.PI;
+let camPitch=0.3;
+let camDistance=8;
+let camTargetY=1.4;
+
+// Jump physics
+let velocityY=0;
+let isGrounded=true;
+const GRAVITY=-25;
+const JUMP_VELOCITY=11;
+const COYOTE_TIME=0.1;
+let coyoteTimer=0;
 
 // ========================================
 // WARDROBE PREVIEW SCENE
 // ========================================
 const previewScene=new THREE.Scene();
-previewScene.background=new THREE.Color(0x876447);
-previewScene.fog=new THREE.Fog(0x876447,10,24);
-previewScene.add(new THREE.HemisphereLight(0xffe9ce,0x62452e,2.2));
+previewScene.background=new THREE.Color(0x5a3a6a);
+previewScene.fog=new THREE.Fog(0x5a3a6a,10,24);
+previewScene.add(new THREE.HemisphereLight(0xffccaa,0x6a4a7a,2));
 
-const previewLight=new THREE.DirectionalLight(0xffe5bd,2.5);
+const previewLight=new THREE.DirectionalLight(0xffddaa,2.5);
 previewLight.position.set(-3,7,5);
 previewLight.castShadow=true;
 previewScene.add(previewLight);
@@ -1013,11 +1047,11 @@ alpha:false
 previewRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
 previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
 
-const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x9a704d));
+const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x7a5a8a));
 previewFloor.position.y=-.08;
 previewScene.add(previewFloor);
 
-const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x6b5140));
+const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x5a3a6a));
 previewRug.position.y=0;
 previewScene.add(previewRug);
 
@@ -1065,7 +1099,7 @@ previewCanvas.addEventListener('pointercancel',()=>previewPointer=null);
 function renderWardrobe(){
 const cats=document.getElementById('categories');
 cats.innerHTML='';
-for(const [key,label] of categoryNames){
+for(const[key,label]of categoryNames){
 const row=document.createElement('div');
 row.className='category'+(key===activeCategory?' active':'');
 const name=document.createElement('span');
@@ -1091,7 +1125,7 @@ document.getElementById('customTitle').textContent=categoryNames.find(v=>v[0]===
 document.getElementById('selectedName').textContent=selected?selected[0]:'Selected option';
 const sw=document.getElementById('swatches');
 sw.innerHTML='';
-for(const [label,value] of list){
+for(const[label,value]of list){
 const b=document.createElement('button');
 b.className='swatch'+(appearance[activeCategory]===value?' selected':'');
 b.title=label;
@@ -1171,6 +1205,7 @@ document.getElementById('wardrobe').style.display='none';
 document.getElementById('instructions').style.display='none';
 document.getElementById('joystick').style.display='none';
 document.getElementById('runButton').style.display='none';
+document.getElementById('jumpButton').style.display='none';
 if(document.pointerLockElement)document.exitPointerLock();
 resizePreview();
 }
@@ -1183,6 +1218,7 @@ document.getElementById('instructions').style.display='block';
 if(matchMedia('(pointer:coarse)').matches){
 document.getElementById('joystick').style.display='block';
 document.getElementById('runButton').style.display='block';
+document.getElementById('jumpButton').style.display='block';
 }
 if(matchMedia('(pointer:fine)').matches){
 renderer.domElement.requestPointerLock();
@@ -1198,19 +1234,32 @@ document.getElementById('wardrobe').addEventListener('click',openCreator);
 // ========================================
 const keys={};
 let yaw=0;
-let pitch=.12;
 let running=false;
 let localMoving=false;
 let localSprinting=false;
+let jumpPressed=false;
 
-window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;});
-window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
-window.addEventListener('blur',()=>{for(const key in keys)keys[key]=false;running=false;});
+window.addEventListener('keydown',e=>{
+const k=e.key.toLowerCase();
+keys[k]=true;
+if(k===' '||k==='space')jumpPressed=true;
+});
+window.addEventListener('keyup',e=>{
+keys[e.key.toLowerCase()]=false;
+if(e.key===' '||e.key==='Space')jumpPressed=false;
+});
+window.addEventListener('blur',()=>{for(const key in keys)keys[key]=false;running=false;jumpPressed=false;});
 
 const runButton=document.getElementById('runButton');
 runButton.addEventListener('pointerdown',e=>{e.preventDefault();running=true;});
-for(const n of ['pointerup','pointerleave','pointercancel']){
+for(const n of['pointerup','pointerleave','pointercancel']){
 runButton.addEventListener(n,()=>running=false);
+}
+
+const jumpButton=document.getElementById('jumpButton');
+jumpButton.addEventListener('pointerdown',e=>{e.preventDefault();jumpPressed=true;});
+for(const n of['pointerup','pointerleave','pointercancel']){
+jumpButton.addEventListener(n,()=>jumpPressed=false);
 }
 
 const joystick=document.getElementById('joystick');
@@ -1242,9 +1291,9 @@ joystick.addEventListener('lostpointercapture',resetJoystick);
 
 document.addEventListener('mousemove',e=>{
 if(wardrobeOpen||document.pointerLockElement!==renderer.domElement)return;
-yaw-=e.movementX*.003;
-pitch+=e.movementY*.002;
-pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
+camYaw-=e.movementX*.003;
+camPitch+=e.movementY*.002;
+camPitch=THREE.MathUtils.clamp(camPitch,-0.8,0.8);
 });
 
 let cameraPointer=null;
@@ -1252,7 +1301,7 @@ let touchX=0;
 let touchY=0;
 
 renderer.domElement.addEventListener('pointerdown',e=>{
-if(wardrobeOpen||e.pointerType!=='touch'||e.clientX<innerWidth*.42)return;
+if(wardrobeOpen||e.pointerType!=='touch'||e.clientX<innerWidth*.3||e.clientY<innerHeight*.3)return;
 cameraPointer=e.pointerId;
 renderer.domElement.setPointerCapture(e.pointerId);
 touchX=e.clientX;touchY=e.clientY;
@@ -1262,9 +1311,9 @@ renderer.domElement.addEventListener('pointermove',e=>{
 if(e.pointerId!==cameraPointer)return;
 const dx=e.clientX-touchX;
 const dy=e.clientY-touchY;
-yaw-=dx*.006;
-pitch+=dy*.004;
-pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
+camYaw-=dx*.006;
+camPitch+=dy*.004;
+camPitch=THREE.MathUtils.clamp(camPitch,-0.8,0.8);
 touchX=e.clientX;touchY=e.clientY;
 });
 
@@ -1272,6 +1321,11 @@ function releaseCamera(e){if(e.pointerId===cameraPointer)cameraPointer=null;}
 renderer.domElement.addEventListener('pointerup',releaseCamera);
 renderer.domElement.addEventListener('pointercancel',releaseCamera);
 renderer.domElement.addEventListener('lostpointercapture',releaseCamera);
+
+renderer.domElement.addEventListener('wheel',e=>{
+e.preventDefault();
+camDistance=THREE.MathUtils.clamp(camDistance+e.deltaY*0.01,4,18);
+},{passive:false});
 
 // ========================================
 // MULTIPLAYER
@@ -1284,7 +1338,8 @@ myPlayerRef=ref(db,'players/'+myUID);
 await onDisconnect(myPlayerRef).remove();
 await set(myPlayerRef,{
 x:player.position.x,z:player.position.z,rotation:player.rotation.y,
-moving:false,running:false,appearance:appearance,updatedAt:Date.now()
+moving:false,running:false,jumping:false,y:player.position.y,
+appearance:appearance,updatedAt:Date.now()
 });
 networkReady=true;
 onValue(ref(db,'players'),snapshot=>{
@@ -1294,12 +1349,13 @@ if(id===myUID||!data)return;
 let other=remotePlayers.get(id);
 if(!other){
 other=createCharacter(data.appearance||defaultAppearance);
-other.group.position.set(Number(data.x)||0,0,Number(data.z)||0);
+other.group.position.set(Number(data.x)||0,Number(data.y)||0,Number(data.z)||0);
 other.group.rotation.y=Number(data.rotation)||0;
-other.group.userData.targetPosition=new THREE.Vector3(Number(data.x)||0,0,Number(data.z)||0);
+other.group.userData.targetPosition=new THREE.Vector3(Number(data.x)||0,Number(data.y)||0,Number(data.z)||0);
 other.group.userData.targetRotation=Number(data.rotation)||0;
 other.group.userData.targetMoving=data.moving===true;
 other.group.userData.targetRunning=data.running===true;
+other.group.userData.targetJumping=data.jumping===true;
 scene.add(other.group);
 remotePlayers.set(id,other);
 }else{
@@ -1314,16 +1370,17 @@ replacement.group.userData.targetPosition=state.targetPosition;
 replacement.group.userData.targetRotation=state.targetRotation;
 replacement.group.userData.targetMoving=state.targetMoving;
 replacement.group.userData.targetRunning=state.targetRunning;
+replacement.group.userData.targetJumping=state.targetJumping;
 scene.remove(old);scene.add(replacement.group);
 other=replacement;remotePlayers.set(id,other);
 }
 }
 const state=other.group.userData;
-state.targetPosition.set(Number(data.x)||0,0,Number(data.z)||0);
+state.targetPosition.set(Number(data.x)||0,Number(data.y)||0,Number(data.z)||0);
 if(Number.isFinite(Number(data.rotation)))state.targetRotation=Number(data.rotation);
-state.targetMoving=data.moving===true;state.targetRunning=data.running===true;
+state.targetMoving=data.moving===true;state.targetRunning=data.running===true;state.targetJumping=data.jumping===true;
 });
-for(const [id,other] of remotePlayers){if(!snapshot.hasChild(id)){scene.remove(other.group);other.mixer.stopAllAction();remotePlayers.delete(id);}}
+for(const[id,other]of remotePlayers){if(!snapshot.hasChild(id)){scene.remove(other.group);other.mixer.stopAllAction();remotePlayers.delete(id);}}
 statusText.textContent=remotePlayers.size>0?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players':'🟢 Connected · Waiting for Tina';
 },error=>{console.error(error);statusText.textContent='🔴 Multiplayer read error';});
 }catch(error){console.error(error);statusText.textContent='🔴 Connection failed';}}
@@ -1332,7 +1389,12 @@ connectMultiplayer();
 let lastSent=0;
 function sendMyPosition(){
 if(!networkReady||!myPlayerRef)return;
-set(myPlayerRef,{x:player.position.x,z:player.position.z,rotation:player.rotation.y,moving:localMoving,running:localSprinting,appearance:appearance,updatedAt:Date.now()}).catch(error=>{console.error('Position update failed:',error);});
+set(myPlayerRef,{
+x:player.position.x,y:player.position.y,z:player.position.z,
+rotation:player.rotation.y,
+moving:localMoving,running:localSprinting,jumping:!isGrounded,
+appearance:appearance,updatedAt:Date.now()
+}).catch(error=>{console.error('Position update failed:',error);});
 }
 
 // ========================================
@@ -1368,11 +1430,10 @@ const speed=sprint?10:5.5;
 const newX=player.position.x+dx*speed*delta;
 const newZ=player.position.z+dz*speed*delta;
 
-// Collision check
 let canMove=true;
 for(const box of cityCollisionBoxes){
-if(newX > box.x - box.halfWidth && newX < box.x + box.halfWidth &&
-newZ > box.z - box.halfDepth && newZ < box.z + box.halfDepth){
+if(newX>box.x-box.halfWidth&&newX<box.x+box.halfWidth&&
+newZ>box.z-box.halfDepth&&newZ<box.z+box.halfDepth){
 canMove=false;break;
 }
 }
@@ -1382,8 +1443,35 @@ player.position.z=newZ;
 }
 }
 
-player.rotation.y=Math.PI+yaw;
-character.play(moving?(sprint?'run':'walk'):'idle');
+// Jump logic
+if(jumpPressed&&(isGrounded||coyoteTimer>0)){
+velocityY=JUMP_VELOCITY;
+isGrounded=false;
+coyoteTimer=0;
+jumpPressed=false;
+}
+
+velocityY+=GRAVITY*delta;
+player.position.y+=velocityY*delta;
+
+if(player.position.y<=0){
+player.position.y=0;
+velocityY=0;
+isGrounded=true;
+coyoteTimer=COYOTE_TIME;
+}else{
+coyoteTimer-=delta;
+}
+
+// Face movement direction when moving
+if(moving){
+const targetYaw=Math.atan2(dx,dz);
+yaw=targetYaw;
+}
+player.rotation.y=yaw;
+
+const animName=moving?(sprint?'run':'walk'):(isGrounded?'idle':'jump');
+character.play(animName);
 character.update(delta);
 
 for(const other of remotePlayers.values()){
@@ -1391,14 +1479,20 @@ const data=other.group.userData;
 other.group.position.lerp(data.targetPosition,Math.min(1,delta*12));
 const diff=Math.atan2(Math.sin(data.targetRotation-other.group.rotation.y),Math.cos(data.targetRotation-other.group.rotation.y));
 other.group.rotation.y+=diff*Math.min(1,delta*12);
-other.play(data.targetMoving?(data.targetRunning?'run':'walk'):'idle');
+const remoteAnim=data.targetJumping?'jump':(data.targetMoving?(data.targetRunning?'run':'walk'):'idle');
+other.play(remoteAnim);
 other.update(delta);
 }
 
-const horizontal=7*Math.cos(pitch);
-targetCamera.set(player.position.x+Math.sin(yaw)*horizontal,player.position.y+2.2+7*Math.sin(pitch),player.position.z+Math.cos(yaw)*horizontal);
-camera.position.lerp(targetCamera,.16);
-camera.lookAt(player.position.x,player.position.y+1.45,player.position.z);
+// Third person camera
+const horizontal=camDistance*Math.cos(camPitch);
+targetCamera.set(
+player.position.x+Math.sin(camYaw)*horizontal,
+player.position.y+camTargetY+camDistance*Math.sin(camPitch),
+player.position.z+Math.cos(camYaw)*horizontal
+);
+camera.position.lerp(targetCamera,0.12);
+camera.lookAt(player.position.x,player.position.y+camTargetY,player.position.z);
 
 if(time-lastSent>.08){sendMyPosition();lastSent=time;}
 renderer.render(scene,camera);
