@@ -2,1008 +2,1417 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Our First Date - Midnight Streets Horror</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<script type="importmap">
+{
+"imports": {
+"three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+}
+}
+</script>
+<title>Our First Date Kinda Game ❤️</title>
 <style>
-html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; }
-#hud { position: absolute; top: 14px; left: 14px; z-index: 10; max-width: 300px; padding: 14px 18px; border-radius: 12px; background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-#status { font-size: 13px; line-height: 1.5; color: #ff6b6b; margin: 8px 0; white-space: pre-line; min-height: 60px; }
-.stat-bar { height: 10px; background: #1a1a2e; border-radius: 5px; overflow: hidden; margin: 6px 0; border: 1px solid #333; }
-.stat-fill { height: 100%; transition: width 0.3s ease; }
-#staminaFill { background: linear-gradient(90deg, #00d4aa, #009977); }
-#flashlightFill { background: linear-gradient(90deg, #ffe066, #ffaa00); }
-#fearFill { background: linear-gradient(90deg, #ff3366, #cc0033); }
-.stat-label { font-size: 11px; color: #888; display: flex; justify-content: space-between; }
-#crosshair { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 100; opacity: 0.8; }
-#crosshair.aiming { width: 20px; height: 20px; border: 2px solid #fff; background: transparent; }
-#interactPrompt { position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%); background: rgba(20,20,30,0.9); padding: 10px 20px; border-radius: 8px; font-size: 14px; display: none; z-index: 100; border: 1px solid #444; }
-#gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; color: #fff; }
-#gameOverScreen h1 { font-size: 48px; margin-bottom: 20px; text-shadow: 0 0 20px #ff0000; }
-#gameOverScreen p { font-size: 18px; margin: 10px 0; color: #aaa; }
-#gameOverScreen button { margin-top: 20px; padding: 12px 30px; font-size: 16px; background: #cc0033; border: none; border-radius: 6px; color: #fff; cursor: pointer; }
-#gameOverScreen button:hover { background: #ff0044; }
-#objectives { position: absolute; top: 14px; right: 14px; z-index: 10; width: 280px; background: rgba(13, 17, 23, 0.9); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
-#objectives h3 { margin: 0 0 10px 0; font-size: 14px; color: #ffe066; border-bottom: 1px solid #333; padding-bottom: 8px; }
-#objectiveList { font-size: 12px; line-height: 1.8; }
-#objectiveList .done { color: #00d4aa; text-decoration: line-through; }
-#objectiveList .current { color: #fff; }
-#objectiveList .pending { color: #666; }
-.flashlight-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; background: radial-gradient(ellipse at center, transparent 0%, transparent 30%, rgba(0,0,0,0.95) 100%); display: none; }
-.flashlight-overlay.on { display: block; }
-.vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%); }
-.noise-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); animation: noiseAnim 0.2s infinite; }
-@keyframes noiseAnim { 0% { transform: translate(0,0); } 10% { transform: translate(-1%,1%); } 20% { transform: translate(1%,-1%); } 30% { transform: translate(-1%,-1%); } 40% { transform: translate(1%,1%); } 50% { transform: translate(0,0); } 60% { transform: translate(1%,0); } 70% { transform: translate(-1%,1%); } 80% { transform: translate(0,-1%); } 90% { transform: translate(-1%,0); } 100% { transform: translate(0,0); } }
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;font-family:Georgia,serif;background:#9bd8ee}
+canvas{display:block;touch-action:none}
+#start{position:absolute;inset:0;z-index:10;display:flex;color:#f8f0df;background:linear-gradient(90deg,#241b15d9,#241b1570 48%,#241b15d9);overflow:hidden}
+#wardrobeRoom{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,#b98b5e 0,#8b6244 48%,#493526 100%)}
+#wardrobeRoom:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 95px,#3e281b55 97px 101px),repeating-linear-gradient(0deg,transparent 0 75px,#2b1b1440 77px 81px);opacity:.75}
+#wardrobeRoom:after{content:"";position:absolute;left:0;right:0;bottom:0;height:23%;background:repeating-linear-gradient(90deg,#70472d 0 118px,#8b5c39 120px 124px);border-top:9px solid #3b281d;box-shadow:0 -12px 35px #24160d88}
+#roomTitle{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:clamp(20px,3vw,32px);letter-spacing:3px;text-shadow:0 3px 5px #24160d;text-align:center;z-index:1;white-space:nowrap}
+#start .layout{position:relative;z-index:2;width:100%;height:100%;display:grid;grid-template-columns:minmax(190px,25%) 1fr minmax(190px,25%);gap:12px;padding:72px 18px 18px}
+.ward-panel{background:linear-gradient(145deg,#493326ed,#281d17f2);border:2px solid #b88c5c;border-radius:13px;padding:14px;box-shadow:0 8px 24px #1b100b88;overflow:auto;min-height:0}
+.ward-panel h2{font-size:17px;color:#e7c79b;letter-spacing:1px;margin-bottom:12px;border-bottom:1px solid #b88c5c66;padding-bottom:9px}
+.category{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px 6px;margin:5px 0;border:1px solid #a77c5144;border-radius:8px;background:#674a35;color:#fff1dc;font:13px Arial;cursor:pointer}
+.category.active{background:#b88752;color:#21160f;border-color:#f0d0a1}
+.category span:first-child{font-weight:bold}
+.arrows{display:flex;gap:5px}
+.arrows button,.small-btn{border:0;border-radius:6px;background:#e4c49a;color:#342115;font-weight:bold;padding:5px 9px;font-size:16px;cursor:pointer}
+#previewWrap{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+#previewCanvas{width:100%;height:100%;max-height:calc(100vh - 115px);border-radius:16px;touch-action:none}
+.preview-plaque{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:#3a281dcc;border:1px solid #d1a979;border-radius:20px;padding:8px 18px;color:#f7e6c8;font:12px Arial;white-space:nowrap}
+#selectedName{font-size:13px;color:#f3d6ae;margin:-4px 0 12px}
+#swatches{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.swatch{width:29px;height:29px;border-radius:50%;border:2px solid #f7e8d3;box-shadow:0 2px 4px #0008;cursor:pointer}
+.swatch.selected{outline:3px solid #e4bd79;outline-offset:3px}
+#savedOutfits{display:grid;gap:8px}
+.outfit{padding:10px;border:1px solid #a77c51;border-radius:8px;background:#674a35;color:#fff1dc;text-align:left;font:13px Arial;cursor:pointer}
+.outfit strong{display:block;color:#f0d2a8;margin-bottom:3px}
+#saveOutfit{width:100%;padding:10px;border:1px solid #e7c79b;border-radius:8px;background:#8b6244;color:white;font-weight:bold;margin-top:10px;cursor:pointer}
+#enterButton{position:absolute;z-index:4;bottom:19px;left:50%;transform:translateX(-50%);padding:13px 42px;border:2px solid #f2d3a5;border-radius:30px;background:linear-gradient(#e6bd81,#ad7846);color:#2d1d12;font:bold 16px Georgia;box-shadow:0 4px 14px #1b100b99;cursor:pointer;white-space:nowrap}
+#instructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;background:#203e36bb;color:white;padding:10px 15px;border-radius:12px;text-align:center;font:12px Arial;pointer-events:none;line-height:1.5}
+#status{position:absolute;top:14px;right:14px;z-index:3;background:#203e36dd;color:white;padding:9px 12px;border-radius:12px;font:12px Arial;pointer-events:none}
+#wardrobe{display:none;position:absolute;top:65px;right:14px;z-index:4;background:#493326e8;color:white;border:1px solid #e7c79b;border-radius:12px;padding:12px 16px;font-weight:bold}
+#joystick{display:none;position:absolute;bottom:28px;left:25px;width:140px;height:140px;border-radius:50%;background:#203e3655;border:2px solid #ffffff99;z-index:5;touch-action:none}
+#stick{position:absolute;width:58px;height:58px;left:39px;top:39px;border-radius:50%;background:#ffffffbb;border:3px solid white;pointer-events:none}
+#runButton{display:none;position:absolute;right:28px;bottom:35px;width:76px;height:76px;border-radius:50%;border:2px solid #ffffffaa;background:#203e36bb;color:white;font-weight:bold;font-size:15px;z-index:5;touch-action:none}
+@media(max-width:700px){
+#start .layout{grid-template-columns:minmax(112px,30%) 1fr minmax(112px,30%);gap:6px;padding:64px 6px 82px}
+.ward-panel{padding:8px;border-radius:9px}
+.ward-panel h2{font-size:12px;margin-bottom:8px}
+.category{font-size:10px;padding:7px 4px}
+.arrows button{padding:4px 7px;font-size:13px}
+.swatch{width:23px;height:23px}
+.outfit{font-size:10px;padding:7px}
+#roomTitle{top:12px;font-size:17px}
+#enterButton{bottom:13px;padding:11px 30px;font-size:14px}
+.preview-plaque{font-size:10px}
+}
+@media(pointer:coarse){#joystick,#runButton{display:block}#instructions{font-size:11px}#wardrobe{top:65px}}
 </style>
 </head>
 <body>
 
-<div class="vignette"></div>
-<div class="noise-overlay"></div>
-<div class="flashlight-overlay" id="flashlightOverlay"></div>
-<div id="crosshair"></div>
-<div id="interactPrompt">[E] Interact</div>
-
-<div id="hud">
-  <strong>MIDNIGHT STREETS — SURVIVAL</strong>
-  <div id="status">Find Tina's Bakery. Avoid the Mimic.</div>
-
-  <div class="stat-label"><span>STAMINA</span><span id="staminaText">100%</span></div>
-  <div class="stat-bar"><div class="stat-fill" id="staminaFill" style="width:100%"></div></div>
-
-  <div class="stat-label"><span>FLASHLIGHT</span><span id="flashlightText">100%</span></div>
-  <div class="stat-bar"><div class="stat-fill" id="flashlightFill" style="width:100%"></div></div>
-
-  <div class="stat-label"><span>FEAR</span><span id="fearText">0%</span></div>
-  <div class="stat-bar"><div class="stat-fill" id="fearFill" style="width:0%"></div></div>
+<div id="start">
+<div id="wardrobeRoom"></div>
+<div id="roomTitle">YOUR LITTLE WARDROBE</div>
+<div class="layout">
+<section class="ward-panel">
+<h2>CHARACTER</h2>
+<div id="categories"></div>
+</section>
+<div id="previewWrap">
+<canvas id="previewCanvas"></canvas>
+<div class="preview-plaque">Drag to turn your character</div>
+</div>
+<section class="ward-panel">
+<h2 id="customTitle">SKIN TONE</h2>
+<div id="selectedName">Choose your look</div>
+<div id="swatches"></div>
+<h2>YOUR OUTFITS</h2>
+<div id="savedOutfits"></div>
+<button id="saveOutfit">＋ SAVE CURRENT OUTFIT</button>
+</section>
+</div>
+<button id="enterButton">CONTINUE TO OUR CITY ❤️</button>
 </div>
 
-<div id="objectives">
-  <h3>OBJECTIVES</h3>
-  <div id="objectiveList">
-    <div class="current" data-id="0">▸ Find Tina's Bakery on Main Street</div>
-    <div class="pending" data-id="1">▸ Retrieve the Bakery Key from the Corner Shop</div>
-    <div class="pending" data-id="2">▸ Enter Tina's Bakery and find the photo album</div>
-    <div class="pending" data-id="3">▸ Escape through the North Loop exit</div>
-  </div>
-</div>
-
-<div id="gameOverScreen">
-  <h1 id="gameOverTitle">GAME OVER</h1>
-  <p id="gameOverMsg">The Mimic caught you...</p>
-  <button onclick="location.reload()">TRY AGAIN</button>
-</div>
-
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.170.0/build/three.module.js"
-  }
-}
-</script>
+<div id="instructions">WASD – Move | SHIFT – Run<br>Mouse / Finger – Look around</div>
+<div id="status">Loading 3D characters...</div>
+<button id="wardrobe">👕 WARDROBE</button>
+<div id="joystick"><div id="stick"></div></div>
+<button id="runButton">RUN</button>
 
 <script type="module">
-import * as THREE from "three";
-import { GLTFLoader } from "https://unpkg.com/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "https://unpkg.com/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js';
+import {clone as cloneSkeleton} from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/utils/SkeletonUtils.js';
 
-// ========================================
-// GAME STATE
-// ========================================
-const GameState = {
-  stamina: 100,
-  maxStamina: 100,
-  flashlight: 100,
-  maxFlashlight: 100,
-  fear: 0,
-  maxFear: 100,
-  flashlightOn: true,
-  isSprinting: false,
-  isWalking: false,
-  gameOver: false,
-  gameWon: false,
-  objectives: [false, false, false, false],
-  currentObjective: 0,
-  mimicAlerted: false,
-  lastNoiseTime: 0
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+import {getAuth,signInAnonymously} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+import {getDatabase,ref,set,onValue,onDisconnect} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js';
+
+const statusText=document.getElementById('status');
+
+// LOAD THE TWO REAL 3D CHARACTERS
+const loader=new GLTFLoader();
+
+const modelURLs={
+boy:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/boy.glb.glb',
+girl:'https://raw.githubusercontent.com/sefamateeee/our-first-date-kinda-game/main/girl.glb.glb'
 };
 
-// ========================================
-// DOM ELEMENTS
-// ========================================
-const statusEl = document.getElementById("status");
-const crosshair = document.getElementById("crosshair");
-const interactPrompt = document.getElementById("interactPrompt");
-const flashlightOverlay = document.getElementById("flashlightOverlay");
-const gameOverScreen = document.getElementById("gameOverScreen");
-const gameOverTitle = document.getElementById("gameOverTitle");
-const gameOverMsg = document.getElementById("gameOverMsg");
-const staminaFill = document.getElementById("staminaFill");
-const staminaText = document.getElementById("staminaText");
-const flashlightFill = document.getElementById("flashlightFill");
-const flashlightText = document.getElementById("flashlightText");
-const fearFill = document.getElementById("fearFill");
-const fearText = document.getElementById("fearText");
-const objectiveList = document.getElementById("objectiveList");
+let models={};
 
-// ========================================
-// THREE.JS SETUP
-// ========================================
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x030508);
-scene.fog = new THREE.FogExp2(0x030508, 0.018);
+try{
+statusText.textContent='Loading your 3D characters...';
+const [boyModel,girlModel]=await Promise.all([
+loader.loadAsync(modelURLs.boy),
+loader.loadAsync(modelURLs.girl)
+]);
+models.boy=boyModel;
+models.girl=girlModel;
+}catch(error){
+console.error('Character loading error:',error);
+statusText.textContent='Could not load characters. Check the model files.';
+throw error;
+}
 
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 500);
-camera.position.set(0, 1.7, 10);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.8;
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
-
-// ========================================
-// PLAYER CONTROLS (FPS)
-// ========================================
-const keys = {};
-const player = {
-  position: new THREE.Vector3(0, 1.7, 10),
-  velocity: new THREE.Vector3(),
-  yaw: 0,
-  pitch: 0,
-  walkSpeed: 4.5,
-  sprintSpeed: 9,
-  crouchSpeed: 2,
-  height: 1.7,
-  crouchHeight: 1.1,
-  isCrouching: false,
-  isGrounded: true,
-  jumpVelocity: 0,
-  canJump: true
+// FIREBASE
+const firebaseConfig={
+apiKey:"AIzaSyCIkwXfeAfEZrG1kE0myW8BIRXNq5gOnpE",
+authDomain:"our-first-date-kinda-game.firebaseapp.com",
+databaseURL:"https://our-first-date-kinda-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId:"our-first-date-kinda-game",
+storageBucket:"our-first-date-kinda-game.firebasestorage.app",
+messagingSenderId:"176526649038",
+appId:"1:176526649038:web:3c6ab02491491e4e8e129f",
+measurementId:"G-49HR8VS7TV"
 };
 
-const clock = new THREE.Clock();
-let pointerLocked = false;
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
 
-document.addEventListener("keydown", e => { keys[e.code] = true; });
-document.addEventListener("keyup", e => { keys[e.code] = false; });
+let myUID=null;
+let myPlayerRef=null;
+let networkReady=false;
+const remotePlayers=new Map();
 
-document.addEventListener("mousemove", e => {
-  if (!pointerLocked || GameState.gameOver) return;
-  const sens = 0.002;
-  player.yaw -= e.movementX * sens;
-  player.pitch -= e.movementY * sens;
-  player.pitch = Math.max(-Math.PI/2.1, Math.min(Math.PI/2.1, player.pitch));
+const defaultAppearance={
+gender:'boy',
+skinColor:'#d99b72',
+hairStyle:'short',
+hairColor:'#25170f',
+eyeColor:'#30251f',
+accessory:'none',
+topStyle:'tshirt',
+topColor:'#398b72',
+bottomStyle:'pants',
+bottomColor:'#394b68',
+shoeColor:'#63452e'
+};
+
+let appearance={...defaultAppearance};
+
+const choices={
+gender:[['Boy','boy'],['Girl','girl']],
+skinColor:[['Light','#f5d0b0'],['Warm light','#e8b58e'],['Medium','#d99b72'],['Tan','#b97950'],['Brown','#895536'],['Deep brown','#583521']],
+hairStyle:[
+['Short','short'],
+['Buzz Cut','buzz'],
+['Crew Cut','crew'],
+['Low Fade','lowfade'],
+['High Fade','highfade'],
+['Textured Crop','textured'],
+['Slick Back','slickback'],
+['Middle Part','middlepart'],
+['Curly','curly'],
+['Wavy','wavy'],
+['Long Straight','long'],
+['Shaggy','shaggy'],
+['Wolf Cut','wolfcut'],
+['Long Wolf Cut','longwolf'],
+['Mullet','mullet'],
+['Bob','bob'],
+['Ponytail','ponytail'],
+['High Ponytail','highpony'],
+['Low Ponytail','lowpony'],
+['Twin Ponytails','twinponies'],
+['Bun','bun'],
+['Messy Bun','messybun'],
+['Braids','braids'],
+['Cornrows','cornrows'],
+['Box Braids','boxbraids'],
+['Twists','twists'],
+['Side Part','sidepart'],
+['French Crop','frenchcrop'],
+['Afro','afro'],
+['Double Buns','doublebun']
+],
+hairColor:[['Black','#25170f'],['Dark brown','#493020'],['Brown','#79502d'],['Blonde','#c18a4a'],['Light blonde','#d5b879'],['Ginger','#a94d35'],['White','#eeeeee'],['Purple','#8b5cc5'],['Pink','#d85c91'],['Blue','#427fbd']],
+eyeColor:[['Brown','#30251f'],['Dark','#202020'],['Blue','#478cbb'],['Green','#57965c'],['Hazel','#8a6740'],['Grey','#777777']],
+accessory:[['None','none'],['Glasses','glasses'],['Headband','headband']],
+topStyle:[['T-shirt','tshirt'],['Hoodie','hoodie'],['Tank top','tank'],['Sweater','sweater']],
+topColor:[['Green','#398b72'],['Black','#252b3d'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e'],['Purple','#8656a7'],['Pink','#e58b9c'],['Orange','#b87543'],['Grey','#777777']],
+bottomStyle:[['Trousers','pants'],['Shorts','shorts'],['Skirt','skirt']],
+bottomColor:[['Navy','#394b68'],['Black','#252525'],['White','#eeeeee'],['Green','#547c4b'],['Red','#a34b4b'],['Blue','#5479aa'],['Brown','#9b7958'],['Grey','#777777'],['Purple','#8656a7']],
+shoeColor:[['Brown','#63452e'],['Black','#252525'],['White','#eeeeee'],['Red','#bd4444'],['Blue','#426eae'],['Yellow','#d5a64e']]
+};
+
+const categoryNames=[
+['gender','Body style'],
+['skinColor','Skin tone'],
+['eyeColor','Eye colour'],
+['hairStyle','Hairstyle'],
+['hairColor','Hair colour'],
+['accessory','Accessories'],
+['topStyle','Top style'],
+['topColor','Top colour'],
+['bottomStyle','Bottom style'],
+['bottomColor','Bottom colour'],
+['shoeColor','Shoes']
+];
+
+let activeCategory='gender';
+let wardrobeOpen=true;
+let previewCharacter=null;
+let previewRotation=0;
+let previewPointer=null;
+let previewLastX=0;
+
+// CREATE A CHARACTER FROM A GLB MODEL
+function createCharacter(custom=defaultAppearance){
+const appearance={...defaultAppearance,...custom};
+
+const group=new THREE.Group();
+const gender=appearance.gender==='girl'?'girl':'boy';
+const source=models[gender];
+
+const model=cloneSkeleton(source.scene);
+
+const originalBox=new THREE.Box3().setFromObject(model);
+const originalSize=originalBox.getSize(new THREE.Vector3());
+
+if(originalSize.y>0){
+const scale=2.8/originalSize.y;
+model.scale.setScalar(scale);
+}
+
+const fittedBox=new THREE.Box3().setFromObject(model);
+const fittedCenter=fittedBox.getCenter(new THREE.Vector3());
+
+model.position.x-=fittedCenter.x;
+model.position.z-=fittedCenter.z;
+model.position.y-=fittedBox.min.y;
+
+const modelHolder=new THREE.Group();
+modelHolder.rotation.y=0;
+modelHolder.add(model);
+group.add(modelHolder);
+
+model.traverse(object=>{
+if(object.isMesh){
+object.castShadow=true;
+object.receiveShadow=true;
+
+function colourMaterial(material){
+const mat=material.clone();
+const name=(mat.name||'').toLowerCase();
+
+let colour=null;
+
+if(name==='skin'||name==='body_secondary'){
+colour=appearance.skinColor;
+}
+else if(name==='hair'){
+colour=appearance.hairColor;
+}
+else if(name==='eyes'){
+colour=appearance.eyeColor;
+}
+else if(name.startsWith('top_')){
+colour=appearance.topColor;
+}
+else if(name.startsWith('bottom_')){
+colour=appearance.bottomColor;
+}
+else if(name.startsWith('shoes_')){
+colour=appearance.shoeColor;
+}
+
+if(colour&&mat.color){
+mat.color.set(colour);
+}
+
+return mat;
+}
+
+object.material=Array.isArray(object.material)
+?object.material.map(colourMaterial)
+:colourMaterial(object.material);
+}
 });
 
-renderer.domElement.addEventListener("click", () => {
-  if (!GameState.gameOver && !GameState.gameWon) renderer.domElement.requestPointerLock();
+const hairStyle = appearance.hairStyle;
+
+if (hairStyle !== 'short') {
+model.traverse(object => {
+if (object.isMesh && object.material) {
+const materials = Array.isArray(object.material)
+? object.material
+: [object.material];
+
+if (materials.some(mat => mat.name === 'hair')) {
+object.visible = false;
+}
+}
 });
 
-document.addEventListener("pointerlockchange", () => {
-  pointerLocked = document.pointerLockElement === renderer.domElement;
-  crosshair.style.display = pointerLocked ? "block" : "none";
+const hairMaterial = new THREE.MeshStandardMaterial({
+color: appearance.hairColor,
+roughness: 0.85
 });
 
-// Interaction key
-document.addEventListener("keydown", e => {
-  if (e.code === "KeyE" && !GameState.gameOver) tryInteract();
+const hair = new THREE.Group();
+
+function sphere(x, y, z, sx, sy, sz) {
+const mesh = new THREE.Mesh(
+new THREE.SphereGeometry(1, 16, 12),
+hairMaterial
+);
+mesh.position.set(x, y, z);
+mesh.scale.set(sx, sy, sz);
+hair.add(mesh);
+return mesh;
+}
+
+function strand(x, y, z, radius, length, sx=1, sz=1, rz=0) {
+const mesh = new THREE.Mesh(
+new THREE.CapsuleGeometry(radius, length, 6, 12),
+hairMaterial
+);
+mesh.position.set(x, y, z);
+mesh.scale.set(sx, 1, sz);
+mesh.rotation.z = rz;
+hair.add(mesh);
+return mesh;
+}
+
+function cap() {
+sphere(0, 0.27, 0, 0.27, 0.22, 0.25);
+}
+
+function sides(length=0.85) {
+for (const side of [-1, 1]) {
+strand(side * 0.20, -0.05, -0.02, 0.105, length);
+}
+}
+
+function back(length=0.85, radius=0.21) {
+strand(0, -0.22, -0.17, radius, length, 1, 1, 0);
+}
+
+function fringe() {
+for (let i = -2; i <= 2; i++) {
+strand(i * 0.075, 0.13, 0.19, 0.055, 0.16, 1, 1, i * 0.12);
+}
+}
+
+function curls() {
+for (let row = 0; row < 3; row++) {
+for (let i = -2; i <= 2; i++) {
+sphere(
+i * 0.095,
+0.30 + (row === 1 ? 0.07 : 0),
+row === 0 ? 0.12 : row === 1 ? -0.02 : -0.14,
+0.105, 0.11, 0.105
+);
+}
+}
+sphere(-0.24, 0.10, 0, 0.10, 0.20, 0.11);
+sphere(0.24, 0.10, 0, 0.10, 0.20, 0.11);
+}
+
+function ponytail(x=0, y=-0.02, length=0.85, radius=0.12) {
+strand(x, y - length * 0.35, -0.25, radius, length, 1, 1, -0.12);
+sphere(x, y + 0.10, -0.23, radius * 1.5, radius * 1.3, radius * 1.5);
+}
+
+function braid(x, length=0.85) {
+for (let i = 0; i < 7; i++) {
+sphere(
+x + Math.sin(i * 1.2) * 0.025,
+0.02 - i * (length / 7),
+-0.08,
+0.075, 0.09, 0.075
+);
+}
+}
+
+switch (hairStyle) {
+case 'long':
+cap();
+sides(0.95);
+back(1.0, 0.22);
+break;
+
+case 'curly':
+cap();
+curls();
+break;
+
+case 'wavy':
+cap();
+sides(0.95);
+back(0.85, 0.20);
+for (const side of [-1, 1]) {
+sphere(side * 0.20, 0.25, 0.02, 0.13, 0.18, 0.13);
+}
+break;
+
+case 'wolfcut':
+cap();
+fringe();
+sides(0.65);
+back(0.95, 0.20);
+break;
+
+case 'longwolf':
+cap();
+fringe();
+sides(1.05);
+back(1.15, 0.22);
+break;
+
+case 'mullet':
+cap();
+fringe();
+back(1.1, 0.22);
+break;
+
+case 'shaggy':
+cap();
+sides(0.75);
+back(0.9, 0.22);
+fringe();
+break;
+
+case 'textured':
+cap();
+fringe();
+for (let i = -2; i <= 2; i++) {
+strand(i * 0.08, 0.35, 0.04, 0.07, 0.15, 1, 1, i * 0.15);
+}
+break;
+
+case 'middlepart':
+cap();
+for (const side of [-1, 1]) {
+strand(side * 0.18, 0.10, 0.14, 0.09, 0.30, 1, 1, side * 0.3);
+}
+sides(0.45);
+break;
+
+case 'slickback':
+cap();
+back(0.55, 0.18);
+break;
+
+case 'buzz':
+sphere(0, 0.27, 0, 0.275, 0.17, 0.25);
+break;
+
+case 'crew':
+sphere(0, 0.29, 0, 0.27, 0.19, 0.25);
+break;
+
+case 'highfade':
+case 'lowfade':
+sphere(0, 0.32, -0.01, 0.26, 0.13, 0.24);
+break;
+
+case 'bob':
+cap();
+sides(0.32);
+back(0.35, 0.22);
+break;
+
+case 'ponytail':
+cap();
+ponytail(0, -0.05, 0.95);
+break;
+
+case 'highpony':
+cap();
+ponytail(0, 0.15, 1.0);
+break;
+
+case 'lowpony':
+cap();
+ponytail(0, -0.12, 0.85);
+break;
+
+case 'twinponies':
+cap();
+ponytail(-0.23, 0.05, 0.85, 0.10);
+ponytail(0.23, 0.05, 0.85, 0.10);
+break;
+
+case 'bun':
+cap();
+sphere(0, -0.02, -0.27, 0.19, 0.18, 0.18);
+break;
+
+case 'messybun':
+cap();
+sphere(0, 0.03, -0.28, 0.22, 0.20, 0.20);
+strand(-0.22, 0.02, 0.05, 0.07, 0.30);
+strand(0.22, 0.02, 0.05, 0.07, 0.30);
+break;
+
+case 'braids':
+cap();
+sides(0.45);
+braid(-0.20, 0.85);
+braid(0.20, 0.85);
+break;
+
+case 'cornrows':
+cap();
+for (let i = -2; i <= 2; i++) {
+strand(i * 0.085, 0.30, 0, 0.035, 0.30, 1, 1, 0);
+}
+break;
+
+case 'boxbraids':
+cap();
+for (let i = -2; i <= 2; i++) {
+braid(i * 0.09, 0.95);
+}
+break;
+
+case 'twists':
+cap();
+for (const side of [-1, 1]) {
+for (let i = 0; i < 3; i++) {
+strand(side * (0.12 + i * 0.06), -0.05, -0.10, 0.055, 0.65, 1, 1, side * 0.15);
+}
+}
+break;
+
+default:
+cap();
+sides(0.85);
+break;
+}
+
+const hairBone = model.getObjectByName('head');
+
+if (hairBone) {
+hairBone.add(hair);
+} else {
+model.add(hair);
+}
+
+hair.traverse(object => {
+if (object.isMesh) {
+object.castShadow = true;
+object.receiveShadow = true;
+}
 });
+}
 
-// ========================================
-// LIGHTING & ATMOSPHERE
-// ========================================
-const hemiLight = new THREE.HemisphereLight(0x1a1a2e, 0x050510, 0.3);
-scene.add(hemiLight);
+const mixer=new THREE.AnimationMixer(model);
+const actions={};
 
-const moonLight = new THREE.DirectionalLight(0x4a6fa5, 0.25);
-moonLight.position.set(80, 120, 50);
-moonLight.castShadow = true;
-moonLight.shadow.mapSize.set(2048, 2048);
-moonLight.shadow.camera.left = -100;
-moonLight.shadow.camera.right = 100;
-moonLight.shadow.camera.top = 100;
-moonLight.shadow.camera.bottom = -100;
-scene.add(moonLight);
+const clips=source.animations||[];
 
-// Player flashlight (spotlight attached to camera)
-const flashlight = new THREE.SpotLight(0xfff8e7, 0, 35, Math.PI / 5.5, 0.4, 1);
-flashlight.castShadow = true;
-flashlight.shadow.mapSize.set(1024, 1024);
-flashlight.shadow.camera.near = 0.5;
-flashlight.shadow.camera.far = 35;
-flashlight.shadow.camera.fov = 60;
-camera.add(flashlight);
-flashlight.target = new THREE.Object3D();
-camera.add(flashlight.target);
-flashlight.target.position.set(0, 0, -1);
+function findClip(word){
+return clips.find(clip=>clip.name.toLowerCase().includes(word));
+}
 
-// Street lights
-const streetLights = [];
-function createStreetLamp(x, z) {
-  const light = new THREE.PointLight(0xffb84d, 0, 25, 1.5);
-  light.position.set(x, 5.2, z);
-  light.castShadow = true;
-  light.shadow.mapSize.set(512, 512);
-  scene.add(light);
-  streetLights.push(light);
+const animationNames={
+idle:findClip('idle'),
+walk:findClip('walk'),
+run:findClip('run'),
+wave:findClip('wave'),
+jump:findClip('jump')
+};
 
-  // Visual bulb
-  const bulb = new THREE.Mesh(
-    new THREE.SphereGeometry(0.25, 8, 8),
-    new THREE.MeshBasicMaterial({ color: 0xffd175 })
-  );
-  bulb.position.set(x, 5.4, z);
-  scene.add(bulb);
+for(const [name,clip] of Object.entries(animationNames)){
+if(clip)actions[name]=mixer.clipAction(clip);
+}
+
+let currentAction=null;
+let currentAnimation='';
+
+function play(name){
+if(!actions[name]){
+if(name==='run'&&actions.walk)name='walk';
+else if(name!=='idle'&&actions.idle)name='idle';
+else return;
+}
+
+if(currentAnimation===name)return;
+
+const next=actions[name];
+if(currentAction){
+currentAction.fadeOut(.18);
+}
+
+next.reset();
+next.fadeIn(.18);
+next.play();
+
+currentAction=next;
+currentAnimation=name;
+}
+
+play('idle');
+
+group.userData.appearanceSignature=JSON.stringify(appearance);
+
+return{
+group,
+mixer,
+actions,
+play,
+update(delta){mixer.update(delta)},
+model
+};
 }
 
 // ========================================
-// GROUND
+// MAIN CITY SCENE - YOUR EXACT ROAD LAYOUT
 // ========================================
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(240, 220),
-  new THREE.MeshStandardMaterial({ color: 0x1a1f18, roughness: 0.95, metalness: 0 })
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x9bd8ee);
+scene.fog=new THREE.Fog(0x9bd8ee, 80, 220);
+
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// LIGHTING - BRIGHT DAYTIME
+scene.add(new THREE.HemisphereLight(0xe5f5ff, 0x8fb86c, 1.8));
+const sun=new THREE.DirectionalLight(0xfff2d5, 2.5);
+sun.position.set(-30, 50, 25);
+sun.castShadow=true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -80;
+sun.shadow.camera.right = 80;
+sun.shadow.camera.top = 80;
+sun.shadow.camera.bottom = -80;
+scene.add(sun);
+
+function material(color){
+return new THREE.MeshStandardMaterial({color, roughness:.85});
+}
+
+// Collision boundaries
+const cityCollisionBoxes = [];
+
+// Ground
+const cityGround = new THREE.Mesh(
+new THREE.PlaneGeometry(240, 220),
+material(0x83ad78)
 );
-ground.rotation.x = -Math.PI / 2;
-ground.position.set(0, -0.22, 3);
-ground.receiveShadow = true;
-scene.add(ground);
+cityGround.rotation.x = -Math.PI / 2;
+cityGround.position.set(0, -0.02, 3);
+cityGround.receiveShadow = true;
+scene.add(cityGround);
 
 // ========================================
-// ASSET LOADER & PROCEDURAL FALLBACKS
+// YOUR EXACT 36-PIECE ROAD LAYOUT
 // ========================================
-const loader = new GLTFLoader();
-const roadFolder = "./city-assets/roads/";
-const roads = [];
-const buildings = [];
-const interactables = [];
-const failedAssets = [];
-
 const roadFiles = {
-  straight: "MS_RD_01_StraightRoad.glb",
-  corner: "MS_RD_02_RoadCorner90.glb",
-  crossroads: "MS_RD_04_Crossroads.glb",
-  transition64: "MS_RD_06_Transition_6to4.glb"
+straight: "MS_RD_01_StraightRoad.glb",
+corner: "MS_RD_02_RoadCorner90.glb",
+crossroads: "MS_RD_04_Crossroads.glb",
+transition64: "MS_RD_06_Transition_6to4.glb"
 };
 
 const savedRoads = [
-  {id:1,type:"crossroads",x:-27.429,y:0.16,z:5,rot:0},
-  {id:2,type:"crossroads",x:17.6,y:0.16,z:5,rot:0},
-  {id:3,type:"straight",x:-18,y:0.16,z:2,rot:0},
-  {id:4,type:"straight",x:-12,y:0.16,z:2,rot:0},
-  {id:5,type:"straight",x:-6,y:0.16,z:2,rot:0},
-  {id:6,type:"straight",x:0,y:0.16,z:2,rot:0},
-  {id:7,type:"straight",x:6,y:0.16,z:2,rot:0},
-  {id:8,type:"straight",x:12,y:0.16,z:2,rot:0},
-  {id:9,type:"transition64",x:-19.622,y:0.16,z:4.504,rot:3.142},
-  {id:10,type:"straight",x:-20.626,y:0.16,z:14,rot:1.571},
-  {id:11,type:"straight",x:-20.646,y:0.16,z:20,rot:1.571},
-  {id:12,type:"transition64",x:-25.784,y:0.16,z:-5,rot:0},
-  {id:13,type:"straight",x:-20.903,y:0.16,z:-6.391,rot:1.571},
-  {id:14,type:"straight",x:-20.882,y:0.16,z:-12.266,rot:1.571},
-  {id:15,type:"transition64",x:26.123,y:0.16,z:4.22,rot:3.142},
-  {id:16,type:"straight",x:25.101,y:0.16,z:14.193,rot:1.571},
-  {id:17,type:"straight",x:25.094,y:0.16,z:20,rot:1.571},
-  {id:18,type:"transition64",x:19.453,y:0.16,z:-5,rot:0},
-  {id:19,type:"straight",x:24.375,y:0.16,z:-8.602,rot:1.571},
-  {id:20,type:"straight",x:24.392,y:0.16,z:-14.162,rot:1.571},
-  {id:21,type:"corner",x:-17.172,y:0.16,z:18.984,rot:-0.032},
-  {id:22,type:"corner",x:17.379,y:0.16,z:18.001,rot:-1.557},
-  {id:23,type:"straight",x:-18,y:0.16,z:26,rot:0},
-  {id:24,type:"straight",x:-12,y:0.16,z:26,rot:0},
-  {id:25,type:"straight",x:-6,y:0.16,z:26,rot:0},
-  {id:26,type:"straight",x:0,y:0.16,z:26,rot:0},
-  {id:27,type:"straight",x:6,y:0.16,z:26,rot:0},
-  {id:28,type:"straight",x:12,y:0.16,z:26,rot:0},
-  {id:29,type:"corner",x:-16.874,y:0.16,z:-18.121,rot:1.547},
-  {id:30,type:"corner",x:16.833,y:0.173,z:-18.225,rot:-0.01},
-  {id:31,type:"straight",x:-18,y:0.16,z:-22,rot:0},
-  {id:32,type:"straight",x:-12,y:0.16,z:-22,rot:0},
-  {id:33,type:"straight",x:-6,y:0.16,z:-22,rot:0},
-  {id:34,type:"straight",x:0,y:0.16,z:-22,rot:0},
-  {id:35,type:"straight",x:6,y:0.16,z:-22,rot:0},
-  {id:36,type:"straight",x:12,y:0.16,z:-22,rot:0}
+{id:1,type:"crossroads",x:-27.429,y:0.16,z:5,rot:0},
+{id:2,type:"crossroads",x:17.6,y:0.16,z:5,rot:0},
+{id:3,type:"straight",x:-18,y:0.16,z:2,rot:0},
+{id:4,type:"straight",x:-12,y:0.16,z:2,rot:0},
+{id:5,type:"straight",x:-6,y:0.16,z:2,rot:0},
+{id:6,type:"straight",x:0,y:0.16,z:2,rot:0},
+{id:7,type:"straight",x:6,y:0.16,z:2,rot:0},
+{id:8,type:"straight",x:12,y:0.16,z:2,rot:0},
+{id:9,type:"transition64",x:-19.622,y:0.16,z:4.504,rot:3.142},
+{id:10,type:"straight",x:-20.626,y:0.16,z:14,rot:1.571},
+{id:11,type:"straight",x:-20.646,y:0.16,z:20,rot:1.571},
+{id:12,type:"transition64",x:-25.784,y:0.16,z:-5,rot:0},
+{id:13,type:"straight",x:-20.903,y:0.16,z:-6.391,rot:1.571},
+{id:14,type:"straight",x:-20.882,y:0.16,z:-12.266,rot:1.571},
+{id:15,type:"transition64",x:26.123,y:0.16,z:4.22,rot:3.142},
+{id:16,type:"straight",x:25.101,y:0.16,z:14.193,rot:1.571},
+{id:17,type:"straight",x:25.094,y:0.16,z:20,rot:1.571},
+{id:18,type:"transition64",x:19.453,y:0.16,z:-5,rot:0},
+{id:19,type:"straight",x:24.375,y:0.16,z:-8.602,rot:1.571},
+{id:20,type:"straight",x:24.392,y:0.16,z:-14.162,rot:1.571},
+{id:21,type:"corner",x:-17.172,y:0.16,z:18.984,rot:-0.032},
+{id:22,type:"corner",x:17.379,y:0.16,z:18.001,rot:-1.557},
+{id:23,type:"straight",x:-18,y:0.16,z:26,rot:0},
+{id:24,type:"straight",x:-12,y:0.16,z:26,rot:0},
+{id:25,type:"straight",x:-6,y:0.16,z:26,rot:0},
+{id:26,type:"straight",x:0,y:0.16,z:26,rot:0},
+{id:27,type:"straight",x:6,y:0.16,z:26,rot:0},
+{id:28,type:"straight",x:12,y:0.16,z:26,rot:0},
+{id:29,type:"corner",x:-16.874,y:0.16,z:-18.121,rot:1.547},
+{id:30,type:"corner",x:16.833,y:0.173,z:-18.225,rot:-0.01},
+{id:31,type:"straight",x:-18,y:0.16,z:-22,rot:0},
+{id:32,type:"straight",x:-12,y:0.16,z:-22,rot:0},
+{id:33,type:"straight",x:-6,y:0.16,z:-22,rot:0},
+{id:34,type:"straight",x:0,y:0.16,z:-22,rot:0},
+{id:35,type:"straight",x:6,y:0.16,z:-22,rot:0},
+{id:36,type:"straight",x:12,y:0.16,z:-22,rot:0}
 ];
 
-function loadGLB(url) {
-  return new Promise((resolve, reject) => loader.load(url, gltf => resolve(gltf.scene), undefined, reject));
+// Procedural road creation with markings
+function createProceduralRoadMesh(type) {
+const group = new THREE.Group();
+const roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3f44, roughness: 0.9 });
+const curbMat = new THREE.MeshStandardMaterial({ color: 0x9ca0a3, roughness: 0.8 });
+const lineMat = new THREE.MeshBasicMaterial({ color: 0xf4f0dc, transparent: true, opacity: 0.95 });
+const crosswalkMat = new THREE.MeshBasicMaterial({ color: 0xf5f3e9 });
+
+const road = new THREE.Mesh(new THREE.BoxGeometry(6, 0.15, 6), roadMat);
+road.receiveShadow = true;
+group.add(road);
+
+if (type === "straight") {
+const curbL = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat);
+curbL.position.set(0, 0.05, 2.6);
+const curbR = curbL.clone(); curbR.position.set(0, 0.05, -2.6);
+group.add(curbL, curbR);
+
+const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat);
+stripe.position.y = 0.085; group.add(stripe);
+
+} else if (type === "corner") {
+const curb1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.22, 6), curbMat); curb1.position.set(2.6, 0.05, 0);
+const curb2 = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat); curb2.position.set(0, 0.05, -2.6);
+group.add(curb1, curb2);
+
+const cw1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), crosswalkMat); cw1.position.set(0, 0.085, 2.6); group.add(cw1);
+const cw2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.17, 4), crosswalkMat); cw2.position.set(-2.6, 0.085, 0); group.add(cw2);
+
+} else if (type === "crossroads") {
+for (const [cx, cz] of [[2.6,0],[-2.6,0],[0,2.6],[0,-2.6]]) {
+const curb = new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.8:6, 0.22, cz!==0?0.8:6), curbMat);
+curb.position.set(cx, 0.05, cz); group.add(curb);
+}
+const s1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat); s1.position.y = 0.085;
+const s2 = s1.clone(); s2.rotation.y = Math.PI/2; group.add(s1, s2);
+
+for (const [cx, cz] of [[0,2.8],[0,-2.8],[2.8,0],[-2.8,0]]) {
+const cw = new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.12:4, 0.17, cz!==0?0.12:4), crosswalkMat);
+cw.position.set(cx, 0.085, cz); group.add(cw);
 }
 
-function createProceduralRoadMesh(type) {
-  const group = new THREE.Group();
-  const roadMat = new THREE.MeshStandardMaterial({ color: 0x181a1e, roughness: 0.9 });
-  const curbMat = new THREE.MeshStandardMaterial({ color: 0x7a7872, roughness: 0.9 });
-  const lineMat = new THREE.MeshBasicMaterial({ color: 0xe8c03a, transparent: true, opacity: 0.9 });
+} else if (type === "transition64") {
+const curbL = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat);
+curbL.position.set(0, 0.05, 2.6);
+const curbR = curbL.clone(); curbR.position.set(0, 0.05, -2.6);
+group.add(curbL, curbR);
+const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat);
+stripe.position.y = 0.085; group.add(stripe);
+}
 
-  const road = new THREE.Mesh(new THREE.BoxGeometry(6, 0.15, 6), roadMat);
-  road.receiveShadow = true;
-  group.add(road);
-
-  if (type === "straight") {
-    const curbL = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat);
-    curbL.position.set(0, 0.05, 2.6);
-    const curbR = curbL.clone(); curbR.position.set(0, 0.05, -2.6);
-    group.add(curbL, curbR);
-    const stripe = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat);
-    stripe.position.y = 0.085; group.add(stripe);
-  } else if (type === "corner") {
-    const curb1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.22, 6), curbMat); curb1.position.set(2.6, 0.05, 0);
-    const curb2 = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.8), curbMat); curb2.position.set(0, 0.05, -2.6);
-    group.add(curb1, curb2);
-  } else if (type === "crossroads") {
-    for (const [cx, cz] of [[2.6,0],[-2.6,0],[0,2.6],[0,-2.6]]) {
-      const curb = new THREE.Mesh(new THREE.BoxGeometry(cx!==0?0.8:6, 0.22, cz!==0?0.8:6), curbMat);
-      curb.position.set(cx, 0.05, cz); group.add(curb);
-    }
-    const s1 = new THREE.Mesh(new THREE.BoxGeometry(4, 0.17, 0.12), lineMat); s1.position.y = 0.085;
-    const s2 = s1.clone(); s2.rotation.y = Math.PI/2; group.add(s1, s2);
-  }
-
-  group.userData.localRoadSize = new THREE.Vector3(6, 0.15, 6);
-  group.userData.localRoadTop = 0.075;
-  group.userData.roadType = type;
-  return group;
+group.userData.localRoadSize = new THREE.Vector3(6, 0.15, 6);
+group.userData.localRoadTop = 0.075;
+group.userData.roadType = type;
+return group;
 }
 
 async function addRoad(type, x, z, rotation = 0, y = 0.16) {
-  let model;
-  try {
-    model = await loadGLB(roadFolder + roadFiles[type]);
-    const bounds = new THREE.Box3().setFromObject(model);
-    const center = bounds.getCenter(new THREE.Vector3());
-    model.position.x -= center.x; model.position.z -= center.z;
-    const adjusted = new THREE.Box3().setFromObject(model);
-    model.position.y -= adjusted.min.y;
-    model.updateMatrixWorld(true);
-    const localBounds = new THREE.Box3().setFromObject(model);
-    model.userData.localRoadSize = localBounds.getSize(new THREE.Vector3());
-    model.userData.localRoadTop = localBounds.max.y;
-  } catch (e) {
-    model = createProceduralRoadMesh(type);
-  }
-  model.position.set(x, y, z);
-  model.rotation.y = rotation;
-  model.userData.roadType = type;
-  scene.add(model);
-  roads.push(model);
-  return model;
+let model;
+try {
+model = await loader.loadAsync("./city-assets/roads/" + roadFiles[type]);
+const bounds = new THREE.Box3().setFromObject(model);
+const center = bounds.getCenter(new THREE.Vector3());
+model.position.x -= center.x; model.position.z -= center.z;
+const adjusted = new THREE.Box3().setFromObject(model);
+model.position.y -= adjusted.min.y;
+model.updateMatrixWorld(true);
+const localBounds = new THREE.Box3().setFromObject(model);
+model.userData.localRoadSize = localBounds.getSize(new THREE.Vector3());
+model.userData.localRoadTop = localBounds.max.y;
+} catch (e) {
+model = createProceduralRoadMesh(type);
+}
+model.position.set(x, y, z);
+model.rotation.y = rotation;
+model.userData.roadType = type;
+scene.add(model);
+return model;
 }
 
+// Build all roads
+for (const r of savedRoads) {
+await addRoad(r.type, r.x, r.z, r.rot, r.y);
+}
+
+// ========================================
+// BUILDINGS - PROCEDURAL WITH YOUR ASSET NAMES
+// ========================================
 function createProceduralBuildingMesh(filename, label) {
-  const group = new THREE.Group();
-  let color = 0x5a6a7a, isStore = false, isApartment = false, isBakery = false;
-  if (filename.includes("bakery")) { color = 0xcc7700; isStore = true; isBakery = true; }
-  else if (filename.includes("Shop") || filename.includes("Storefront")) { color = 0x007788; isStore = true; }
-  else if (filename.includes("Apartment") || filename.includes("Block") || filename.includes("Boarding") || filename.includes("Studio") || filename.includes("Budget")) { color = 0x7a44aa; isApartment = true; }
-  else if (filename.includes("Bungalow") || filename.includes("House") || filename.includes("Duplex") || filename.includes("Rental")) { color = 0xaa4411; }
-  else if (filename.includes("Townhouse") || filename.includes("Entry") || filename.includes("Gated")) { color = 0x993300; }
+const group = new THREE.Group();
+let color = 0x5a6a7a, isStore = false, isApartment = false, isBakery = false;
+if (filename.includes("bakery")) { color = 0xcc7700; isStore = true; isBakery = true; }
+else if (filename.includes("Shop") || filename.includes("Storefront")) { color = 0x007788; isStore = true; }
+else if (filename.includes("Apartment") || filename.includes("Block") || filename.includes("Boarding") || filename.includes("Studio") || filename.includes("Budget")) { color = 0x7a44aa; isApartment = true; }
+else if (filename.includes("Bungalow") || filename.includes("House") || filename.includes("Duplex") || filename.includes("Rental")) { color = 0xaa4411; }
+else if (filename.includes("Townhouse") || filename.includes("Entry") || filename.includes("Gated")) { color = 0x993300; }
 
-  const height = isBakery ? 7 : (isStore ? 5.5 : (isApartment ? 10 : 7));
-  const width = isBakery ? 9 : (isStore ? 8 : (isApartment ? 9 : 7));
-  const depth = 7.5;
+const height = isBakery ? 7 : (isStore ? 5.5 : (isApartment ? 10 : 7));
+const width = isBakery ? 9 : (isStore ? 8 : (isApartment ? 9 : 7));
+const depth = 7.5;
 
-  const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), new THREE.MeshStandardMaterial({ color, roughness: 0.7 }));
-  body.position.y = height/2; body.castShadow = true; body.receiveShadow = true; group.add(body);
+const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material(color));
+body.position.y = height/2; body.castShadow = true; body.receiveShadow = true; group.add(body);
 
-  const roof = new THREE.Mesh(new THREE.BoxGeometry(width+0.6, 0.5, depth+0.6), new THREE.MeshStandardMaterial({ color: 0x111822, roughness: 0.5 }));
-  roof.position.y = height + 0.25; group.add(roof);
+const roof = new THREE.Mesh(new THREE.BoxGeometry(width+0.6, 0.5, depth+0.6), material(0x111822));
+roof.position.y = height + 0.25; group.add(roof);
 
-  // Door
-  const door = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.15), new THREE.MeshStandardMaterial({ color: 0x2a1a0a }));
-  door.position.set(0, 1.25, depth/2 + 0.08); group.add(door);
-  group.userData.doorPos = new THREE.Vector3(0, 1.25, depth/2 + 0.5);
+const door = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.15), material(0x2a1a0a));
+door.position.set(0, 1.25, depth/2 + 0.08); group.add(door);
+group.userData.doorPos = new THREE.Vector3(0, 1.25, depth/2 + 0.5);
 
-  // Windows with warm glow
-  const winGlow = new THREE.MeshBasicMaterial({ color: 0xffd466, transparent: true, opacity: 0.8 });
-  for (let wx = -width/3; wx <= width/3; wx += width/3) {
-    for (let wy = height/3; wy < height; wy += height/2.5) {
-      const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 0.1), winGlow);
-      win.position.set(wx, wy, depth/2 + 0.06); group.add(win);
-    }
-  }
+const winGlow = new THREE.MeshBasicMaterial({ color: 0xffd466, transparent: true, opacity: 0.8 });
+for (let wx = -width/3; wx <= width/3; wx += width/3) {
+for (let wy = height/3; wy < height; wy += height/2.5) {
+const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 0.1), winGlow);
+win.position.set(wx, wy, depth/2 + 0.06); group.add(win);
+}
+}
 
-  if (isBakery) {
-    // Sign
-    const sign = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 0.2), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
-    sign.position.set(0, height + 1.5, depth/2 + 0.3); group.add(sign);
-  }
+if (isBakery) {
+const sign = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 0.2), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
+sign.position.set(0, height + 1.5, depth/2 + 0.3); group.add(sign);
+}
 
-  group.userData.buildingLabel = label;
-  group.userData.isBakery = isBakery;
-  group.userData.isStore = isStore;
-  return group;
+group.userData.buildingLabel = label;
+group.userData.isBakery = isBakery;
+group.userData.isStore = isStore;
+return group;
 }
 
 async function addBuilding(filename, x, z, rotation = 0, label = "Building") {
-  let root;
-  try {
-    const url = "./" + encodeURIComponent(filename);
-    root = await loadGLB(url);
-    const bounds = new THREE.Box3().setFromObject(root);
-    const center = bounds.getCenter(new THREE.Vector3());
-    root.position.x -= center.x; root.position.z -= center.z;
-    const size = bounds.getSize(new THREE.Vector3());
-    const footprint = Math.max(size.x, size.z);
-    const scale = Math.min(1.3, 8.0 / Math.max(footprint, 0.001));
-    root.scale.setScalar(scale);
-    const afterScale = new THREE.Box3().setFromObject(root);
-    root.position.y -= afterScale.min.y;
-  } catch (error) {
-    failedAssets.push(filename);
-    root = createProceduralBuildingMesh(filename, label);
-  }
-  root.position.set(x, 0, z);
-  root.rotation.y = rotation;
-  root.userData.cityBuilding = label;
-  scene.add(root);
-  buildings.push(root);
-  return root;
+let root;
+try {
+const url = "./" + encodeURIComponent(filename);
+root = await loader.loadAsync(url);
+const bounds = new THREE.Box3().setFromObject(root);
+const center = bounds.getCenter(new THREE.Vector3());
+root.position.x -= center.x; root.position.z -= center.z;
+const size = bounds.getSize(new THREE.Vector3());
+const footprint = Math.max(size.x, size.z);
+const scale = Math.min(1.3, 8.0 / Math.max(footprint, 0.001));
+root.scale.setScalar(scale);
+const afterScale = new THREE.Box3().setFromObject(root);
+root.position.y -= afterScale.min.y;
+} catch (error) {
+root = createProceduralBuildingMesh(filename, label);
+}
+root.position.set(x, 0, z);
+root.rotation.y = rotation;
+root.userData.cityBuilding = label;
+scene.add(root);
+
+// Collision box
+const box = new THREE.Box3().setFromObject(root);
+cityCollisionBoxes.push({
+x: x,
+z: z,
+halfWidth: (box.max.x - box.min.x) / 2 + 0.3,
+halfDepth: (box.max.z - box.min.z) / 2 + 0.3
+});
+return root;
 }
 
 // ========================================
-// MIMIC MONSTER
+// HOUSES POSITIONED INSIDE ROAD LOOPS
 // ========================================
-const mimic = {
-  mesh: null,
-  position: new THREE.Vector3(0, 0, 0),
-  target: null,
-  state: "patrol", // patrol, hunt, attack
-  speed: 0,
-  patrolPoints: [],
-  currentPatrol: 0,
-  lastSeenPlayer: null,
-  huntTimer: 0,
-  attackCooldown: 0,
-  roarSound: null
-};
 
-function createMimic() {
-  const group = new THREE.Group();
-
-  // Body - tall, thin, unsettling
-  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.3, metalness: 0.1 });
-  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.8, 8, 16), bodyMat);
-  body.position.y = 1.2; body.castShadow = true; group.add(body);
-
-  // Head
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 12), bodyMat);
-  head.position.y = 2.4; head.scale.set(1, 1.2, 1); head.castShadow = true; group.add(head);
-
-  // Eyes - glowing
-  const eyeGeo = new THREE.SphereGeometry(0.08, 8, 8);
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff3344 });
-  const leftEye = new THREE.Mesh(eyeGeo, eyeMat); leftEye.position.set(-0.12, 2.45, 0.3); group.add(leftEye);
-  const rightEye = new THREE.Mesh(eyeGeo, eyeMat); rightEye.position.set(0.12, 2.45, 0.3); group.add(rightEye);
-  mimic.eyes = [leftEye, rightEye];
-
-  // Long arms
-  const armMat = new THREE.MeshStandardMaterial({ color: 0x0d0d0d, roughness: 0.4 });
-  for (let side of [-1, 1]) {
-    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 1.5, 6, 12), armMat);
-    arm.position.set(side * 0.6, 1.4, 0); arm.rotation.z = side * 0.3; arm.castShadow = true; group.add(arm);
-  }
-
-  // Spawn at a patrol point
-  mimic.mesh = group;
-  scene.add(group);
-
-  // Patrol points around the map
-  mimic.patrolPoints = [
-    new THREE.Vector3(-20, 0, 10),
-    new THREE.Vector3(20, 0, 10),
-    new THREE.Vector3(20, 0, -10),
-    new THREE.Vector3(-20, 0, -10),
-    new THREE.Vector3(0, 0, 20),
-    new THREE.Vector3(0, 0, -20),
-    new THREE.Vector3(-35, 0, 0),
-    new THREE.Vector3(35, 0, 0)
-  ];
-  mimic.position.copy(mimic.patrolPoints[0]);
-  group.position.copy(mimic.position);
-  mimic.mesh.position.y = 0;
-}
-
-function updateMimic(delta) {
-  if (GameState.gameOver || GameState.gameWon) return;
-
-  const playerPos = player.position.clone();
-  playerPos.y = 0;
-  const mimicPos = mimic.position.clone();
-  const dist = playerPos.distanceTo(mimicPos);
-
-  // Check line of sight
-  const canSeePlayer = checkLineOfSight(mimicPos.clone().setY(2), player.position.clone());
-
-  // Noise detection
-  const playerNoise = GameState.isSprinting ? 25 : (GameState.isWalking ? 12 : 0);
-  const noiseThreshold = 15 + mimic.huntTimer * 2; // Gets more sensitive when hunting
-
-  if (mimic.state === "patrol") {
-    mimic.speed = 2.5;
-    const targetPatrol = mimic.patrolPoints[mimic.currentPatrol];
-    const toTarget = new THREE.Vector3().subVectors(targetPatrol, mimicPos);
-    if (toTarget.length() < 2) {
-      mimic.currentPatrol = (mimic.currentPatrol + 1) % mimic.patrolPoints.length;
-    } else {
-      toTarget.normalize();
-      mimic.position.addScaledVector(toTarget, mimic.speed * delta);
-      mimic.mesh.position.lerp(mimic.position, 0.1);
-      mimic.mesh.lookAt(targetPatrol.x, mimic.mesh.position.y, targetPatrol.z);
-    }
-
-    // Transition to hunt
-    if (dist < 18 && (canSeePlayer || playerNoise > noiseThreshold)) {
-      mimic.state = "hunt";
-      mimic.huntTimer = 15; // Hunt for 15 seconds
-      mimic.lastSeenPlayer = playerPos.clone();
-      GameState.mimicAlerted = true;
-      playMimicSound("roar");
-      updateStatus("THE MIMIC HAS FOUND YOU! RUN!");
-    }
-
-  } else if (mimic.state === "hunt") {
-    mimic.speed = 7.5;
-    mimic.huntTimer -= delta;
-
-    const targetPos = mimic.lastSeenPlayer || playerPos;
-    const toTarget = new THREE.Vector3().subVectors(targetPos, mimicPos);
-
-    if (canSeePlayer) {
-      mimic.lastSeenPlayer = playerPos.clone();
-      mimic.huntTimer = Math.max(mimic.huntTimer, 5); // Reset hunt timer if seeing player
-    }
-
-    if (toTarget.length() > 1.5) {
-      toTarget.normalize();
-      mimic.position.addScaledVector(toTarget, mimic.speed * delta);
-      mimic.mesh.position.lerp(mimic.position, 0.15);
-      mimic.mesh.lookAt(targetPos.x, mimic.mesh.position.y, targetPos.z);
-    }
-
-    // Attack if close
-    if (dist < 1.8) {
-      mimic.state = "attack";
-      mimic.attackCooldown = 1.5;
-    }
-
-    // Return to patrol if lost player
-    if (mimic.huntTimer <= 0 && !canSeePlayer && dist > 25) {
-      mimic.state = "patrol";
-      GameState.mimicAlerted = false;
-    }
-
-  } else if (mimic.state === "attack") {
-    mimic.attackCooldown -= delta;
-    mimic.mesh.lookAt(player.position.x, mimic.mesh.position.y, player.position.z);
-
-    if (mimic.attackCooldown <= 0) {
-      // Damage player
-      GameState.fear = Math.min(100, GameState.fear + 35);
-      GameState.stamina = Math.max(0, GameState.stamina - 20);
-      mimic.state = "hunt";
-      mimic.huntTimer = 10;
-      mimic.attackCooldown = 2;
-      playMimicSound("attack");
-      screenShake(0.5);
-
-      if (GameState.fear >= 100) {
-        gameOver("The Mimic caught you. Your fear consumed you.");
-      }
-    }
-  }
-
-  // Eye blink animation
-  const blink = Math.sin(Date.now() * 0.003) > 0.95 ? 0.1 : 1;
-  mimic.eyes.forEach(e => e.scale.y = blink);
-
-  // Intensity glow when hunting
-  const glowIntensity = mimic.state === "hunt" ? 1.5 : (mimic.state === "attack" ? 2 : 0.8);
-  mimic.eyes.forEach(e => e.material.color.setHSL(0.99, 1, glowIntensity * 0.5));
-
-  // Update fear based on proximity
-  if (dist < 30 && mimic.state !== "patrol") {
-    GameState.fear = Math.min(100, GameState.fear + delta * (30 - dist) * 0.8);
-  } else if (dist > 40) {
-    GameState.fear = Math.max(0, GameState.fear - delta * 3);
-  }
-}
-
-function checkLineOfSight(from, to) {
-  const dir = new THREE.Vector3().subVectors(to, from).normalize();
-  const dist = from.distanceTo(to);
-  const ray = new THREE.Raycaster(from, dir, 0, dist);
-  const obstacles = [...buildings, ...roads];
-  const hits = ray.intersectObjects(obstacles, true);
-  return hits.length === 0;
-}
-
-function playMimicSound(type) {
-  // Procedural audio using Web Audio API
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-
-    if (type === "roar") {
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(80, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 1.5);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
-      osc.start(); osc.stop(ctx.currentTime + 1.5);
-    } else if (type === "attack") {
-      osc.type = "square";
-      osc.frequency.setValueAtTime(200, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      osc.start(); osc.stop(ctx.currentTime + 0.3);
-    }
-  } catch (e) { /* Audio not available */ }
-}
-
-// ========================================
-// INTERACTION SYSTEM
-// ========================================
-const interactionTargets = [
-  { name: "Corner Shop Key", pos: new THREE.Vector3(-37, 1.5, 9), radius: 3, objective: 1, message: "Found the Bakery Key!" },
-  { name: "Bakery Door", pos: new THREE.Vector3(8, 1.5, -8), radius: 2.5, objective: 2, requiresKey: true, message: "Entered Tina's Bakery..." },
-  { name: "Photo Album", pos: new THREE.Vector3(8, 1.5, -12), radius: 2, objective: 3, message: "Found the photo album! Our first date..." },
-  { name: "North Exit", pos: new THREE.Vector3(0, 1.5, 34), radius: 4, objective: 4, message: "You escaped with the memories." }
+// North Loop interior (bounded by corners at ~-17,19 and ~17,18, straights at z=26)
+const northLoopHomes = [
+["MS_HV_01_PorchBungalow.glb", -14, 22.5, 0],
+["MS_HV_02_WideBalconyHouse.glb", -6, 22.5, 0],
+["MS_HV_03_UrbanTownhouse.glb", 2, 22.5, 0],
+["MS_HV_04_CornerEntryHouse.glb", 10, 22.5, 0],
+["MS_PF_03_ThreeStoreyApartment.glb", -14, 29, Math.PI],
+["MS_PF_04_ApartmentBlock.glb", -4, 29, Math.PI],
+["MS_RR_A01_TinySingleRoom.glb", 6, 29, Math.PI],
+["MS_RR_A02_BudgetHouse.glb", 14, 29, Math.PI]
 ];
 
-function tryInteract() {
-  const playerPos = player.position.clone();
-  playerPos.y = 0;
+// South Loop interior (bounded by corners at ~-17,-18 and ~17,-18, straights at z=-22)
+const southLoopHomes = [
+["MS_HV_05_GatedCarportHouse.glb", -14, -20, Math.PI],
+["MS_HV_06_OlderDuplexRental.glb", -4, -20, Math.PI],
+["MS_PF_01_TwoStoreyHouse.glb", 6, -20, Math.PI],
+["MS_PF_02_NarrowTownhouse.glb", 14, -20, Math.PI],
+["MS_RR_B02_StandardFamilyBungalow.glb", -14, -28, 0],
+["MS_RR_D01_StudioUnit.glb", -4, -28, 0],
+["MS_RR_D04_BoardingHouse.glb", 8, -28, 0]
+];
 
-  for (const target of interactionTargets) {
-    const dist = playerPos.distanceTo(target.pos);
-    if (dist < target.radius) {
-      if (target.requiresKey && !GameState.objectives[1]) {
-        updateStatus("The bakery door is locked. Need the key from the Corner Shop.");
-        return;
-      }
-      if (!GameState.objectives[target.objective]) {
-        GameState.objectives[target.objective] = true;
-        updateObjectiveUI();
-        updateStatus(target.message);
+// West side (between x=-25 and x=-17 transition roads)
+const westSideHomes = [
+["MS_HV_01_PorchBungalow.glb", -22, 8, Math.PI/2],
+["MS_HV_02_WideBalconyHouse.glb", -22, 0, Math.PI/2]
+];
 
-        if (target.objective === 3) {
-          // Trigger mimic to hunt more aggressively
-          mimic.state = "hunt";
-          mimic.huntTimer = 30;
-          mimic.lastSeenPlayer = playerPos.clone();
-          GameState.mimicAlerted = true;
-          playMimicSound("roar");
-        }
-        if (target.objective === 4) {
-          gameWin();
-        }
-      }
-      return;
-    }
-  }
+// East side (between x=19 and x=26 transition roads)
+const eastSideHomes = [
+["MS_HV_03_UrbanTownhouse.glb", 22, 8, -Math.PI/2],
+["MS_HV_04_CornerEntryHouse.glb", 22, -2, -Math.PI/2]
+];
+
+const allHomes = [...northLoopHomes, ...southLoopHomes, ...westSideHomes, ...eastSideHomes];
+for (const [file, x, z, rot] of allHomes) {
+await addBuilding(file, x, z, rot, "Home");
 }
+
+// Key buildings
+await addBuilding("MS_PF_05_CornerShop.glb", -37, 9, Math.PI/2, "Corner Shop");
+await addBuilding("MS_PF_06_ClosedStorefront.glb", -5, -8, 0, "Storefront");
+await addBuilding("tinas bakery.glb", 8, -8, 0, "Tina's Bakery");
 
 // ========================================
-// UI FUNCTIONS
+// STREETLIGHTS
 // ========================================
-function updateStatus(msg) {
-  statusEl.textContent = msg;
-  statusEl.style.color = "#ff6b6b";
-  clearTimeout(statusEl.timeout);
-  statusEl.timeout = setTimeout(() => {
-    statusEl.style.color = "#7ce3ff";
-  }, 3000);
+function createStreetLamp(x, z) {
+const light = new THREE.PointLight(0xffd175, 0, 25, 1.5);
+light.position.set(x, 5.2, z);
+light.castShadow = true;
+light.shadow.mapSize.set(512, 512);
+scene.add(light);
+
+const bulb = new THREE.Mesh(
+new THREE.SphereGeometry(0.25, 8, 8),
+new THREE.MeshBasicMaterial({ color: 0xffd175 })
+);
+bulb.position.set(x, 5.4, z);
+scene.add(bulb);
 }
 
-function updateObjectiveUI() {
-  const items = objectiveList.children;
-  for (let i = 0; i < items.length; i++) {
-    items[i].className = GameState.objectives[i] ? "done" : (i === GameState.currentObjective ? "current" : "pending");
-    items[i].textContent = (GameState.objectives[i] ? "✓ " : "▸ ") + items[i].textContent.replace(/^[✓▸]\s*/, "");
-  }
-  // Update current objective
-  for (let i = 0; i < GameState.objectives.length; i++) {
-    if (!GameState.objectives[i]) {
-      GameState.currentObjective = i;
-      break;
-    }
-  }
-}
-
-function updateHUD() {
-  staminaFill.style.width = GameState.stamina + "%";
-  staminaText.textContent = Math.round(GameState.stamina) + "%";
-  flashlightFill.style.width = GameState.flashlight + "%";
-  flashlightText.textContent = Math.round(GameState.flashlight) + "%";
-  fearFill.style.width = GameState.fear + "%";
-  fearText.textContent = Math.round(GameState.fear) + "%";
-
-  // Fear effects
-  if (GameState.fear > 60) {
-    document.body.style.filter = `hue-rotate(${(GameState.fear-60)*2}deg) saturate(${1 - (GameState.fear-60)/100*0.5})`;
-    crosshair.classList.add("aiming");
-  } else {
-    document.body.style.filter = "none";
-    crosshair.classList.remove("aiming");
-  }
-
-  // Flashlight overlay
-  flashlightOverlay.classList.toggle("on", GameState.flashlightOn && GameState.flashlight > 0);
-}
-
-function gameOver(msg) {
-  GameState.gameOver = true;
-  gameOverTitle.textContent = "GAME OVER";
-  gameOverMsg.textContent = msg;
-  gameOverScreen.style.display = "flex";
-  document.exitPointerLock();
-  crosshair.style.display = "none";
-}
-
-function gameWin() {
-  GameState.gameWon = true;
-  gameOverTitle.textContent = "YOU SURVIVED";
-  gameOverMsg.textContent = "You found the memories and escaped the Midnight Streets.";
-  gameOverScreen.style.display = "flex";
-  document.exitPointerLock();
-  crosshair.style.display = "none";
-}
-
-function screenShake(intensity) {
-  const start = Date.now();
-  const duration = 300;
-  function shake() {
-    const elapsed = Date.now() - start;
-    if (elapsed < duration) {
-      const prog = elapsed / duration;
-      const mag = intensity * (1 - prog) * 0.3;
-      camera.position.x += (Math.random() - 0.5) * mag;
-      camera.position.y += (Math.random() - 0.5) * mag;
-      requestAnimationFrame(shake);
-    }
-  }
-  shake();
-}
+const lightPositions = [
+[-27, 5], [18, 5], [-12, 2], [6, 2],
+[-20, 12], [-20, 20], [25, 12], [25, 20],
+[-20, -6], [-20, -12], [24, -6], [24, -14],
+[-17, 19], [17, 18], [-12, 26], [6, 26],
+[-17, -18], [17, -18], [-12, -22], [6, -22],
+[-37, 9], [8, -8]
+];
+lightPositions.forEach(p => createStreetLamp(p[0], p[1]));
 
 // ========================================
-// BUILD CITY
+// TREES
 // ========================================
-async function buildCity() {
-  statusEl.textContent = "Generating Midnight Streets...";
+function addTree(x, z, s=1) {
+const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18*s, 0.24*s, 2.2*s, 7), material(0x3d2a1a));
+trunk.position.set(x, 1.1*s, z); trunk.castShadow = true; scene.add(trunk);
+const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s, 1), material(0x2d5a2f));
+crown.position.set(x, 2.65*s, z); crown.castShadow = true; scene.add(crown);
 
-  // Roads
-  for (const r of savedRoads) {
-    await addRoad(r.type, r.x, r.z, r.rot, r.y);
-  }
+cityCollisionBoxes.push({x, z, halfWidth: 0.65*s, halfDepth: 0.65*s});
+}
+[[-34,18],[-34,-15],[38,18],[38,-15],[-27,34],[24,34],[-27,-32],[24,-32],[-22,15],[-22,5],[23,15],[23,5]].forEach(p => addTree(p[0], p[1], 0.9));
 
-  // Streetlights
-  const lightPositions = [
-    [-27, 5], [18, 5], [-12, 2], [6, 2],
-    [-20, 12], [-20, 20], [25, 12], [25, 20],
-    [-20, -6], [-20, -12], [24, -6], [24, -14],
-    [-17, 19], [17, 18], [-12, 26], [6, 26],
-    [-17, -18], [17, -18], [-12, -22], [6, -22],
-    [-37, 9], [8, -8]
-  ];
-  lightPositions.forEach(p => createStreetLamp(p[0], p[1]));
+// ========================================
+// LOCAL PLAYER
+// ========================================
+let character=createCharacter(appearance);
+let player=character.group;
+scene.add(player);
+player.position.set(0, 0, 10);
 
-  // Houses inside loops
-  const northLoopHomes = [
-    ["MS_HV_01_PorchBungalow.glb", -14, 22.5, 0],
-    ["MS_HV_02_WideBalconyHouse.glb", -6, 22.5, 0],
-    ["MS_HV_03_UrbanTownhouse.glb", 2, 22.5, 0],
-    ["MS_HV_04_CornerEntryHouse.glb", 10, 22.5, 0],
-    ["MS_PF_03_ThreeStoreyApartment.glb", -14, 29, Math.PI],
-    ["MS_PF_04_ApartmentBlock.glb", -4, 29, Math.PI],
-    ["MS_RR_A01_TinySingleRoom.glb", 6, 29, Math.PI],
-    ["MS_RR_A02_BudgetHouse.glb", 14, 29, Math.PI]
-  ];
+// ========================================
+// WARDROBE PREVIEW SCENE
+// ========================================
+const previewScene=new THREE.Scene();
+previewScene.background=new THREE.Color(0x876447);
+previewScene.fog=new THREE.Fog(0x876447,10,24);
+previewScene.add(new THREE.HemisphereLight(0xffe9ce,0x62452e,2.2));
 
-  const southLoopHomes = [
-    ["MS_HV_05_GatedCarportHouse.glb", -14, -20, Math.PI],
-    ["MS_HV_06_OlderDuplexRental.glb", -4, -20, Math.PI],
-    ["MS_PF_01_TwoStoreyHouse.glb", 6, -20, Math.PI],
-    ["MS_PF_02_NarrowTownhouse.glb", 14, -20, Math.PI],
-    ["MS_RR_B02_StandardFamilyBungalow.glb", -14, -28, 0],
-    ["MS_RR_D01_StudioUnit.glb", -4, -28, 0],
-    ["MS_RR_D04_BoardingHouse.glb", 8, -28, 0]
-  ];
+const previewLight=new THREE.DirectionalLight(0xffe5bd,2.5);
+previewLight.position.set(-3,7,5);
+previewLight.castShadow=true;
+previewScene.add(previewLight);
 
-  const westSideHomes = [
-    ["MS_HV_01_PorchBungalow.glb", -22, 8, Math.PI/2],
-    ["MS_HV_02_WideBalconyHouse.glb", -22, 0, Math.PI/2]
-  ];
+const previewCamera=new THREE.PerspectiveCamera(32,1,.1,50);
+previewCamera.position.set(0,2.15,7.4);
+previewCamera.lookAt(0,1.45,0);
 
-  const eastSideHomes = [
-    ["MS_HV_03_UrbanTownhouse.glb", 22, 8, -Math.PI/2],
-    ["MS_HV_04_CornerEntryHouse.glb", 22, -2, -Math.PI/2]
-  ];
+const previewRenderer=new THREE.WebGLRenderer({
+canvas:document.getElementById('previewCanvas'),
+antialias:true,
+alpha:false
+});
+previewRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
+previewRenderer.outputColorSpace=THREE.SRGBColorSpace;
 
-  const allHomes = [...northLoopHomes, ...southLoopHomes, ...westSideHomes, ...eastSideHomes];
-  for (const [file, x, z, rot] of allHomes) {
-    await addBuilding(file, x, z, rot, "Home");
-  }
+const previewFloor=new THREE.Mesh(new THREE.CylinderGeometry(2.7,2.7,.12,48),material(0x9a704d));
+previewFloor.position.y=-.08;
+previewScene.add(previewFloor);
 
-  // Key buildings
-  await addBuilding("MS_PF_05_CornerShop.glb", -37, 9, Math.PI/2, "Corner Shop");
-  await addBuilding("MS_PF_06_ClosedStorefront.glb", -5, -8, 0, "Storefront");
-  await addBuilding("tinas bakery.glb", 8, -8, 0, "Tina's Bakery");
+const previewRug=new THREE.Mesh(new THREE.CylinderGeometry(1.45,1.45,.025,48),material(0x6b5140));
+previewRug.position.y=0;
+previewScene.add(previewRug);
 
-  // Trees
-  function addTree(x, z, s=1) {
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18*s, 0.24*s, 2.2*s, 7), new THREE.MeshStandardMaterial({ color: 0x3d2a1a }));
-    trunk.position.set(x, 1.1*s, z); trunk.castShadow = true; scene.add(trunk);
-    const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s, 1), new THREE.MeshStandardMaterial({ color: 0x1a3a1f }));
-    crown.position.set(x, 2.65*s, z); crown.castShadow = true; scene.add(crown);
-  }
-  [[-34,18],[-34,-15],[38,18],[38,-15],[-27,34],[24,34],[-27,-32],[24,-32],[-22,15],[-22,5],[23,15],[23,5]].forEach(p => addTree(p[0], p[1], 0.9));
+function updatePreview(){
+if(previewCharacter){
+previewScene.remove(previewCharacter.group);
+previewCharacter.mixer.stopAllAction();
+}
+previewCharacter=createCharacter(appearance);
+previewScene.add(previewCharacter.group);
+previewCharacter.group.position.y=0;
+previewCharacter.group.rotation.y=previewRotation;
+}
+updatePreview();
 
-  // Create Mimic
-  createMimic();
+function resizePreview(){
+const r=document.getElementById('previewWrap').getBoundingClientRect();
+const w=Math.max(1,r.width);
+const h=Math.max(1,r.height);
+previewRenderer.setSize(w,h,false);
+previewCamera.aspect=w/h;
+previewCamera.updateProjectionMatrix();
+}
+new ResizeObserver(resizePreview).observe(document.getElementById('previewWrap'));
+resizePreview();
 
-  statusEl.textContent = "Midnight Streets loaded. Find Tina's Bakery. Survive the Mimic.";
-  updateObjectiveUI();
+const previewCanvas=document.getElementById('previewCanvas');
+previewCanvas.addEventListener('pointerdown',e=>{
+previewPointer=e.pointerId;
+previewLastX=e.clientX;
+previewCanvas.setPointerCapture(e.pointerId);
+});
+previewCanvas.addEventListener('pointermove',e=>{
+if(e.pointerId!==previewPointer)return;
+previewRotation+=(e.clientX-previewLastX)*.012;
+previewLastX=e.clientX;
+if(previewCharacter)previewCharacter.group.rotation.y=previewRotation;
+});
+previewCanvas.addEventListener('pointerup',e=>{if(e.pointerId===previewPointer)previewPointer=null;});
+previewCanvas.addEventListener('pointercancel',()=>previewPointer=null);
+
+// ========================================
+// WARDROBE UI
+// ========================================
+function renderWardrobe(){
+const cats=document.getElementById('categories');
+cats.innerHTML='';
+for(const [key,label] of categoryNames){
+const row=document.createElement('div');
+row.className='category'+(key===activeCategory?' active':'');
+const name=document.createElement('span');
+name.textContent=label;
+const arrows=document.createElement('div');
+arrows.className='arrows';
+const left=document.createElement('button');
+left.textContent='‹';
+left.setAttribute('aria-label','Previous '+label);
+const right=document.createElement('button');
+right.textContent='›';
+right.setAttribute('aria-label','Next '+label);
+left.onclick=e=>{e.stopPropagation();cycle(key,-1);};
+right.onclick=e=>{e.stopPropagation();cycle(key,1);};
+arrows.append(left,right);
+row.append(name,arrows);
+row.onclick=()=>{activeCategory=key;renderWardrobe();};
+cats.append(row);
+}
+const list=choices[activeCategory];
+const selected=list.find(v=>v[1]===appearance[activeCategory]);
+document.getElementById('customTitle').textContent=categoryNames.find(v=>v[0]===activeCategory)[1].toUpperCase();
+document.getElementById('selectedName').textContent=selected?selected[0]:'Selected option';
+const sw=document.getElementById('swatches');
+sw.innerHTML='';
+for(const [label,value] of list){
+const b=document.createElement('button');
+b.className='swatch'+(appearance[activeCategory]===value?' selected':'');
+b.title=label;
+if(value.startsWith('#')){
+b.style.background=value;
+}else{
+b.style.background=activeCategory==='gender'
+?(value==='boy'?'#5b8db7':'#c77c9b')
+:activeCategory==='hairStyle'
+?({short:'#63452e',long:'#8b5a38',curly:'#38251c',braids:'#52351f',ponytail:'#76502e',bun:'#9b7048',none:'#d9c6aa'}[value])
+:({none:'#b8b0a4',glasses:'#777',headband:'#d7a5c4'}[value]);
+}
+b.onclick=()=>choose(value);
+sw.append(b);
+}
+}
+
+function replaceLocalCharacter(){
+const oldPosition=player.position.clone();
+const oldRotation=player.rotation.clone();
+scene.remove(player);
+character.mixer.stopAllAction();
+character=createCharacter(appearance);
+player=character.group;
+player.position.copy(oldPosition);
+player.rotation.copy(oldRotation);
+scene.add(player);
+}
+
+function choose(value){
+appearance[activeCategory]=value;
+replaceLocalCharacter();
+updatePreview();
+renderWardrobe();
+sendMyPosition();
+}
+
+function cycle(key,direction){
+const arr=choices[key];
+const i=arr.findIndex(v=>v[1]===appearance[key]);
+activeCategory=key;
+choose(arr[(i+direction+arr.length)%arr.length][1]);
+}
+
+renderWardrobe();
+
+function renderSaved(){
+const box=document.getElementById('savedOutfits');
+box.innerHTML='';
+const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
+const defaults=[
+{name:'Everyday outfit',data:{...defaultAppearance}},
+{name:'Cosy evening',data:{...defaultAppearance,topColor:'#8656a7',bottomColor:'#252525',hairStyle:'long'}},
+{name:'Summer day',data:{...defaultAppearance,topColor:'#e58b9c',bottomStyle:'shorts',shoeColor:'#eeeeee'}}
+];
+[...defaults,...saved].slice(0,6).forEach(o=>{
+const b=document.createElement('button');
+b.className='outfit';
+b.innerHTML='<strong>'+o.name+'</strong><span>Tap to wear this look</span>';
+b.onclick=()=>{appearance={...defaultAppearance,...o.data};replaceLocalCharacter();updatePreview();renderWardrobe();sendMyPosition();};
+box.append(b);
+});
+}
+
+document.getElementById('saveOutfit').onclick=()=>{
+const saved=JSON.parse(localStorage.getItem('ofd_saved_outfits')||'[]');
+if(saved.length>=3)saved.shift();
+saved.push({name:'Saved outfit '+(saved.length+1),data:{...appearance}});
+localStorage.setItem('ofd_saved_outfits',JSON.stringify(saved));
+renderSaved();
+};
+
+function openCreator(){
+wardrobeOpen=true;
+document.getElementById('start').style.display='flex';
+document.getElementById('wardrobe').style.display='none';
+document.getElementById('instructions').style.display='none';
+document.getElementById('joystick').style.display='none';
+document.getElementById('runButton').style.display='none';
+if(document.pointerLockElement)document.exitPointerLock();
+resizePreview();
+}
+
+function closeCreator(){
+wardrobeOpen=false;
+document.getElementById('start').style.display='none';
+document.getElementById('wardrobe').style.display='block';
+document.getElementById('instructions').style.display='block';
+if(matchMedia('(pointer:coarse)').matches){
+document.getElementById('joystick').style.display='block';
+document.getElementById('runButton').style.display='block';
+}
+if(matchMedia('(pointer:fine)').matches){
+renderer.domElement.requestPointerLock();
+}
+sendMyPosition();
+}
+
+document.getElementById('enterButton').addEventListener('click',closeCreator);
+document.getElementById('wardrobe').addEventListener('click',openCreator);
+
+// ========================================
+// INPUT & MOVEMENT
+// ========================================
+const keys={};
+let yaw=0;
+let pitch=.12;
+let running=false;
+let localMoving=false;
+let localSprinting=false;
+
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;});
+window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+window.addEventListener('blur',()=>{for(const key in keys)keys[key]=false;running=false;});
+
+const runButton=document.getElementById('runButton');
+runButton.addEventListener('pointerdown',e=>{e.preventDefault();running=true;});
+for(const n of ['pointerup','pointerleave','pointercancel']){
+runButton.addEventListener(n,()=>running=false);
+}
+
+const joystick=document.getElementById('joystick');
+const stick=document.getElementById('stick');
+let joystickPointer=null;
+let joyX=0;
+let joyY=0;
+
+function resetJoystick(){joyX=0;joyY=0;joystickPointer=null;stick.style.transform='translate(0px,0px)';}
+
+function updateJoystick(e){
+const r=joystick.getBoundingClientRect();
+const cx=r.left+r.width/2;
+const cy=r.top+r.height/2;
+let dx=e.clientX-cx;
+let dy=e.clientY-cy;
+const max=48;
+const d=Math.hypot(dx,dy);
+if(d>max){dx=dx/d*max;dy=dy/d*max;}
+joyX=dx/max;joyY=dy/max;
+stick.style.transform=`translate(${dx}px,${dy}px)`;
+}
+
+joystick.addEventListener('pointerdown',e=>{e.preventDefault();if(joystickPointer!==null)return;joystickPointer=e.pointerId;joystick.setPointerCapture(e.pointerId);updateJoystick(e);});
+joystick.addEventListener('pointermove',e=>{if(e.pointerId!==joystickPointer)return;e.preventDefault();updateJoystick(e);});
+joystick.addEventListener('pointerup',e=>{if(e.pointerId===joystickPointer)resetJoystick();});
+joystick.addEventListener('pointercancel',resetJoystick);
+joystick.addEventListener('lostpointercapture',resetJoystick);
+
+document.addEventListener('mousemove',e=>{
+if(wardrobeOpen||document.pointerLockElement!==renderer.domElement)return;
+yaw-=e.movementX*.003;
+pitch+=e.movementY*.002;
+pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
+});
+
+let cameraPointer=null;
+let touchX=0;
+let touchY=0;
+
+renderer.domElement.addEventListener('pointerdown',e=>{
+if(wardrobeOpen||e.pointerType!=='touch'||e.clientX<innerWidth*.42)return;
+cameraPointer=e.pointerId;
+renderer.domElement.setPointerCapture(e.pointerId);
+touchX=e.clientX;touchY=e.clientY;
+});
+
+renderer.domElement.addEventListener('pointermove',e=>{
+if(e.pointerId!==cameraPointer)return;
+const dx=e.clientX-touchX;
+const dy=e.clientY-touchY;
+yaw-=dx*.006;
+pitch+=dy*.004;
+pitch=THREE.MathUtils.clamp(pitch,-.65,.65);
+touchX=e.clientX;touchY=e.clientY;
+});
+
+function releaseCamera(e){if(e.pointerId===cameraPointer)cameraPointer=null;}
+renderer.domElement.addEventListener('pointerup',releaseCamera);
+renderer.domElement.addEventListener('pointercancel',releaseCamera);
+renderer.domElement.addEventListener('lostpointercapture',releaseCamera);
+
+// ========================================
+// MULTIPLAYER
+// ========================================
+async function connectMultiplayer(){
+try{
+const result=await signInAnonymously(auth);
+myUID=result.user.uid;
+myPlayerRef=ref(db,'players/'+myUID);
+await onDisconnect(myPlayerRef).remove();
+await set(myPlayerRef,{
+x:player.position.x,z:player.position.z,rotation:player.rotation.y,
+moving:false,running:false,appearance:appearance,updatedAt:Date.now()
+});
+networkReady=true;
+onValue(ref(db,'players'),snapshot=>{
+snapshot.forEach(child=>{
+const id=child.key;const data=child.val();
+if(id===myUID||!data)return;
+let other=remotePlayers.get(id);
+if(!other){
+other=createCharacter(data.appearance||defaultAppearance);
+other.group.position.set(Number(data.x)||0,0,Number(data.z)||0);
+other.group.rotation.y=Number(data.rotation)||0;
+other.group.userData.targetPosition=new THREE.Vector3(Number(data.x)||0,0,Number(data.z)||0);
+other.group.userData.targetRotation=Number(data.rotation)||0;
+other.group.userData.targetMoving=data.moving===true;
+other.group.userData.targetRunning=data.running===true;
+scene.add(other.group);
+remotePlayers.set(id,other);
+}else{
+const incoming=JSON.stringify({...defaultAppearance,...(data.appearance||{})});
+const current=other.group.userData.appearanceSignature;
+if(incoming!==current){
+const old=other.group;const state=old.userData;
+const replacement=createCharacter(data.appearance||defaultAppearance);
+replacement.group.position.copy(old.position);
+replacement.group.rotation.copy(old.rotation);
+replacement.group.userData.targetPosition=state.targetPosition;
+replacement.group.userData.targetRotation=state.targetRotation;
+replacement.group.userData.targetMoving=state.targetMoving;
+replacement.group.userData.targetRunning=state.targetRunning;
+scene.remove(old);scene.add(replacement.group);
+other=replacement;remotePlayers.set(id,other);
+}
+}
+const state=other.group.userData;
+state.targetPosition.set(Number(data.x)||0,0,Number(data.z)||0);
+if(Number.isFinite(Number(data.rotation)))state.targetRotation=Number(data.rotation);
+state.targetMoving=data.moving===true;state.targetRunning=data.running===true;
+});
+for(const [id,other] of remotePlayers){if(!snapshot.hasChild(id)){scene.remove(other.group);other.mixer.stopAllAction();remotePlayers.delete(id);}}
+statusText.textContent=remotePlayers.size>0?'🟢 Multiplayer · '+(remotePlayers.size+1)+' players':'🟢 Connected · Waiting for Tina';
+},error=>{console.error(error);statusText.textContent='🔴 Multiplayer read error';});
+}catch(error){console.error(error);statusText.textContent='🔴 Connection failed';}}
+connectMultiplayer();
+
+let lastSent=0;
+function sendMyPosition(){
+if(!networkReady||!myPlayerRef)return;
+set(myPlayerRef,{x:player.position.x,z:player.position.z,rotation:player.rotation.y,moving:localMoving,running:localSprinting,appearance:appearance,updatedAt:Date.now()}).catch(error=>{console.error('Position update failed:',error);});
 }
 
 // ========================================
 // GAME LOOP
 // ========================================
-function gameLoop() {
-  requestAnimationFrame(gameLoop);
-  const delta = Math.min(clock.getDelta(), 0.1);
+const clock=new THREE.Clock();
+const targetCamera=new THREE.Vector3();
 
-  if (!GameState.gameOver && !GameState.gameWon) {
-    handlePlayerMovement(delta);
-    updateMimic(delta);
-    updateResources(delta);
-    updateHUD();
-    updateFlashlight();
-    checkInteractPrompt();
-  }
+function animate(){
+requestAnimationFrame(animate);
+const delta=Math.min(clock.getDelta(),.05);
+const time=clock.elapsedTime;
 
-  renderer.render(scene, camera);
+let forward=0,sideways=0;
+if(!wardrobeOpen){
+if(keys.w||keys.arrowup)forward+=1;
+if(keys.s||keys.arrowdown)forward-=1;
+if(keys.d||keys.arrowright)sideways+=1;
+if(keys.a||keys.arrowleft)sideways-=1;
+forward+=-joyY;sideways+=joyX;
 }
 
-function handlePlayerMovement(delta) {
-  // Sprint detection
-  GameState.isSprinting = keys["ShiftLeft"] && GameState.stamina > 10 && (keys["KeyW"] || keys["ArrowUp"]);
-  GameState.isWalking = (keys["KeyW"] || keys["ArrowUp"] || keys["KeyS"] || keys["ArrowDown"] || keys["KeyA"] || keys["ArrowLeft"] || keys["KeyD"] || keys["ArrowRight"]) && !GameState.isSprinting;
-  GameState.isCrouching = keys["ControlLeft"];
+const length=Math.hypot(forward,sideways);
+const moving=length>.08;
+const sprint=keys.shift||running;
+localMoving=moving;localSprinting=moving&&sprint;
 
-  // Movement input
-  const moveDir = new THREE.Vector3();
-  if (keys["KeyW"] || keys["ArrowUp"]) moveDir.z -= 1;
-  if (keys["KeyS"] || keys["ArrowDown"]) moveDir.z += 1;
-  if (keys["KeyA"] || keys["ArrowLeft"]) moveDir.x -= 1;
-  if (keys["KeyD"] || keys["ArrowRight"]) moveDir.x += 1;
+if(moving){
+forward/=length;sideways/=length;
+const dx=-Math.sin(yaw)*forward+Math.cos(yaw)*sideways;
+const dz=-Math.cos(yaw)*forward-Math.sin(yaw)*sideways;
+const speed=sprint?10:5.5;
+const newX=player.position.x+dx*speed*delta;
+const newZ=player.position.z+dz*speed*delta;
 
-  let currentSpeed = player.walkSpeed;
-  if (GameState.isSprinting) currentSpeed = player.sprintSpeed;
-  else if (GameState.isCrouching) currentSpeed = player.crouchSpeed;
-
-  if (moveDir.length() > 0) {
-    moveDir.normalize();
-    const forward = new THREE.Vector3(Math.sin(player.yaw), 0, Math.cos(player.yaw)).negate();
-    const right = new THREE.Vector3(forward.z, 0, -forward.x);
-    const moveVector = new THREE.Vector3()
-      .addScaledVector(forward, moveDir.z)
-      .addScaledVector(right, moveDir.x);
-
-    // Simple collision with buildings
-    const newPos = player.position.clone().addScaledVector(moveVector, currentSpeed * delta);
-    if (!checkBuildingCollision(newPos)) {
-      player.position.copy(newPos);
-    }
-  }
-
-  // Stamina drain/regen
-  if (GameState.isSprinting) {
-    GameState.stamina = Math.max(0, GameState.stamina - delta * 15);
-  } else if (GameState.stamina < GameState.maxStamina) {
-    GameState.stamina = Math.min(GameState.maxStamina, GameState.stamina + delta * 8);
-  }
-
-  // Update camera position
-  camera.position.x = player.position.x;
-  camera.position.y = player.position.y;
-  camera.position.z = player.position.z;
-
-  // Camera rotation
-  const target = new THREE.Vector3(
-    player.position.x + Math.sin(player.yaw) * Math.cos(player.pitch),
-    player.position.y + Math.sin(player.pitch),
-    player.position.z + Math.cos(player.yaw) * Math.cos(player.pitch)
-  );
-  camera.lookAt(target);
-
-  // Footstep sounds (visual feedback via subtle camera bob)
-  if (moveDir.length() > 0 && (GameState.isWalking || GameState.isSprinting) && Math.random() < delta * 8) {
-    camera.position.y += (GameState.isSprinting ? 0.02 : 0.01) * Math.sin(Date.now() * 0.02);
-  }
+// Collision check
+let canMove=true;
+for(const box of cityCollisionBoxes){
+if(newX > box.x - box.halfWidth && newX < box.x + box.halfWidth &&
+newZ > box.z - box.halfDepth && newZ < box.z + box.halfDepth){
+canMove=false;break;
+}
+}
+if(canMove){
+player.position.x=newX;
+player.position.z=newZ;
+}
 }
 
-function checkBuildingCollision(pos) {
-  const checkPos = pos.clone(); checkPos.y = 1;
-  for (const b of buildings) {
-    const box = new THREE.Box3().setFromObject(b);
-    box.expandByScalar(1.2); // Player radius
-    if (box.containsPoint(checkPos)) return true;
-  }
-  return false;
+player.rotation.y=Math.PI+yaw;
+character.play(moving?(sprint?'run':'walk'):'idle');
+character.update(delta);
+
+for(const other of remotePlayers.values()){
+const data=other.group.userData;
+other.group.position.lerp(data.targetPosition,Math.min(1,delta*12));
+const diff=Math.atan2(Math.sin(data.targetRotation-other.group.rotation.y),Math.cos(data.targetRotation-other.group.rotation.y));
+other.group.rotation.y+=diff*Math.min(1,delta*12);
+other.play(data.targetMoving?(data.targetRunning?'run':'walk'):'idle');
+other.update(delta);
 }
 
-function updateResources(delta) {
-  // Flashlight battery
-  if (GameState.flashlightOn) {
-    GameState.flashlight = Math.max(0, GameState.flashlight - delta * 5);
-    if (GameState.flashlight <= 0) GameState.flashlightOn = false;
-  } else if (GameState.flashlight < GameState.maxFlashlight) {
-    GameState.flashlight = Math.min(GameState.maxFlashlight, GameState.flashlight + delta * 3);
-  }
+const horizontal=7*Math.cos(pitch);
+targetCamera.set(player.position.x+Math.sin(yaw)*horizontal,player.position.y+2.2+7*Math.sin(pitch),player.position.z+Math.cos(yaw)*horizontal);
+camera.position.lerp(targetCamera,.16);
+camera.lookAt(player.position.x,player.position.y+1.45,player.position.z);
 
-  // Fear passive regen when safe
-  if (GameState.fear > 0 && !GameState.mimicAlerted) {
-    GameState.fear = Math.max(0, GameState.fear - delta * 2);
-  }
+if(time-lastSent>.08){sendMyPosition();lastSent=time;}
+renderer.render(scene,camera);
+
+if(wardrobeOpen&&previewCharacter){
+previewCharacter.group.rotation.y=previewRotation;
+previewCharacter.update(delta);
+previewRenderer.render(previewScene,previewCamera);
 }
-
-function updateFlashlight() {
-  if (GameState.flashlightOn && GameState.flashlight > 0) {
-    flashlight.intensity = 1.8;
-    flashlight.distance = 35;
-  } else {
-    flashlight.intensity = 0;
-  }
-
-  // Flicker when low
-  if (GameState.flashlight < 20 && GameState.flashlight > 0 && GameState.flashlightOn) {
-    flashlight.intensity *= 0.5 + Math.random() * 0.5;
-  }
 }
+animate();
 
-function checkInteractPrompt() {
-  const playerPos = player.position.clone(); playerPos.y = 0;
-  let show = false;
-  for (const target of interactionTargets) {
-    if (playerPos.distanceTo(target.pos) < target.radius + 1) {
-      if (target.requiresKey && !GameState.objectives[1]) continue;
-      if (!GameState.objectives[target.objective]) {
-        show = true; break;
-      }
-    }
-  }
-  interactPrompt.style.display = show ? "block" : "none";
-}
-
-// Flashlight toggle
-document.addEventListener("keydown", e => {
-  if (e.code === "KeyF" && !GameState.gameOver) {
-    GameState.flashlightOn = !GameState.flashlightOn;
-  }
-});
-
-// ========================================
-// START
-// ========================================
-buildCity().then(() => {
-  gameLoop();
-}).catch(err => {
-  console.error(err);
-  statusEl.textContent = "Error: " + err.message;
-});
-
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);resizePreview();});
+statusText.textContent='🟢 3D characters loaded';
 </script>
 </body>
 </html>
