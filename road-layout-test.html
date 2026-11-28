@@ -587,111 +587,82 @@ selectRoad(object);
 // --------------------------------------
 
 async function buildLayout() {
-
 try {
 
-// MAIN STREET
-// Three crossroads with connecting roads.
-
-await addRoad("crossroads", 0, 0);
+// =================================
+// MAIN ROAD THROUGH THE MIDDLE
+// =================================
 
 await addRoad("crossroads", -24, 0);
 await addRoad("crossroads", 24, 0);
 
-for (const x of [-40, -32, -16, -8, 8, 16, 32, 40]) {
+// Connect both crossroads with a straight road.
+for (const x of [-15, -9, -3, 3, 9, 15]) {
 await addRoad("straight", x, 0);
 }
 
 
-// UPPER SIDE CONNECTIONS
+// =================================
+// UPPER LEFT SIDE OF THE SQUARE
+// =================================
 
-await addRoad("junction", -24, 8, 0);
-await addRoad("junction", 24, 8, Math.PI);
+await addRoad("straight", -24, 11, Math.PI / 2);
+await addRoad("straight", -24, 17, Math.PI / 2);
 
-await addRoad("straight", -24, 16, Math.PI / 2);
-await addRoad("straight", 24, 16, Math.PI / 2);
-
-
-// UPPER RESIDENTIAL LOOP
-
-await addRoad("corner", -32, 24, 0);
-await addRoad("corner", 32, 24, Math.PI / 2);
-
-await addRoad("straight", -24, 32);
-await addRoad("straight", -16, 32);
-await addRoad("straight", -8, 32);
-await addRoad("straight", 0, 32);
-await addRoad("straight", 8, 32);
-await addRoad("straight", 16, 32);
-await addRoad("straight", 24, 32);
-
-await addRoad("corner", -32, 40, Math.PI * 1.5);
-await addRoad("corner", 32, 40, Math.PI);
-
-await addRoad("straight", -24, 48, Math.PI / 2);
-await addRoad("straight", -16, 48, Math.PI / 2);
-await addRoad("straight", -8, 48, Math.PI / 2);
-await addRoad("straight", 0, 48, Math.PI / 2);
-await addRoad("straight", 8, 48, Math.PI / 2);
-await addRoad("straight", 16, 48, Math.PI / 2);
-await addRoad("straight", 24, 48, Math.PI / 2);
+// Upper left corner.
+await addRoad("corner", -24, 24, 0);
 
 
-// LOWER SIDE CONNECTIONS
+// =================================
+// TOP OF THE SQUARE
+// =================================
 
-await addRoad("junction", -24, -8, Math.PI);
-await addRoad("junction", 24, -8, 0);
-
-await addRoad("straight", -24, -16, Math.PI / 2);
-await addRoad("straight", 24, -16, Math.PI / 2);
-
-
-// LOWER RESIDENTIAL LOOP
-
-await addRoad("corner", -32, -24, Math.PI * 1.5);
-await addRoad("corner", 32, -24, Math.PI);
-
-await addRoad("straight", -24, -32);
-await addRoad("straight", -16, -32);
-await addRoad("straight", -8, -32);
-await addRoad("straight", 0, -32);
-await addRoad("straight", 8, -32);
-await addRoad("straight", 16, -32);
-await addRoad("straight", 24, -32);
-
-await addRoad("corner", -32, -40, 0);
-await addRoad("corner", 32, -40, Math.PI / 2);
-
-await addRoad("straight", -24, -48, Math.PI / 2);
-await addRoad("straight", -16, -48, Math.PI / 2);
-await addRoad("straight", -8, -48, Math.PI / 2);
-await addRoad("straight", 0, -48, Math.PI / 2);
-await addRoad("straight", 8, -48, Math.PI / 2);
-await addRoad("straight", 16, -48, Math.PI / 2);
-await addRoad("straight", 24, -48, Math.PI / 2);
+for (const x of [-15, -9, -3, 3, 9, 15]) {
+await addRoad("straight", x, 24);
+}
 
 
-// EXTRA CUL-DE-SAC / SIDE STREET PIECES
+// =================================
+// UPPER RIGHT SIDE
+// =================================
 
-await addRoad("junction", 48, 0, Math.PI / 2);
+await addRoad("corner", 24, 24, Math.PI / 2);
 
-await addRoad("straight", 56, 0);
-await addRoad("straight", 64, 0);
+await addRoad("straight", 24, 17, Math.PI / 2);
+await addRoad("straight", 24, 11, Math.PI / 2);
 
-await addRoad("corner", 72, 8, Math.PI);
-await addRoad("straight", 72, 16, Math.PI / 2);
 
-await addRoad("corner", 72, 24, Math.PI / 2);
+// =================================
+// LOWER RIGHT SIDE
+// =================================
 
-await addRoad("straight", 64, 32);
-await addRoad("straight", 56, 32);
+await addRoad("straight", 24, -11, Math.PI / 2);
+await addRoad("straight", 24, -17, Math.PI / 2);
 
-await addRoad("corner", 48, 24, 0);
+await addRoad("corner", 24, -24, Math.PI);
+
+
+// =================================
+// BOTTOM OF THE SQUARE
+// =================================
+
+for (const x of [15, 9, 3, -3, -9, -15]) {
+await addRoad("straight", x, -24);
+}
+
+
+// =================================
+// LOWER LEFT SIDE
+// =================================
+
+await addRoad("corner", -24, -24, Math.PI * 1.5);
+
+await addRoad("straight", -24, -17, Math.PI / 2);
+await addRoad("straight", -24, -11, Math.PI / 2);
 
 
 document.getElementById("status").textContent =
-roads.length +
-" road pieces loaded. Select a road to adjust it!";
+roads.length + " road pieces loaded. Check the square layout!";
 
 } catch(error) {
 
@@ -701,7 +672,6 @@ document.getElementById("status").textContent =
 "Loading error: " + error.message;
 
 }
-
 }
 
 
